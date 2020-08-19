@@ -117,7 +117,7 @@ iex> RNATranscription.to_rna("T")
 
 And there you go, we've created compile-time functions! We could take the automation even further by hosting the mapping somewhere, using a hook to create an Elixir package when it changes, and publish it without the interference of a developer.
 
-### In conclusion
+## In conclusion
 
 Elixir macros allow us to create awesome stuff. Though this awesomeness does come with a word of caution. It might be harder to understand what your code does and where some functions come from. New developers to your project with macros might have a hard time finding their way around. It is a tradeoff you have to make. Some might argue that using macros for a small mapping such as in our example above might be overkill. And I won't argue with that. However, it is fun to write and show you how you can define compile-time functions.
 
