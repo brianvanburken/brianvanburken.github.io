@@ -20,7 +20,7 @@
 
 title: Brian van Burken
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "http://brianvanburken.nl" # the base hostname & protocol for your site, e.g. http://example.com
+url: "" # the base hostname & protocol for your site, e.g. http://example.com
 
 # Build settings
 theme: minima
