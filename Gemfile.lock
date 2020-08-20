@@ -82,6 +82,7 @@ DEPENDENCIES
   jekyll-feed (~> 0.12)
   jekyll-seo-tag (~> 2.6)
   jekyll-sitemap (~> 1.4)
+  libv8 (~> 3.16)
   minima (~> 2.5)
   therubyracer (~> 0.12.2)
 

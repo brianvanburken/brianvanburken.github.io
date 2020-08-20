@@ -12,9 +12,10 @@ gem "jekyll", "~> 4.1.1"
 # This is the default theme for new Jekyll sites. You may change this to anything you like.
 gem "minima", "~> 2.5"
 
-# These are needed for precompiling prism output
+# These are needed for pre-compiling prism output
+gem "libv8", "~> 3.16"
+gem "therubyracer", "~> 0.12.2", platform: :ruby
 gem "execjs", "~> 2.7"
-gem "therubyracer", "~> 0.12.2"
 
 # If you have any plugins, put them here!
 group :jekyll_plugins do
