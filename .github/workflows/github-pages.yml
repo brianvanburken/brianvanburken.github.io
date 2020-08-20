@@ -16,6 +16,13 @@ jobs:
                   fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
             - uses: actions/setup-node@v1
             - uses: actions/setup-ruby@v1
+            - uses: actions/cache@v2
+              with:
+                  path: vendor/bundle
+                  key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-gems-
+            - run: bundle config path vendor/bundle
             - run: bundle install --jobs 4 --retry 3
             - run: EXECJS_RUNTIME=Node JEKYLL_ENV=production bundle exec jekyll build -s ${GITHUB_WORKSPACE}/ -d docs
             - run: touch docs/.nojekyll
