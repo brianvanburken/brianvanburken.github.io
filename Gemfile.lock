@@ -44,6 +44,7 @@ GEM
       rexml
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
+    libv8 (3.16.14.19)
     liquid (4.0.3)
     listen (3.2.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
@@ -59,6 +60,7 @@ GEM
     rb-fsevent (0.10.4)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
+    ref (2.0.0)
     rexml (3.2.4)
     rouge (3.22.0)
     safe_yaml (1.0.5)
@@ -66,6 +68,9 @@ GEM
       ffi (~> 1.9)
     terminal-table (1.8.0)
       unicode-display_width (~> 1.1, >= 1.1.1)
+    therubyracer (0.12.3)
+      libv8 (~> 3.16.14.15)
+      ref
     unicode-display_width (1.7.0)
 
 PLATFORMS
@@ -78,6 +83,7 @@ DEPENDENCIES
   jekyll-seo-tag (~> 2.6)
   jekyll-sitemap (~> 1.4)
   minima (~> 2.5)
+  therubyracer
 
 BUNDLED WITH
    2.1.4

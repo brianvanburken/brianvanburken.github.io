@@ -11,17 +11,11 @@ jobs:
         runs-on: ubuntu-16.04
         steps:
             - uses: actions/checkout@v2
-            - uses: actions/setup-node@v1
-              with:
-                  node-version: '12'
-            # Use GitHub Actions' cache to shorten build times and decrease load on servers
-            - uses: actions/cache@v1
-              with:
-                  path: vendor/bundle
-                  key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gems-
-            - uses:  helaili/jekyll-action@2.0.3
+            - name: Install Node.js runtime
+              run: sudo apt-get install nodejs
+            - name: Link Node.js
+              run: sudo ln -s /usr/local/bin/node /usr/bin/node && which node
+            - uses: helaili/jekyll-action@2.0.3
               env:
                   JEKYLL_PAT: ${{ secrets.JEKYLL_PAT }}
                   EXECJS_RUNTIME: Node
