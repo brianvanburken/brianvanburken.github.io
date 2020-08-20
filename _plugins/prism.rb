@@ -12,7 +12,7 @@ module Jekyll
       end
 
       def render(context)
-        code = super.lstrip.gsub!('``', '&#96;')
+        code = super.lstrip.gsub('`', '&#96;')
         output = %Q[Prism.highlight(`#{code}`, Prism.languages.#{@language}, '#{@language}')]
         output = $js.eval(output)
         <<~EOS

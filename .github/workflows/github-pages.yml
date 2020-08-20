@@ -10,12 +10,26 @@ jobs:
     github-pages:
         runs-on: ubuntu-16.04
         steps:
-            - uses: actions/checkout@v2
-            - name: Install Node.js runtime
-              run: sudo apt-get install nodejs
-            - name: Link Node.js
-              run: sudo ln -s /usr/local/bin/node /usr/bin/node && which node
-            - uses: helaili/jekyll-action@2.0.3
+            - uses: actions/checkout@master
+              with:
+                  persist-credentials: false # otherwise, the token used is the GITHUB_TOKEN, instead of your personal token
+                  fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+            - uses: actions/setup-node@v1
+            - uses: actions/setup-ruby@v1
+            - run: bundle install --jobs 4 --retry 3
+            - run: EXECJS_RUNTIME=Node JEKYLL_ENV=production bundle exec jekyll build -s ${GITHUB_WORKSPACE}/ -d docs
+            - run: touch docs/.nojekyll
+            - run: cd docs
+            - name: "Init Git repository"
+              run: |
+                  git init
+                  git config --local user.name "${GITHUB_ACTOR}"
+                  git config --local user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+            - run: git add .
+            - run: git commit -m "Jekyll build from Github Action ${GITHUB_SHA}"
+            - name: "Publishing to branch gh-pages"
               env:
-                  JEKYLL_PAT: ${{ secrets.JEKYLL_PAT }}
-                  EXECJS_RUNTIME: Node
+                  REPO_TOKEN: ${{secrets.REPO_TOKEN}}
+              run: |
+                git log --pretty=oneline
+                git push --force "https://${REPO_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" master:gh-pages
