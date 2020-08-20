@@ -19,9 +19,6 @@ module Jekyll
         <pre class="language-#{@language}"><code class='language-#{@language}'>#{output}</code></pre>
         EOS
       end
-
-      def init_js()
-      end
     end
   end
 end
