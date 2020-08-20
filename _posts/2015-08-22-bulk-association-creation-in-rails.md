@@ -1,15 +1,19 @@
 ---
+layout: post
+title: "Bulk Association Creation in Rails"
+excerpt: "During development of an application I stumbled across a situation where
+my produced n+1 queries and I improved it drastically."
 tags:
-    - rails
-    - ruby
-    - activerecord
+    - Rails
+    - Ruby
+    - ActiveRecord
 ---
 
 During development of an application I stumbled across a situation that could be
 improved. The application contains posts that are automatically tagged based on
 the content. Beneath you can see all the models that are used in this situation.
 
-```ruby
+{% prism ruby %}
 class Post < ActiveRecord::Base
   has_many :taggings, as: :taggable
   has_many :tags, through: :taggings
@@ -22,27 +26,23 @@ class Post < ActiveRecord::Base
     TaggingService.new(self).tag(words)
   end
 end
-```
 
-```ruby
 class Tagging < ActiveRecord::Base
   belongs_to :taggable, polymorphic: true
   belongs_to :tag
 end
-```
 
-```ruby
 class Tag < ActiveRecord::Base
   has_many :taggings
 end
-```
+{% endprism %}
 
 When the content of a post is changed it passes the words to a service which
 tags the post. It deletes all the current taggings to make sure irrelevant tags
 are removed. Then it walks through all the tags that are stored. Below is the
 tagging service which is responsible for the automatic tagging.
 
-```ruby
+{% prism ruby %}
 class TaggingService
   def initialize(record)
     @record = record
@@ -55,21 +55,21 @@ class TaggingService
     end
   end
 end
-```
+{% endprism %}
 
 The first problem with this service is that it walks through all the tags, even
 the ones that aren’t present in the content. We could improve this by only
 fetching relevant tags. By changing the query we can skip the check if the tag
 name is included.
 
-```ruby
+{% prism ruby %}
 def tag(words)
   @record.taggings.destroy_all
   Tag.where(name: words).each do |tag|
     record.tags << tag
   end
 end
-```
+{% endprism %}
 
 It’s an improvement, but still walks through each tag and as a result produces
 N+1 queries. After looking through the source of Rails I’ve found that it’s
@@ -81,16 +81,16 @@ Rails would use the `ActiveRecord::Relation` instance to generate a query and
 skip fetching data from the database. This would reduce the time spent in Ruby
 code. To improve our example we just pass in the query we improved earlier.
 
-```ruby
+{% prism ruby %}
 def tag(words)
   @record.taggings.destroy_all
   @record.tags << Tag.where(name: words)
 end
-```
+{% endprism %}
 
 This generates a nice SQL `INSERT` query that would look like the query below.
 
-```sql
+{% prism sql %}
 INSERT INTO "taggings" ("taggable_type", "taggable_id", "tag_id", "created_at", "updated_at")
 VALUES ("Post", 1, 1, "2015-08-22 00:00:00.000000", "2015-08-22 00:00:00.000000")
-```
+{% endprism %}

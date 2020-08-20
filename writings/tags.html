@@ -1,0 +1,17 @@
+---
+---
+{% capture tags %}{% for tag in site.tags %}{{ tag[0] }}|{% endfor %}{% endcapture %}
+{% assign sortedtags = tags | split:'|' | trim | filter | sort %}
+
+<header>
+  <h1>Tags</h1>
+</header>
+
+{% for tag in sortedtags %}
+  <h2 id="{{tag | slugify}}">{{ tag }}</h2>
+  {% for post in site.tags[tag] %}
+  <p>
+    {{post.date | date: "%Y-%m-%d" }} - <a href="{{post.url}}" >{{post.title}}</a>
+  </p>
+  {% endfor %}
+{% endfor %}

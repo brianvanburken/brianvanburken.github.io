@@ -20,12 +20,26 @@
 
 title: Brian van Burken
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://brianvanburken.nl" # the base hostname & protocol for your site, e.g. http://example.com
 
 # Build settings
-theme: minima
+permalink: "/blog/:year/:month/:day/:title/"
+
+defaults:
+    -   scope:
+            path: "" # an empty string here means all files in the project
+        values:
+            layout: "default"
+
+highlighter: none
+
+sass:
+    style: compressed
+
 plugins:
-  - jekyll-feed
+    - jekyll-feed
+    - jekyll-sitemap
+    - jekyll-seo-tag
 
 # Exclude from processing.
 # The following items will not be processed, by default.

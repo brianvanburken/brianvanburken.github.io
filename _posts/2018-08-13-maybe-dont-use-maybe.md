@@ -1,10 +1,12 @@
 ---
 layout: post
 title: Maybe Don't Use Maybe?
+excerpt: "At my work I've come across a code that had more branches than were
+possible in the logic of the domain."
 tags:
     - elm
     - custom-types
-    - maybe
+    - Maybe
     - monads
 ---
 
@@ -33,7 +35,7 @@ default to `null`.
 
 Our domain code started out like this:
 
-```elm
+{% prism elm %}
 type alias Question =
     { id: String
     , date : Date
@@ -42,12 +44,12 @@ type alias Question =
     }
 
 type Answer = Answer (Maybe String) (Maybe Date)
-```
+{% endprism %}
 
 Here we store both fields on the question at the same level as we received from
 the back-end. And our decoder looked like this:
 
-```elm
+{% prism elm %}
 import Json.Decode as JD
 import DateTime  -- Note: DateTime contains our internal decoder for dates
 
@@ -61,7 +63,7 @@ decoder =
             (JD.field "answer" (JD.maybe JD.string))
             (JD.field "answeredOn" (JD.maybe DateTime.decoder))
 		)
-```
+{% endprism %}
 
 ## Maybe we have a bug?
 
@@ -98,7 +100,7 @@ refactor our code let's think about how our code looks in each approach. Compare
 both examples below one of each possible fix and look at how we would use it
 rendering our answer. First look at the approach using `Maybe`:
 
-```elm
+{% prism elm %}
 import Html exposing (Html)
 
 type Answer = Answer String Date
@@ -118,11 +120,11 @@ viewAnswer possibleAnswer =
 
         Nothing ->
             Html.text "No answer yet"
-```
+{% endprism %}
 
 And our Union type approach:
 
-```elm
+{% prism elm %}
 import Html exposing (Html)
 
 type Answer
@@ -145,7 +147,7 @@ viewAnswer answer =
 
         NoAnswerYet ->
             Html.text "No answer yet"
-```
+{% endprism %}
 
 As you can see our Union type approach is less code (you don't have to write
 `Maybe` and `Just` for the value) and has more clarity. Using Maybe does fix it
@@ -171,11 +173,11 @@ Union Type approach.
 First, we change our Answer type that represents our only two possible cases.
 
 
-```elm
+{% prism elm %}
 type Answer
     = Answered String Date
     | NoAnswerYet
-```
+{% endprism %}
 
 Then we change our decoder to set return the Answered type if all is well and
 `NoAnswerYet` for the other cases where one or more of the fields are `null`.
@@ -183,7 +185,7 @@ To make our code more concise we use
 [`Json.Decode.Extra.withDefault`](http://package.elm-lang.org/packages/elm-community/json-extra/2.7.0/Json-Decode-Extra#withDefault)
 to set a fallback if one of our fields are `null`.
 
-```elm
+{% prism elm %}
 import Json.Decode.Extra as JDE
 
 decoder : JD.Decoder Question
@@ -197,7 +199,7 @@ decoder =
             (JD.field "answeredOn" DateTime.decoder)
             |> JDE.withDefault NoAnswerYet
         )
-```
+{% endprism %}
 
 Now our code is safe from weird cases and is more expressive! Having fewer
 possible cases means fewer possible bugs, makes it easier to test, and easier

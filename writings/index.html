@@ -1,0 +1,18 @@
+---
+layout: default
+---
+<header>
+  <h1>Writings</h1>
+</header>
+{% for post in site.posts %}
+<p class="writing">
+  <a href="{{post.url}}" title="Read this blog" class="writing__link">{{post.title}}</a> – {{post.excerpt}}
+  <br/>
+  🏷 {% assign sorted = post.tags | sort %}
+  {% for tag in sorted %}
+  <a href="/writings/tags#{{tag | slugify}}" title="See all post for {{tag}}">{{tag}}</a>{% if forloop.last == false %},{% endif %}
+  {% endfor %}
+  <br/>
+  🗓 {{post.date | date: "%Y-%m-%d"}}
+</p>
+{% endfor %}

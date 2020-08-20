@@ -1,0 +1,13 @@
+code {
+  $bg: #fdf6e3;
+  background-color: $bg;
+  border: 3px solid $bg;
+  border-top: 2px;
+  border-bottom: 2px;
+  color: #657b83;
+  border-radius: 0.3rem;
+}
+
+a code {
+  color: inherit;
+}
