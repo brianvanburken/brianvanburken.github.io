@@ -36,6 +36,12 @@ highlighter: none
 sass:
     style: compressed
 
+liquid:
+    error_mode: strict
+
+assets:
+    source_maps: false
+
 plugins:
     - jekyll-feed
     - jekyll-sitemap

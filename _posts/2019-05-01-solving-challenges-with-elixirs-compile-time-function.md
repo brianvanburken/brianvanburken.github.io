@@ -4,9 +4,9 @@ title: Solving Challenge with Elixir's Compile-Time Functions
 excerpt: "I love solving small programming challenges. One of the many challenges on this website is about transcribing DNA nucleotides to RNA nucleotides. I was able to solve this by using Elixir."
 tags:
     - Elixir
-    - macro
+    - Macro
     - AST
-    - compile-time
+    - Compile Time
 ---
 
 I love solving small programming challenges. If you do too, I recommend [exercism.io](exercism.io). One of the many challenges on this website is about transcribing DNA nucleotides to RNA nucleotides. I was able to solve this by using Elixir. I also found that I could apply metaprogramming to improve my answer. In this blog post, I will walk you through this process of improvement.
@@ -28,7 +28,7 @@ defmodule RNATranscription do
 end
 {% endprism %}
 
-Following this, we can try out our module in the Elixir REPL (Read-Evaluate-Print Loop) called IEx (Interactive Elixir) and give it a valid DNA nucleotide. As can be seen below, this returns the correct corresponding RNA nucleotide:
+Following this, we can try out our module in the Elixir REPL called IEx and give it a valid DNA nucleotide. As can be seen below, this returns the correct corresponding RNA nucleotide:
 
 {% prism elixir %}
 iex> import_file("rna.ex")
@@ -71,7 +71,7 @@ end
 
 You can read more about the source code in the [`Kernel`](https://github.com/elixir-lang/elixir/blob/master/lib/elixir/lib/kernel.ex#L3093) library. This will show you how Elixir works beautifully. You can see the only falsely values are `false` and `nil`, everything else is truthy.
 
-To get a sense of how we can implement something like this, let's try something out in the REPL. Using [`unquote`](<https://hexdocs.pm/elixir/Kernel.SpecialForms.html#unquote/1>) we can take an expression and make it static on compile time. And with [`quote`](<https://hexdocs.pm/elixir/Kernel.SpecialForms.html#quote/2>) we can receive the AST (Abstract Syntax Tree) from the block passed to check what we've created. The AST is what Elixir uses to represent our code before compiling down to Erlang. To see what the AST represents we use [`Macro.to_string/1`](<https://hexdocs.pm/elixir/Macro.html#to_string/2>).
+To get a sense of how we can implement something like this, let's try something out in the REPL. Using [`unquote`](<https://hexdocs.pm/elixir/Kernel.SpecialForms.html#unquote/1>) we can take an expression and make it static on compile time. And with [`quote`](<https://hexdocs.pm/elixir/Kernel.SpecialForms.html#quote/2>) we can receive the AST from the block passed to check what we've created. The AST is what Elixir uses to represent our code before compiling down to Erlang. To see what the AST represents we use [`Macro.to_string/1`](<https://hexdocs.pm/elixir/Macro.html#to_string/2>).
 
 {% prism elixir %}
 iex> dna = "G"
@@ -122,3 +122,8 @@ And there you go, we've created compile-time functions! We could take the automa
 
 Elixir macros allow us to create awesome stuff. Though this awesomeness does come with a word of caution. It might be harder to understand what your code does and where some functions come from. New developers to your project with macros might have a hard time finding their way around. It is a tradeoff you have to make. Some might argue that using macros for a small mapping such as in our example above might be overkill. And I won't argue with that. However, it is fun to write and show you how you can define compile-time functions.
 
+*[DNA]: DeoxyriboNucleic Acid
+*[RNA]: RiboNucleic Acid
+*[REPL]: Read-Evaluate-Print Loop
+*[IEx]: Interactive Elixir
+*[AST]: Abstract Syntax Tree

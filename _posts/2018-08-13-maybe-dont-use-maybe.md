@@ -4,15 +4,15 @@ title: Maybe Don't Use Maybe?
 excerpt: "At my work I've come across a code that had more branches than were
 possible in the logic of the domain."
 tags:
-    - elm
-    - custom-types
+    - Elm
+    - Custom Types
     - Maybe
-    - monads
+    - Monads
 ---
 
 Your code could be littered with branches that result in invalid data and should
 never happen, but are allowed. We found such a case where we allowed multiple
-variants of data and it broke our code logic. We use [Elm](http://elm-lang.org/)
+variants of data, and it broke our code logic. We use [Elm](http://elm-lang.org/)
 and fixed it using its type system. Although we describe the solution for Elm in
 this blog, the cases and fixes also apply to other similar languages like
 [Haskell](https://www.haskell.org/) and [PureScript](http://www.purescript.org/)
@@ -95,10 +95,10 @@ system to make the other cases impossible! Let’s improve our code.
 
 We could wrap our `Answer` type in a `Maybe` and remove the `Maybe` for both the
 values or another approach is to expand our `Answer` type to a
-[Union Type](https://guide.elm-lang.org/types/custom_types.html). Before we
-refactor our code let's think about how our code looks in each approach. Compare
-both examples below one of each possible fix and look at how we would use it
-rendering our answer. First look at the approach using `Maybe`:
+[Custom Type](https://guide.elm-lang.org/types/custom_types.html) (also called
+Union Type). Before we refactor our code let's think about how our code looks in
+each approach. Compare both examples below one of each possible fix and look at
+how we would use it rendering our answer. First look at the approach using `Maybe`:
 
 {% prism elm %}
 import Html exposing (Html)
@@ -152,7 +152,7 @@ viewAnswer answer =
 As you can see our Union type approach is less code (you don't have to write
 `Maybe` and `Just` for the value) and has more clarity. Using Maybe does fix it
 quickly. But, it adds an extra level of abstraction around our Answer type.
-Having to unwrap the Maybe first to get to our Answer type. With the Union Type
+Having to unwrap the Maybe first to get to our Answer type. With the Custom Type
 approach, it is clear that we have an answer or no answer, this shows more
 intent than a Maybe. Also, our code emits an uncertainty when using Maybe. A
 great talk about uncertainties in your Elm code can be watched here:
@@ -160,13 +160,13 @@ great talk about uncertainties in your Elm code can be watched here:
 Quenneville. We don't want any uncertainties in our code. We are certain
 that when decoded we either have an answer or have no answer.
 
-On the downside, when going for the Union Type approach, we do lose the
-possibility for using Maybe.map and have to use case for everything. This boils
+On the downside, when going for the Custom Type approach, we do lose the
+possibility for using `Maybe.map` and have to use case for everything. This boils
 down to having the power of mapping or clarity of intent in our code. Since we,
 developers, read code more than we write (said by Robert C. Martin in his book
 [Clean Code](https://www.goodreads.com/book/show/3735293-clean-code) and by many
 others) it means that clarity of intent trumps power we decided to go with the
-Union Type approach.
+Custom Type approach.
 
 ## Making the seemly impossible impossible
 
@@ -205,13 +205,15 @@ Now our code is safe from weird cases and is more expressive! Having fewer
 possible cases means fewer possible bugs, makes it easier to test, and easier
 to reason about what the code can do. Another small advantage is that you won't
 have to write tests for the other weird cases. If you try to write such a test
-the compiler just won't allow you. Thus we don't need to write any tests and
+the compiler just won't allow you. Thus, we don't need to write any tests and
 save time. With this, we fixed our bug using the powerful Elm type system.
 
-You can check out the final [SSCCE](http://sscce.org/) here:
+You can check out the final SSCCE here:
 [https://ellie-app.com/embed/PnhF7yzQtra1]()
 
 If you are interested in learning more about fixing similar problems in your Elm
 application I highly recommend to watch
 [Making Impossible States Impossible](https://www.youtube.com/watch?v=IcgmSRJHu_8)
 by Richard Feldman.
+
+*[SSCCE]: Short, Self Contained, Correct (Compilable), Example

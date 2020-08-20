@@ -5,10 +5,10 @@ excerpt: "At my work we started using Kotlin more and more. I wondered how far
 you could go in writing fully Functional in the language."
 tags:
     - Kotlin
-    - FP
+    - Functional Programming
 ---
 
-I have noticed an interesting trend here at Avisi: an increasing number of teams are choosing Kotlin for their projects! Kotlin allows programmers to utilize more aspects of functional programming. This made me wonder, how far can you go with functional programming in Kotlin?
+I have noticed an interesting trend here at my work Avisi: an increasing number of teams are choosing Kotlin for their projects! Kotlin allows programmers to utilize more aspects of functional programming. This made me wonder, how far can you go with functional programming in Kotlin?
 
 While searching for a definition of the basics of functional programming, I found an interesting PDF-file that was created by smart people from the functional programming community. The document is called "LambdaConf Standardised Ladder of Functional Programming" and you can [download it here](/assets/2020-08-03-become-a-fire-keramik-with-kotlin/lambdaconf_slfp.pdf) (sadly the original host of the file has disappeared). It breaks down various concepts and skills into levels. The first level is called "Fire Keramik", which inspired the title of this blog. There has been some [criticism](https://news.ycombinator.com/item?id=13067741) about this list, but in my opinion, it's a good starting point and uses some of the fun of "skill trees" found in games. To become a "Fire Keramik", you need to learn the following concepts and skills:
 
