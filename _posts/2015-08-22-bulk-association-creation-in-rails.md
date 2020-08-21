@@ -1,8 +1,8 @@
 ---
 layout: post
 title: "Bulk Association Creation in Rails"
-excerpt: "During development of an application I stumbled across a situation where
-my produced N+1 queries and I improved it drastically."
+excerpt: "During development of an application I stumbled across a situation
+where it produced N+1 queries and I set out on an adventure improve it."
 tags:
     - Rails
     - Ruby
@@ -10,8 +10,8 @@ tags:
 ---
 
 During development of an application I stumbled across a situation that could be
-improved. The application contains posts that are automatically tagged based on
-the content. Beneath you can see all the models that are used in this situation.
+improved. The application contains posts that get tagged based on the content.
+Beneath you can see all the models in this situation.
 
 {% prism ruby %}
 class Post < ActiveRecord::Base
@@ -37,10 +37,10 @@ class Tag < ActiveRecord::Base
 end
 {% endprism %}
 
-When the content of a post is changed it passes the words to a service which
+When changing the content of a post it passes the words to a service which
 tags the post. It deletes all the current taggings to make sure irrelevant tags
-are removed. Then it walks through all the tags that are stored. Below is the
-tagging service which is responsible for the automatic tagging.
+are no longer present. Then it walks through all the stored tags. Below is the
+tagging service which handles the automatic tagging.
 
 {% prism ruby %}
 class TaggingService
@@ -57,10 +57,10 @@ class TaggingService
 end
 {% endprism %}
 
-The first problem with this service is that it walks through all the tags, even
+The problem with this service is that it walks through all the tags, even
 the ones that aren’t present in the content. We could improve this by only
-fetching relevant tags. By changing the query we can skip the check if the tag
-name is included.
+fetching relevant tags. By changing the query we can skip the check for included
+tag names.
 
 {% prism ruby %}
 def tag(words)
@@ -74,12 +74,12 @@ end
 It’s an improvement, but still walks through each tag and as a result produces
 N+1 queries. After looking through the source of Rails I’ve found that it’s
 possible to pass a `ActiveRecord::Relation` instance at the `CollectionProxy` of
-the post instance. A CollectionProxy is an object that is responsible for
+the post instance. A CollectionProxy is an object that handles
 associating records, in this case the post with its taggings and tags.
 
 Rails would use the `ActiveRecord::Relation` instance to generate a query and
 skip fetching data from the database. This would reduce the time spent in Ruby
-code. To improve our example we just pass in the query we improved earlier.
+code. To improve our example we pass in the query we improved earlier.
 
 {% prism ruby %}
 def tag(words)
