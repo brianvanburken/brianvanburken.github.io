@@ -12,14 +12,13 @@ tags:
 
 Your code could be littered with branches that result in invalid data and should
 never happen, but are allowed. We found such a case where we allowed multiple
-variants of data, and it broke our code logic. We use [Elm](http://elm-lang.org/)
-and fixed it using its type system. Although we describe the solution for Elm in
-this blog, the cases and fixes also apply to other similar languages like
-[Haskell](https://www.haskell.org/) and [PureScript](http://www.purescript.org/)
-. In this blog post we find the seemly impossible bug using examples written in
-Elm and go through a step by step progress to fix it. At the end, you could find
-similar cases in your application and know a way to fix them. Before we go fix
-our bug let’s get clear on the domain model.
+variants of data, and it broke our code logic. We use [Elm][1] and fixed it using
+its type system. Although we describe the solution for Elm in this blog, the
+cases and fixes also apply to other similar languages like [Haskell][2] and
+[PureScript][3]. In this blog post we find the seemly impossible bug using
+examples written in Elm and go through a step by step progress to fix it. At the
+end, you could find similar cases in your application and know a way to fix
+them. Before we go fix our bug let’s get clear on the domain model.
 
 ## How did we get here?
 
@@ -68,8 +67,8 @@ decoder =
 ## Maybe we have a bug?
 
 If we look closer at our `Answer` type we see that it takes two `Maybe`'s. If we
-think about it in terms of [algebraic data types](https://codewords.recurse.com/issues/three/algebra-and-calculus-of-algebraic-data-types)
-we can reason that this solution has four possible cases for our answer:
+think about it in terms of [algebraic data types][4] we can reason that this
+solution has four possible cases for our answer:
 
 - `Answer (Just _) (Just _)`
 - `Answer (Just _) Nothing`
@@ -94,11 +93,11 @@ system to make the other cases impossible! Let’s improve our code.
 ## Maybe this will fix it?
 
 We could wrap our `Answer` type in a `Maybe` and remove the `Maybe` for both the
-values or another approach is to expand our `Answer` type to a
-[Custom Type](https://guide.elm-lang.org/types/custom_types.html) (also called
-Union Type). Before we refactor our code let's think about how our code looks in
-each approach. Compare both examples below one of each possible fix and look at
-how we would use it rendering our answer. First look at the approach using `Maybe`:
+values or another approach is to expand our `Answer` type to a [Custom Type][5]
+(also called Union Type). Before we refactor our code let's think about how our
+code looks in each approach. Compare both examples below one of each possible
+fix and look at how we would use it rendering our answer. First look at the
+approach using `Maybe`:
 
 {% prism elm %}
 import Html exposing (Html)
@@ -156,17 +155,16 @@ Having to unwrap the Maybe first to get to our Answer type. With the Custom Type
 approach, it is clear that we have an answer or no answer, this shows more
 intent than a Maybe. Also, our code emits an uncertainty when using Maybe. A
 great talk about uncertainties in your Elm code can be watched here:
-[Working with Maybe](https://www.youtube.com/watch?v=43eM4kNbb6c) by Joël
-Quenneville. We don't want any uncertainties in our code. We are certain
-that when decoded we either have an answer or have no answer.
+[Working with Maybe][6] by Joël Quenneville. We don't want any uncertainties in
+our code. We are certain that when decoded we either have an answer or have no
+answer.
 
 On the downside, when going for the Custom Type approach, we do lose the
 possibility for using `Maybe.map` and have to use case for everything. This boils
 down to having the power of mapping or clarity of intent in our code. Since we,
 developers, read code more than we write (said by Robert C. Martin in his book
-[Clean Code](https://www.goodreads.com/book/show/3735293-clean-code) and by many
-others) it means that clarity of intent trumps power we decided to go with the
-Custom Type approach.
+[Clean Code][7] and by many others) it means that clarity of intent trumps power
+we decided to go with the Custom Type approach.
 
 ## Making the seemly impossible impossible
 
@@ -181,9 +179,8 @@ type Answer
 
 Then we change our decoder to set return the Answered type if all is well and
 `NoAnswerYet` for the other cases where one or more of the fields are `null`.
-To make our code more concise we use
-[`Json.Decode.Extra.withDefault`](http://package.elm-lang.org/packages/elm-community/json-extra/2.7.0/Json-Decode-Extra#withDefault)
-to set a fallback if one of our fields are `null`.
+To make our code more concise we use [`Json.Decode.Extra.withDefault`][8] to set
+a fallback if one of our fields are `null`.
 
 {% prism elm %}
 import Json.Decode.Extra as JDE
@@ -212,8 +209,17 @@ You can check out the final SSCCE here:
 [https://ellie-app.com/embed/PnhF7yzQtra1]()
 
 If you are interested in learning more about fixing similar problems in your Elm
-application I highly recommend to watch
-[Making Impossible States Impossible](https://www.youtube.com/watch?v=IcgmSRJHu_8)
+application I highly recommend to watch [Making Impossible States Impossible][9]
 by Richard Feldman.
 
 *[SSCCE]: Short, Self Contained, Correct (Compilable), Example
+
+[1]: http://elm-lang.org/
+[2]: https://www.haskell.org/
+[3]: http://www.purescript.org/
+[4]: https://codewords.recurse.com/issues/three/algebra-and-calculus-of-algebraic-data-types
+[5]: https://guide.elm-lang.org/types/custom_types.html
+[6]: https://www.youtube.com/watch?v=43eM4kNbb6c
+[7]: https://www.goodreads.com/book/show/3735293-clean-code
+[8]: http://package.elm-lang.org/packages/elm-community/json-extra/2.7.0/Json-Decode-Extra#withDefault
+[9]: https://www.youtube.com/watch?v=IcgmSRJHu_8

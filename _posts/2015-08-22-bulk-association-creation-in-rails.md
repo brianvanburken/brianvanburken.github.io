@@ -2,7 +2,7 @@
 layout: post
 title: "Bulk Association Creation in Rails"
 excerpt: "During development of an application I stumbled across a situation where
-my produced n+1 queries and I improved it drastically."
+my produced N+1 queries and I improved it drastically."
 tags:
     - Rails
     - Ruby
