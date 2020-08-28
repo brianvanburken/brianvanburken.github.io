@@ -22,21 +22,18 @@ jobs:
                   key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
                   restore-keys: |
                       ${{ runner.os }}-gems-
+
             - run: bundle config path vendor/bundle
             - run: bundle install --jobs 4 --retry 3
-            - run: EXECJS_RUNTIME=Node JEKYLL_ENV=production bundle exec jekyll build -s ${GITHUB_WORKSPACE}/ -d docs
-            - run: touch docs/.nojekyll
-            - run: cd docs
-            - name: "Init Git repository"
-              run: |
-                  git init
-                  git config --local user.name "${GITHUB_ACTOR}"
-                  git config --local user.email "${GITHUB_ACTOR}@users.noreply.github.com"
-            - run: git add .
-            - run: git commit -m "Jekyll build from Github Action ${GITHUB_SHA}"
-            - name: "Publishing to branch gh-pages"
-              env:
-                  REPO_TOKEN: ${{secrets.REPO_TOKEN}}
-              run: |
-                git log --pretty=oneline
-                git push --force "https://${REPO_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" master:gh-pages
+
+            - run: EXECJS_RUNTIME=Node JEKYLL_ENV=production bundle exec jekyll build -s ${GITHUB_WORKSPACE}/ -d build
+
+            - run: cp CNAME ./build
+            - name: Deploy to GitHub Pages
+              uses: peaceiris/actions-gh-pages@v3
+              with:
+                  github_token: ${{ secrets.REPO_TOKEN }}
+                  publish_dir: ./build
+                  force_orphan: true
+                  user_name: 'github-actions[bot]'
+                  user_email: 'github-actions[bot]@users.noreply.github.com'
