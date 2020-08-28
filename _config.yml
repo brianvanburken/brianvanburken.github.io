@@ -35,6 +35,7 @@ highlighter: none
 
 sass:
     style: compressed
+    sourcemap: development
 
 liquid:
     error_mode: strict
