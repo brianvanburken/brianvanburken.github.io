@@ -11,10 +11,10 @@ tags:
 ---
 
 Your code could be littered with branches that result in invalid data and should
-never happen, but are allowed. We found such a case where we allowed multiple
-variants of data, and it broke our code logic. We use [Elm][1] and fixed it using
-its type system. Although we describe the solution for Elm in this blog, the
-cases and fixes also apply to other similar languages like [Haskell][2] and
+never happen, but are allowed. We found such a case, at my work, where we allowed
+multiple variants of data, and it broke our code logic. We use [Elm][1] and fixed
+it using its type system. Although we describe the solution for Elm in this blog,
+the cases and fixes also apply to other similar languages like [Haskell][2] and
 [PureScript][3]. In this blog post we find the seemly impossible bug using
 examples written in Elm and go through a step by step progress to fix it. At the
 end, you could find similar cases in your application and know a way to fix
