@@ -2,7 +2,7 @@ export EXECJS_RUNTIME=Node
 
 .PHONEY: default build
 
-default:
+default: clean
 	bundle exec jekyll serve --livereload --drafts --incremental
 
 build: clean
