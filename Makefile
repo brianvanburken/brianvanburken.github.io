@@ -5,6 +5,8 @@ export EXECJS_RUNTIME=Node
 default:
 	bundle exec jekyll serve --livereload --drafts --incremental
 
-build:
-	JEKYLL_ENVIRONMENT=production bundle exec jekyll build --verbose --profile
+build: clean
+	JEKYLL_ENVIRONMENT=production bundle exec jekyll build --verbose --profile --trace
 
+clean:
+	bundle exec jekyll clean
