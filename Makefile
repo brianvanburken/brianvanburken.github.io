@@ -8,5 +8,8 @@ default: clean
 build: clean
 	JEKYLL_ENVIRONMENT=production bundle exec jekyll build --verbose --profile --trace
 
-clean:
+clean: clean_cache
 	bundle exec jekyll clean
+
+clean_cache:
+	rm -rf .jekyll-cache
