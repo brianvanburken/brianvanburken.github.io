@@ -23,7 +23,7 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://brianvanburken.nl" # the base hostname & protocol for your site, e.g. http://example.com
 
 # Build settings
-permalink: "/blog/:year/:month/:day/:title/"
+permalink: "/blog/:title/"
 
 defaults:
     -   scope:
