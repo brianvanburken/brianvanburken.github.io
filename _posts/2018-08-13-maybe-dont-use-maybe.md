@@ -206,10 +206,10 @@ the compiler just won't allow you. Thus, we don't need to write any tests and
 save time. With this, we fixed our bug using the powerful Elm type system.
 
 You can check out the final SSCCE here:
-[https://ellie-app.com/embed/PnhF7yzQtra1][9]
+<https://ellie-app.com/PnhF7yzQtra1>
 
 If you are interested in learning more about fixing similar problems in your Elm
-application I highly recommend to watch [Making Impossible States Impossible][10]
+application I highly recommend to watch [Making Impossible States Impossible][9]
 by Richard Feldman.
 
 *[SSCCE]: Short, Self Contained, Correct (Compilable), Example
@@ -222,5 +222,4 @@ by Richard Feldman.
 [6]: https://www.youtube.com/watch?v=43eM4kNbb6c
 [7]: https://www.goodreads.com/book/show/3735293-clean-code
 [8]: http://package.elm-lang.org/packages/elm-community/json-extra/2.7.0/Json-Decode-Extra#withDefault
-[9]: https://ellie-app.com/embed/PnhF7yzQtra1
-[10]: https://www.youtube.com/watch?v=IcgmSRJHu_8
+[9]: https://www.youtube.com/watch?v=IcgmSRJHu_8
