@@ -6,5 +6,5 @@ default:
 	bundle exec jekyll serve --livereload --drafts
 
 build:
-	JEKYLL_ENVIRONMENT=production bundle exec jekyll build --verbose
+	JEKYLL_ENVIRONMENT=production bundle exec jekyll build --verbose --profile
 
