@@ -1,6 +1,8 @@
+@include vr-reset();
+
 body {
+  // @include vr-grid();
   font-family: $base-sans-serif-font;
-  font-size: 18px;
   width: 100%;
   height: 100%;
 }

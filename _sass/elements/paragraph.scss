@@ -1,5 +1,8 @@
 p {
-  line-height: 1.6;
   text-align: justify;
-  margin: 2rem 0;
+
+  @include vr(
+    $margin-top: 1,
+    $margin-bottom: 1
+  );
 }

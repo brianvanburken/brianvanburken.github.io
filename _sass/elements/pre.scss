@@ -1,0 +1,10 @@
+pre[class*="language-"] {
+  @include vr(
+    $padding-top: 1,
+    $padding-bottom: 1,
+    $padding-left: 0.5,
+    $padding-right: 0.5,
+    $margin-top: 1,
+    $margin-bottom: 1
+  );
+}

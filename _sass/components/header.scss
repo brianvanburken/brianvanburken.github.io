@@ -1,12 +1,20 @@
 .header {
-  margin: 2rem 0;
   display: flex;
+  @include vr(
+    $margin-top: 1,
+    $margin-bottom: 1
+  );
 }
 
 .header__link {
-  margin: 0 0.5rem;
+  @include vr(
+    $margin-left: 0.5,
+    $margin-right: 0.5
+  );
 }
 
 .header__title {
-  margin-right: 0.5rem;
+  @include vr(
+    $margin-right: 0.5
+  );
 }
