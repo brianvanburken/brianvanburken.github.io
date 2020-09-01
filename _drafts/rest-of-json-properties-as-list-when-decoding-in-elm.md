@@ -9,7 +9,7 @@ tags:
 ---
 
 When decoding a result from an API I wanted all the rest of the properties as a
-list to display to the user. As example we have an API that returns a list of
+list to display to the user. For example, we have an API that returns a list of
 videos. Each video has an `id` and `title`. Each video also has a dynamic
 number of properties that are "metadata". These properties are what we want to
 store a list of key-value pairs. This list is then used to display the
@@ -24,7 +24,7 @@ information to the user. An example video would look like this in JSON.
 }
 {% endprism %}
 
-We then define the model as following.
+We then define the model as follows.
 
 {% prism elm %}
 type alias Video =
@@ -35,7 +35,7 @@ type alias Video =
 {% endprism %}
 
 Using standard decoding in Elm we first pass the JSON fields `id` and `title` to
-the model. As last we pass a custom decoder.
+the model. As of last we pass a custom decoder.
 
 {% prism elm %}
 decoder : JD.Decoder Video
@@ -104,8 +104,8 @@ filterMetadata =
 
 {% endprism %}
 
-In the end we have a correct model with all the rest of properties from the JSON
-object. To display this list all we need to do is map the list to HTML to
+In the end, we have a correct model with all the rest of the properties from the
+JSON object. To display this list all we need to do is map the list to HTML to
 display the information to the user.
 
 You can check out the final SSCCE here: <https://ellie-app.com/9Qxk3RDydTka1>

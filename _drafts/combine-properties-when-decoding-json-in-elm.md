@@ -2,7 +2,7 @@
 layout: post
 title: Combine Properties when Decoding JSON in Elm
 excerpt: "Sometimes you want to combine two properties when decoding in Elm. In
-this post I walk through an example how to do this."
+this post I walk through an example of how to do this."
 tags:
     - Elm
     - JSON
@@ -57,13 +57,13 @@ decode =
         (JD.field "name" JD.string)
 {% endprism %}
 
-We're done right? Well yes, the code works and does what we want. But,
+We're done, right? Well yes, the code works and does what we want. But,
 the code isn't clear. What if the API returns more properties that we want to
-use? The `toVideo` functions becomes longer and less readable. This makes it
-error prone, e.g. easier to swap the parameters.
+use? The `toVideo` function becomes longer and less readable. This makes it
+error-prone, e.g. easier to swap the parameters.
 
 We can improve this by extracting the logic of combining the name and extension
-into a separate custom decoder. In the decoder we get the whole JSON object and
+into a separate custom decoder. In the decoder, we get the whole JSON object and
 extract only the name and combine those. The result is then passed into our main
 decoder for `Video`.
 
@@ -85,4 +85,4 @@ decodeFilename =
 
 If we want to add more properties to `Video` all we need to do is to change
 `JD.map2` to `JD.map3` and add our new field at the end. This code is more
-readable and easier  to extend.
+readable and easier to extend.
