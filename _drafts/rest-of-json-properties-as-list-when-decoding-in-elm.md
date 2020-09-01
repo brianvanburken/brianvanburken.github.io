@@ -11,9 +11,9 @@ tags:
 When decoding a result from an API I wanted all the rest of the properties as a
 list to display to the user. As example we have an API that returns a list of
 videos. Each video has an `id` and `title`. Each video also has a dynamic
-number of properties that can be considered "metadata". These properties are
-what we want to store a list of key-value pairs. This list then can be displayed
-to the user. An example video would look like this in JSON.
+number of properties that are "metadata". These properties are what we want to
+store a list of key-value pairs. This list is then used to display the
+information to the user. An example video would look like this in JSON.
 
 {% prism json %}
 {
@@ -48,10 +48,9 @@ decoder =
 
 
 Our custom decoder gets the whole JSON object and decodes it as a list of
-key-value pairs. Since the second parameter of our key-value pair, the value,
-needs to be the same for all we convert everything to a `String`. This is done
-with `valueToString`. Though this does mean that we lose the information. You
-could fix this by writing a [Custom Type][1] for each value type.  
+key-value pairs. We convert all the values to a `String` with the function called
+`valueToString` so all are the same type. Though this does mean that we lose the
+information. You could fix this by writing a [Custom Type][1] for each value type.
 
 {% prism elm %}
 metadataDecoder : JD.Decoder (List ( String, String ))

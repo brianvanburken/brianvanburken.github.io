@@ -10,8 +10,8 @@ tags:
 ---
 
 Sometimes an API returns a JSON that contains properties you want to combine for
-a nicer representation to the user or because the pieces of information just
-belong together.
+a nicer representation to the user or because the pieces of information belong
+together.
 
 So how would you do this? Before we continue, let's establish a shared domain.
 So let's say we have an API that returns a list of videos when called. Each
@@ -57,10 +57,10 @@ decode =
         (JD.field "name" JD.string)
 {% endprism %}
 
-We're done right? Technically yes, the code works and does what we want. But,
+We're done right? Well yes, the code works and does what we want. But,
 the code isn't clear. What if the API returns more properties that we want to
 use? The `toVideo` functions becomes longer and less readable. This makes it
-error prone, e.g. easier to accidently swap the parameters.
+error prone, e.g. easier to swap the parameters.
 
 We can improve this by extracting the logic of combining the name and extension
 into a separate custom decoder. In the decoder we get the whole JSON object and
