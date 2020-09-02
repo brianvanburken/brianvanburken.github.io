@@ -1,4 +1,5 @@
 require "execjs"
+require "json"
 
 class Prism
     def initialize
@@ -9,17 +10,15 @@ class Prism
 
     def render(content, language)
         cache.getset(language+content) do
-            code = content
-                .encode('UTF-8')
-                .lstrip
-                .gsub('`', '&#96;')
-
-            output = %Q[Prism.highlight(`#{code}`, Prism.languages.#{language}, '#{language}')]
+            code = JSON.generate(content.lstrip)
+            output = %Q[Prism.highlight(#{code}, Prism.languages.#{language}, '#{language}')]
             output = @@js.eval(output)
             <<~EOS
-            <pre class="language-#{language}"><code class='language-#{language}'>#{output}</code></pre>
+            <pre class="language-#{language}"><code class="language-#{language}">#{output}</code></pre>
             EOS
         end
+    rescue ExecJS::RuntimeError => e
+        puts "Something is wrong with this code block: #{content}"
     end
 
     def cache
@@ -33,7 +32,7 @@ end
 
 Jekyll::Hooks.register(:posts, :pre_render) do |document|
     content = document.content
-    content.to_s.scan /((`{3})(?:\s*)(\w+)((?:.|\n)*?)\2)/ do |match|
+    content.scan /((`{3})(?:\s*)(\w+)((?:.|\n)*?)\2)/ do |match|
         match = match.select { |m| not m.nil? }
         code_block = match[0]
         language = match[2].strip
