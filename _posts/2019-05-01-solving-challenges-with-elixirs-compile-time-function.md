@@ -31,34 +31,34 @@ same name which are referred to as same head functions. In addition, we can use
 pattern matching on the argument to represent the mapping between the
 nucleotides. Doing so, we end up with the code below:
 
-{% prism elixir %}
+```elixir
 defmodule RNATranscription do
   def to_rna("G"), do: "C"
   def to_rna("C"), do: "G"
   def to_rna("T"), do: "A"
   def to_rna("A"), do: "U"
 end
-{% endprism %}
+```
 
 Following this, we can try out our module in the Elixir REPL called IEx and give
 it a valid DNA nucleotide. As can be seen below, this returns the correct
 corresponding RNA nucleotide:
 
-{% prism elixir %}
+```elixir
 iex> import_file("rna.ex")
 iex> RNATranscription.to_rna("T")
 "A"
-{% endprism %}
+```
 
 Now we can use this module to take a DNA strand and split it into a list of DNA
 nucleotides. Each of these nucleotides is then mapped to its RNA equivalent and
 joined to produce the RNA strand. One way to do this is by using the REPL:
 
-{% prism elixir %}
+```elixir
 iex> strand = "GCAATTA"
 iex> strand |> String.graphemes() |> Enum.map(&RNATranscription.to_rna/1) |> Enum.join()
 "CGUUAAU"
-{% endprism %}
+```
 
 This bit of code could be placed in a method called "decode" and we would be
 done! But now imagine the discovery of new RNA or DNA nucleotides. This would
@@ -79,24 +79,24 @@ and contribute to because you already know the language. Most of it is built
 using metaprogramming on top of a small core. An example of this is `if/else`.
 This is a simple macro for `case`. So the example code below...
 
-{% prism elixir %}
+```elixir
 if is_thruthy?() do
   do_something()
 else
   do_something_else()
 end
-{% endprism %}
+```
 
 ..gets compiled down in an intermitted step:
 
-{% prism elixir %}
+```elixir
 case is_thruthy?() do
   x when x in [false, nil] ->
     do_something_else()
   _ ->
     do_something()
 end
-{% endprism %}
+```
 
 You can read more about the source code in the [`Kernel`][2] library. This will
 show you how Elixir works beautifully. You can see the only falsely values are
@@ -109,7 +109,7 @@ block passed to check what we've created. The AST is what Elixir uses to
 represent our code before compiling down to Erlang. To see what the AST
 represents we use [`Macro.to_string/1`][5].
 
-{% prism elixir %}
+```elixir
 iex> dna = "G"
 iex> ast = quote do
 ...> unquote(dna)
@@ -117,7 +117,7 @@ iex> ast = quote do
 iex> dna = "C"
 iex> IO.puts Macro.to_string(ast)
 "G"
-{% endprism %}
+```
 
 As you can see in the code above, the unquote function returns the value `"G"`
 even if the value of `dna` is changed afterward. Through additional
@@ -126,7 +126,7 @@ argument in our same head pattern matching. We do this by writing the `to_rna`
 as we normally would but swapping out the argument and return value with the
 unquoted values of the DNA and RNA.
 
-{% prism elixir %}
+```elixir
 iex> dna = "G"
 iex> rna = "C"
 iex> ast = quote do
@@ -136,7 +136,7 @@ iex> IO.puts Macro.to_string(ast)
 def(to_rna("G")) do
   "C"
 end
-{% endprism %}
+```
 
 As you can see, the value `"G"` is set as the argument and `"C"` is set as the
 return value. This looks exactly like one of the functions we wrote by hand. But
@@ -147,22 +147,22 @@ our mapping. We can create the DNA to RNA mapping by creating a function for eac
 key and value pair that matches on the DNA and returns the RNA. We'll use a
 simple `for`-comprehension for looping through our mapping:
 
-{% prism elixir %}
+```elixir
 defmodule RNATranscription do
   mapping = %{ "G" => "C", "C" => "G", "T" => "A", "A" => "U" }
   for { dna, rna } <- mapping do
     def to_rna(unquote(dna)), do: unquote(rna)
   end
 end
-{% endprism %}
+```
 
 After loading the file in the REPL,  it gets compiled and all functions get defined:
 
-{% prism elixir %}
+```elixir
 iex> import_file("rna.ex")
 iex> RNATranscription.to_rna("T")
 "A"
-{% endprism %}
+```
 
 And there you go, we've created compile-time functions! We could take the
 automation even further by hosting the mapping somewhere, using a hook to create

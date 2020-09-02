@@ -54,7 +54,7 @@ You won't be able to override this in the code later and if you try to change
 its value, the compiler will throw an error at you. Kotlin won't enforce
 immutability, so the choice between `val` and `var` is up to the programmer.
 
-{% prism kotlin %}
+```kotlin
 class Birthday(val day: Int, val month: Int, val year: Int)
 
 class Person(val name: String, val age: Birthday)
@@ -64,7 +64,7 @@ val age = Birthday(1, 1, 1970)
 val person = Person("Nick", age)
 age.year = age.2020 // Throws an compiler error
 person.age.year = 2020 // Throws an compiler error
-{% endprism %}
+```
 
 ## Use data types to represent optionality
 
@@ -75,7 +75,7 @@ values as non-nullable by default! You can explicitly mark values as optional by
 using the `?` operator which makes it `nullable`. The example code below shows
 that the value 'email' is optional.
 
-{% prism kotlin %}
+```kotlin
 class User(val username: String, val password: String, val email: String?)
 
 // Returns the user if found, else null
@@ -85,7 +85,7 @@ val email: String? = user?.email
 // Here we can create a new user and use the email from the previous user.
 // If there isn't an user, we set a default email
 val newUser = User(username, password, email ?: "default@email.xyz")
-{% endprism %}
+```
 
 ## Read basic type signatures
 
@@ -96,30 +96,30 @@ parameters. You can see that `name` is of type `String` and `age` is of type
 `Int`.
 
 
-{% prism kotlin %}
+```kotlin
 class Person(val name: String, val age: Int)
-{% endprism %}
+```
 
 ## Constructing & Destructuring
 
 Constructing is the process of putting values together and destructuring is a
 way to get the values back. A simple example is the `Pair` class in Kotlin.
 
-{% prism kotlin %}
+```kotlin
 val name = "Kotlin"
 val age = 9
 val person = Pair(name, age)
-{% endprism %}
+```
 
 If you want to extract the values from the pair, you can destructure it on the
 left-hand side of the equation. The destructuring is done in the same order as
 the structuring. To make sure you only get certain specific values, you can use
 an underscore as a placeholder indicating that the value should be ignored.
 
-{% prism kotlin %}
+```kotlin
 val (_, age) = Pair("Kotlin", 9)
 println(age)
-{% endprism %}
+```
 
 This also works for data classes in Kotlin.
 
@@ -132,9 +132,9 @@ confused? The most used and well-known example of a higher-order function is
 it, and returns a list with the results of the map function, applied to each
 element of the original list. Here is an example of the usage of `map`:
 
-{% prism kotlin %}
+```kotlin
 val squaredValues = listOf(1, 2, 3, 4).map { it * it }
-{% endprism %}
+```
 
 ## Second-Order Functions
 
@@ -147,7 +147,7 @@ takes multiple arguments, into smaller functions which each take a single
 argument and return a new function. Currying is not supported out of the box,
 but it can be achieved by using helper functions.
 
-{% prism kotlin %}
+```kotlin
 fun add(a: Int, b:Int): Int {
     return a + b
 }
@@ -161,20 +161,20 @@ fun <A, B, C> partial2(f: (A, B) -> C, a: A): (B) -> C {
 val add1 = partial2(::add, 1)
 
 val result = add1(2) // result = 3
-{% endprism %}
+```
 
 `Partial2` takes a function and the first argument of that function. This will
 return a new function that waits for the second argument to finish up the
 calculation. The new function can be passed around and applied to other values.
 Alternatively, you can do it with an extension method:
 
-{% prism kotlin %}
+```kotlin
 fun <A,B,C> Function2<A,B,C>.partial(a: A): (B) -> C {
     return {b -> invoke(a, b)}
 }
 
 val add1: (Int) -> Int = (::add).partial(1)
-{% endprism %}
+```
 
 ## Functional Composition
 
@@ -186,7 +186,7 @@ something that comes out of the box in Kotlin, yet is still achievable! We can
 achieve it by using callable references and pass them to a compose helper
 function. This combines (composes) two functions together to get a new function.
 
-{% prism kotlin %}
+```kotlin
 fun isOdd(x: Int) = x % 2 != 0
 fun length(s: String) = s.length
 
@@ -202,7 +202,7 @@ val oddLength = compose(::isOdd, ::length)
 val strings = listOf("a", "ab", "abc")
 
 strings.filter(oddLength) == listOf("a", "abc")
-{% endprism %}
+```
 
 ## Closing words
 

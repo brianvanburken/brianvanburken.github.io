@@ -17,31 +17,31 @@ So how would you do this? Before we continue, let's establish a shared domain.
 So let's say we have an API that returns a list of videos when called. Each
 video has the following structure:
 
-{% prism json %}
+```json
 {
     "id": "1",
     "extension": "mp4",
     "name": "example",
 }
-{% endprism %}
+```
 
 Here we see that the `extension` and the `name` are separate properties of the
 object. It would be nice to combine them to get the full filename of the video.
 So we create our desired model in Elm.
 
-{% prism elm %}
+```elm
 type alias Video =
     { id: String
     , filename: String
     }
-{% endprism %}
+```
 
 Now that we know our goal we can create the decoder for our model. In this first
 attempt we decode all the properties in the object and pass this to a function
 that transforms it into our model and, in the process, combines the extension
 and the name.
 
-{% prism elm %}
+```elm
 import Json.Decode as JD exposing (Decoder, string)
 
 decode : Decoder Video
@@ -55,7 +55,7 @@ decode =
         (JD.field "id" JD.string)
         (JD.field "extension" JD.string)
         (JD.field "name" JD.string)
-{% endprism %}
+```
 
 We're done, right? Well yes, the code works and does what we want. But,
 the code isn't clear. What if the API returns more properties that we want to
@@ -67,8 +67,7 @@ into a separate custom decoder. In the decoder, we get the whole JSON object and
 extract only the name and combine those. The result is then passed into our main
 decoder for `Video`.
 
-{% prism elm %}
-
+```elm
 decode : Decoder Video
 decode =
     JD.map2 Video
@@ -81,7 +80,7 @@ decodeFilename =
     JD.map2 (\extension name -> name ++ "." ++ extension)
         (JD.field "extension" JD.string)
         (JD.field "name" JD.string)
-{% endprism %}
+```
 
 If we want to add more properties to `Video` all we need to do is to change
 `JD.map2` to `JD.map3` and add our new field at the end. This code is more
