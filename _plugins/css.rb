@@ -8,7 +8,7 @@ Jekyll::Hooks.register(:site, :post_write) do |site|
 
   puts "#{title.rjust(18)}: Running PurgeCSS"
   # Run purgecss command.
-  system("purgecss --css #{stylesheet} --content _site/**/*.html --output #{stylesheet}")
+  system("purgecss --css #{stylesheet} --content #{dest}/**/*.html --output #{stylesheet}")
 
   puts "#{title.rjust(18)}: Running CSSO"
   # Run CSSO command to clean up CSS further
