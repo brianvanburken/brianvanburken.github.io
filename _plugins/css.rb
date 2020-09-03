@@ -28,7 +28,7 @@ Jekyll::Hooks.register(:site, :post_write) do |site|
 
   puts "#{title.rjust(18)}: Running CSSO"
   # Run CSSO command to clean up CSS further
-  system("csso #{stylesheet} -o #{stylesheet}")
+  system("csso #{stylesheet} -o #{stylesheet} --force-media-merge")
 
   puts "#{title.rjust(18)}: Done"
 end
