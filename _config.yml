@@ -43,6 +43,13 @@ liquid:
 assets:
     source_maps: false
 
+webp:
+    enabled: true
+    quality: 75
+    nested: true
+    img_dir: ["/assets/"]
+    regenerate: true
+
 plugins:
     - jekyll-feed
     - jekyll-sitemap
