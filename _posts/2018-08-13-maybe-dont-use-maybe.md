@@ -1,5 +1,6 @@
 ---
 layout: post
+affiliate: true
 title: Maybe Don't Use Maybe?
 excerpt: "At my work I've come across a code that had more branches than were
 possible in the logic of the domain."
@@ -220,6 +221,6 @@ by Richard Feldman.
 [4]: https://codewords.recurse.com/issues/three/algebra-and-calculus-of-algebraic-data-types
 [5]: https://guide.elm-lang.org/types/custom_types.html
 [6]: https://www.youtube.com/watch?v=43eM4kNbb6c
-[7]: https://www.goodreads.com/book/show/3735293-clean-code
+[7]: https://amzn.to/30sr6WN
 [8]: http://package.elm-lang.org/packages/elm-community/json-extra/2.7.0/Json-Decode-Extra#withDefault
 [9]: https://www.youtube.com/watch?v=IcgmSRJHu_8
