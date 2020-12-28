@@ -8,13 +8,13 @@ tags: ["Ruby", "Jekyll", "Prism"]
 
 One of the biggest slowdown of this blog was using [Prism][1] for syntax
 higlighting of code blocks. While Prism isn't that big, adding more and more
-languages it can become really large. If you wanted to write blogposts about all
-the langauges that Prism supports you end up with a 400kb+ monstrosity. I do
-already have a few diverse blogposts for some languages and want to write about
+languages it can become large. If you wanted to write blogposts about all
+langauges, that Prism could support, you would end up with a 400kb+ monstrosity.
+I do already have a few diverse blogposts for some languages and want to write about
 any language I like. So I wondered how to achieve this without a slowing down my
 blog for my visitors.
 
-Since the output of Prism is just HTML I started looking into capturing this. My
+Since the output of Prism is HTML I started looking into capturing this. My
 first attempt was to build a crawler which would go to each blogpost, execute
 JavaScript, and take the final rendered version to deploy. While this worked it
 had a few challenges. One is the slowness of a having to startup and render of
@@ -22,19 +22,25 @@ each page using a headless browser. Each rendered page still included the
 `script` tag to Prism which needed to be removed.
 
 After doing some more research I decided to take a while different approach.
-This time I would write a Jekyll-plugin which takes the blogpost and extracts
-each code block, passes it to the Prism highlight function, and put back the
-output. The Prism highlight function takes three parameters: code, Prism
-language, code language. Executing the function would look like this.
+This time I would write my own Jekyll-plugin. It extracts code blocks, passes it
+to the Prism highlight function, and put back the HTML output. The Prism
+highlight function takes three parameters: code, Prism language, code language.
+Executing the function would look like this.
 
 ```javascript
-Prism.highlight('var a = "Hello world!";', Prism.languages.javascript, 'javascript');
+Prism.highlight(
+  'var a = "Hello world!";',
+  Prism.languages.javascript,
+  "javascript"
+);
 ```
 
 And this would give us HTML with the special syntax highlight tags added.
 
 ```html
-<span class="token keyword">var</span> a <span class="token operator">=</span> <span class="token string">"Hello world!"</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> a <span class="token operator">=</span>
+<span class="token string">"Hello world!"</span
+><span class="token punctuation">;</span>
 ```
 
 There are a few options to achieve this. One would be to write a custom
@@ -45,18 +51,17 @@ tag option and was successful. While it worked, all the markdown-editors could
 not understand the special tag and render a preview. So I decided to go with the
 hook option.
 
-Since this blog is hosted on [Github Pages][3], and Github Pages doesn't support
-custom plugins, I had to switch from the `github-pages` gem to the normal
-`jekyll` gem and create my own build process. I won't go into further details
-about this, maybe in a future blogpost.
+[Github Pages][3], where I host my blog, doesn't support custom plugins. So I had
+to switch from the `github-pages` gem to the normal `jekyll` gem and create my
+own build process.
 
 To create a custom plugin all I needed was to create a directory in the
 project root called `_plugins` and place a Ruby file in it. Jekyll would then
-load this directory and its contents automatically. I created a new file called
-`prism.rb` and placed it in `_plugins`.
+load this directory and its contents. I created a new file called `prism.rb` and
+placed it in `_plugins`.
 
 Next I added the [ExecJS][4] gem to the `Gemfile` and ran `bundle install`.
-ExecJS lets you run JavaScript code from Ruby. This is needed to execute the
+ExecJS lets you run JavaScript code from Ruby. I use this to execute the
 Prism highlight function and capture its output.
 
 In the `prism.rb` file we can start adding hooks for events. The first hook
@@ -160,8 +165,8 @@ code = JSON.generate(match[3])
 js_code = %Q[Prism.highlight(#{code}, Prism.languages.#{language}, '#{language}')]
 ```
 
-Finally we have blogposts with the pre-rendered syntax highlighting and no need
-for a big JavaScript file. All that's left is to include the CSS file to get the
+Finally we have blogposts with pre-rendered syntax highlighting; without the
+need for JavaScript. All that's left is to include the CSS file to get the
 correct styling.
 
 Future improvements to the code would be to cache each code block so we don't
@@ -179,4 +184,4 @@ PR!
 [5]: https://prismjs.com/download.html
 [6]: https://ruby-doc.org/stdlib-2.7.1/libdoc/json/rdoc/JSON.html
 
-*[Regex]: Regular Expressions
+\*[Regex]: Regular Expressions

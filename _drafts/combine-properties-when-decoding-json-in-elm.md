@@ -19,9 +19,9 @@ video has the following structure:
 
 ```json
 {
-    "id": "1",
-    "extension": "mp4",
-    "name": "example",
+  "id": "1",
+  "extension": "mp4",
+  "name": "example"
 }
 ```
 
@@ -82,6 +82,8 @@ decodeFilename =
         (JD.field "name" JD.string)
 ```
 
-If we want to add more properties to `Video` all we need to do is to change
-`JD.map2` to `JD.map3` and add our new field at the end. This code is more
-readable and easier to extend.
+The code in the end is more readable and easier to extend. If we want to add
+more properties to `Video` all we need to do is to change `JD.map2` to `JD.map3`
+and add our new field at the end or use something like [`Json.Decode.Pipeline`][1].
+
+[1]: https://package.elm-lang.org/packages/NoRedInk/elm-json-decode-pipeline/latest/Json.Decode.Pipeline

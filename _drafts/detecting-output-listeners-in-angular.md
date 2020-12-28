@@ -1,17 +1,17 @@
 ---
 layout: post
 title: Detecting Output Listeners in Angular
-excerpt: "If you want to detect event if a listener is attached to Output in
-your component"
+excerpt: "We wanted to detect listeners on a EventEmitter in an Angular component"
 tags:
-    - Angular
-    - EventEmitter
+  - Angular
+  - EventEmitter
 ---
 
-Sometimes you want to check if listeners are attached to your `@Output` in your
-component. But, how would you do that?
+Sometimes you want to check if you have listeners attached to your `@Output` in
+order for your component to behave different. But, how would you do that?
 
-Well, let's start with a basic blank component that shows a simple message.
+Well, let's start with a new Angular component. We will add a simple message
+that shows if we are static, that means no listeners attached, or interactive.
 
 ```typescript
 import { Component } from "@angular/core";
@@ -24,11 +24,17 @@ export class Example {}
 ```
 
 Next, we will add an EventEmitter with the name `myEvent` to the component to
-which other components can attach themselves to;
+which other components can attach themselves to.
 
 ```typescript
+import { Component, EventEmitter, Output } from "@angular/core";
+
+@Component({
+  selector: "app-example",
+  template: `<span>I'm a static message</span>`,
+})
 export class Example {
-  @Output myEvent = new EventEmitter<void>();
+  @Output() public myEvent = new EventEmitter<void>();
 }
 ```
 
@@ -37,14 +43,21 @@ component react to it. We will add `ngOnInit` to our component in which we
 check for listeners and set a flag on our component indicating that we have
 listeners. When another component listens to our event like so
 `<app-example (myEvent)="handle($event)"></app-example>` we check if there is an
-observer attached and we set our flag if at least one is attached.
+observer attached and we set our flag if we have any listeners.
 
 ```typescript
-export class Example implements OnInit {
-  @Output myEvent = new EventEmitter<void>();
-  isInteractive = false;
+import { Component, EventEmitter, OnInit, Output } from "@angular/core";
 
-  ngOnInit() {
+@Component({
+  selector: "app-example",
+  template: `<span>I'm a static message</span>`,
+})
+export class Example implements OnInit {
+  @Output() public myEvent = new EventEmitter<void>();
+
+  public isInteractive = false;
+
+  public ngOnInit() {
     this.isInteractive = this.myEvent.observers.length > 0;
   }
 }
@@ -64,10 +77,11 @@ import { Component, EventEmitter, OnInit, Output } from "@angular/core";
   `,
 })
 export class Example implements OnInit {
-  @Output myEvent = new EventEmitter<void>();
-  isInteractive = false;
+  @Output() public myEvent = new EventEmitter<void>();
 
-  ngOnInit() {
+  public isInteractive = false;
+
+  public ngOnInit(): void {
     this.isInteractive = this.myEvent.observers.length > 0;
   }
 }
