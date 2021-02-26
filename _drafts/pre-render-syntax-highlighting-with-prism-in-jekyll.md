@@ -184,4 +184,4 @@ PR!
 [5]: https://prismjs.com/download.html
 [6]: https://ruby-doc.org/stdlib-2.7.1/libdoc/json/rdoc/JSON.html
 
-\*[Regex]: Regular Expressions
+*[Regex]: Regular Expressions
