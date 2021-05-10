@@ -95,7 +95,6 @@ example containing a simple data-class in which the `Person` class has typed
 parameters. You can see that `name` is of type `String` and `age` is of type
 `Int`.
 
-
 ```kotlin
 class Person(val name: String, val age: Int)
 ```
@@ -214,5 +213,5 @@ promising start. If you're interested, The Standardized Ladder of Functional
 Programming discusses many other topics that can be applied to Kotlin with which
 you can dive deeper!
 
-[1]: /assets/2020-08-03-become-a-fire-keramik-with-kotlin/lambdaconf_slfp.pdf
+[1]: /assets/become-a-fire-keramik-with-kotlin/lambdaconf_slfp.pdf
 [2]: https://news.ycombinator.com/item?id=13067741
