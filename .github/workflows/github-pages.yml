@@ -28,10 +28,11 @@ jobs:
             # Setup
             - run: bundle config path vendor/bundle
             - run: bundle install --jobs 4 --retry 3
-            - run: npm install -g purgecss csso-cli
+            - run: npm install
 
             # Build
             - run: EXECJS_RUNTIME=Node JEKYLL_ENV=production bundle exec jekyll build -s ${GITHUB_WORKSPACE}/ -d build
+            - run: npx gulp
             - run: cp CNAME ./build
 
             # Publish

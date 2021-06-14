@@ -36,19 +36,15 @@ highlighter: none
 sass:
     style: compressed
     sourcemap: development
+    load_paths:
+        - _sass
+        - node_modules
 
 liquid:
     error_mode: strict
 
 assets:
     source_maps: false
-
-webp:
-    enabled: true
-    quality: 75
-    nested: true
-    img_dir: ["/assets/"]
-    regenerate: true
 
 plugins:
     - jekyll-feed
@@ -65,15 +61,18 @@ plugins:
 # their entries' file path in the `include:` list.
 #
 exclude:
-  - .sass-cache/
+  - .github
   - .jekyll-cache/
-  - gemfiles/
+  - .sass-cache/
   - Gemfile
   - Gemfile.lock
+  - Makefile
+  - gemfiles/
+  - gulpfile.js
   - node_modules/
+  - package-lock.json
+  - package.json
   - vendor/bundle/
   - vendor/cache/
   - vendor/gems/
   - vendor/ruby/
-  - Makefile
-  - .github

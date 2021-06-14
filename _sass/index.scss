@@ -2,36 +2,25 @@
 
 // Settings
 @import "settings/colors";
-@import "settings/fonts";
-
-// Tools
-@import "tools/media-query";
 
 // Generic
-@import "generic/normalize";
-@import "generic/box-sizing";
 @import "generic/prism";
-@import "generic/target";
-@import "generic/vertical-rhythm-reset";
 
 // Elements
-@import "elements/body";
-@import "elements/heading";
-@import "elements/link";
-@import "elements/paragraph";
-@import "elements/image";
-@import "elements/code";
-@import "elements/list";
 @import "elements/abbreviation";
+@import "elements/body";
+@import "elements/code";
+@import "elements/heading";
+@import "elements/html";
+@import "elements/image";
+@import "elements/link";
+@import "elements/list";
+@import "elements/nav";
+@import "elements/paragraph";
 @import "elements/pre";
 
 // Objects
 
 // Components
-@import "components/menu";
-@import "components/post";
-@import "components/header";
-@import "components/writing";
 
 // Utilities
-@import "utilities/container";
