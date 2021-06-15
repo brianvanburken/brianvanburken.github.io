@@ -1,16 +1,9 @@
-<!doctype html>
+<!DOCTYPE html>
 <html dir="ltr" lang="{{ page.lang | default: site.lang | default: 'en' }}">
   {%- include head.html -%}
   <body>
     {%- include header.html -%}
-    <main aria-label="Content" class="container">
-      {{ content }}
-    </main>
+    {{ content }}
     {%- include footer.html -%}
-    <script
-      data-goatcounter="https://brianvanburken.goatcounter.com/count"
-      async
-      src="https://gc.zgo.at/count.js"
-    ></script>
   </body>
 </html>
