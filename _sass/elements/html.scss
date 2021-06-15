@@ -2,7 +2,11 @@
 // https://www.paulirish.com/2012/box-sizing-border-box-ftw/
 html {
   box-sizing: border-box;
+  line-height: 1.5;
 }
-*, *:before, *:after {
+
+*,
+*:before,
+*:after {
   box-sizing: inherit;
 }

@@ -114,4 +114,4 @@ You can check out the final SSCCE here: <https://ellie-app.com/9Qxk3RDydTka1>
 
 [1]: https://guide.elm-lang.org/types/custom_types.html
 
-\*[SSCCE]: Short, Self Contained, Correct (Compilable), Example
+*[SSCCE]: Short, Self Contained, Correct (Compilable), Example
