@@ -3,7 +3,7 @@ const gulp = require("gulp"),
   postcss = require("gulp-postcss"),
   unescapeHtml = require("gulp-unescape-html");
 
-const source = process.env.GITHUB_WORKSPACE || "_site";
+const source = process.env.BUILD_DIR || "_site";
 
 const prismClasses = [];
 

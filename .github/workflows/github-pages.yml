@@ -32,7 +32,7 @@ jobs:
 
             # Build
             - run: EXECJS_RUNTIME=Node JEKYLL_ENV=production bundle exec jekyll build -s ${GITHUB_WORKSPACE}/ -d build
-            - run: npx gulp
+            - run: BUILD_DIR=build npx gulp
             - run: cp CNAME ./build
 
             # Publish
