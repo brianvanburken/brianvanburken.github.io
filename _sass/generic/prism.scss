@@ -27,7 +27,6 @@ $green: #859900;
 
 code,
 pre {
-  color: $base00;
   font-size: 1em;
   text-align: left;
   white-space: pre;
@@ -67,6 +66,7 @@ pre {
 
 pre,
 code {
+  color: $base00;
   background-color: $base3;
   border-color: $base3;
   font-size: 1rem;
@@ -144,4 +144,29 @@ code {
 
 .token.entity {
   cursor: help;
+}
+
+@media (prefers-color-scheme: dark) {
+  pre,
+  code {
+    color: $base0;
+    background-color: $base03;
+    border-color: $base03;
+  }
+
+  .token.comment,
+  .token.prolog,
+  .token.doctype,
+  .token.cdata {
+    color: $base01;
+  }
+
+  .token.punctuation {
+    color: $base01;
+  }
+
+  .token.entity {
+    color: $base0;
+    background: $base02;
+  }
 }
