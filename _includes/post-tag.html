@@ -1,0 +1,14 @@
+<time
+  datetime="{{ include.post.date | date_to_xmlschema }}"
+  itemprop="datePublished"
+>
+  {%- assign date_format = site.minima.date_format | default: "%Y-%m-%d" -%} 🗓
+  {{ include.post.date | date: date_format }}
+</time>
+<br />
+{% assign sorted = include.post.tags | sort %} 🏷 {% for tag in sorted %}
+<a
+  href="/writings/tags#{{ tag | slugify }}"
+  title="See all post for {{ tag }}"
+  >{{ tag }}</a
+>{% if forloop.last == false %},{% endif %} {% endfor %}
