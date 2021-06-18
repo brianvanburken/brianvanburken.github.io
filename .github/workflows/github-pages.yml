@@ -18,23 +18,30 @@ jobs:
             - uses: actions/setup-ruby@v1
               with:
                   ruby-version: '2.7'
+
+            # Caching
             - uses: actions/cache@v2
+              id: gems_cache
               with:
                   path: vendor/bundle
                   key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
                   restore-keys: |
                       ${{ runner.os }}-gems-
             - uses: actions/cache@v2
+              id: npm_cache
               with:
-                  path: ~/.npm
-                  key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-                  restore-keys: |
-                      ${{ runner.os }}-node-
+                  path: ./node_modules
+                  key: ${{ runner.os}}-npm-${{ hashFiles('package-lock.json') }}
 
             # Setup
             - run: bundle config path vendor/bundle
-            - run: bundle install --jobs 4 --retry 3
-            - run: npm ci --ignore-scripts
+            - name: Install Gems
+              if: steps.gems_cache.outputs.cache-hit != 'true'
+              run: bundle install --jobs 4 --retry 3
+
+            - name: Install NPM dependencies
+              if: steps.npm_cache.outputs.cache-hit != 'true'
+              run: npm ci --ignore-scripts
 
             # Build
             - run: EXECJS_RUNTIME=Node JEKYLL_ENV=production bundle exec jekyll build -s ${GITHUB_WORKSPACE}/ -d build
