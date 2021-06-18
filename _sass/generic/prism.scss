@@ -27,7 +27,10 @@ $green: #859900;
 
 code,
 pre {
-  font-size: 1em;
+  color: $base00;
+  background-color: $base3;
+  border-color: $base3;
+  font-size: 1rem;
   text-align: left;
   white-space: pre;
   word-spacing: normal;
@@ -51,14 +54,6 @@ code ::selection {
 /* Code blocks */
 pre {
   overflow: auto;
-}
-
-pre,
-code {
-  color: $base00;
-  background-color: $base3;
-  border-color: $base3;
-  font-size: 1rem;
 }
 
 :not(pre) > code {
