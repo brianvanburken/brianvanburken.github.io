@@ -62,7 +62,7 @@ class Person(val name: String, val age: Birthday)
 
 val age = Birthday(1, 1, 1970)
 val person = Person("Nick", age)
-age.year = age.2020 // Throws an compiler error
+age.year = 2020 // Throws an compiler error
 person.age.year = 2020 // Throws an compiler error
 ```
 
