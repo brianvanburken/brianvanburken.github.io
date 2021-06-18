@@ -54,6 +54,9 @@ code ::selection {
 /* Code blocks */
 pre {
   overflow: auto;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem 0.75rem;
 }
 
 :not(pre) > code {
