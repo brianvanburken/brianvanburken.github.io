@@ -28,6 +28,7 @@ gulp.task("html", function () {
   return gulp
     .src(source + "/**/*.html")
     .pipe(posthtml(plugins))
+    .pipe(uncssStyles())
     .pipe(gulp.dest(source));
 });
 
@@ -52,3 +53,38 @@ gulp.task("css", function () {
 });
 
 gulp.task("default", gulp.series(["css", "html"]));
+
+const uncss = require("uncss");
+const through = require("through2");
+
+function uncssStyles() {
+  return through.obj(function (file, encoding, cb) {
+    if (file.isNull() || !file.isBuffer()) {
+      return cb(null, file);
+    }
+
+    try {
+      const content = String(file.contents);
+      const styleSelector = /<style>(.*?)<\/style>/;
+      const matches = styleSelector.exec(content);
+      if (!matches) {
+        return cb(null, file);
+      }
+      const css = matches[1];
+      const html = content.replace(styleSelector, "");
+
+      uncss(html, { raw: css }, (error, output) => {
+        if (output) {
+          file.contents = Buffer.from(
+            content.replace(styleSelector, `<style>${output}</style>`)
+          );
+          cb(null, file);
+        } else {
+          cb(error, null);
+        }
+      });
+    } catch (e) {
+      return cb(e, file);
+    }
+  });
+}
