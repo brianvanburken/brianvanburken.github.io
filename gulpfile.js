@@ -18,7 +18,7 @@ gulp.task("html", function () {
       filter: new RegExp("^(" + prismClasses.concat("#.").join("|") + ")"),
     }),
     require("htmlnano")({
-      collapseWhitespace: "conservative",
+      collapseWhitespace: "aggressive",
       removeComments: true,
       minifyCss: false,
       minifyJs: false,
