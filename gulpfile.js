@@ -20,8 +20,6 @@ gulp.task("html", function () {
     require("htmlnano")({
       collapseWhitespace: "aggressive",
       removeComments: true,
-      minifyCss: false,
-      minifyJs: false,
     }),
   ];
 
