@@ -2,6 +2,7 @@ const gulp = require("gulp"),
   posthtml = require("gulp-posthtml"),
   postcss = require("gulp-postcss"),
   unescapeHtml = require("gulp-unescape-html");
+const htmlMinimizer = require("gulp-html-minimizer");
 
 const source = process.env.BUILD_DIR || "_site";
 
@@ -27,6 +28,11 @@ gulp.task("html", function () {
     .src(source + "/**/*.html")
     .pipe(posthtml(plugins))
     .pipe(uncssStyles())
+    .pipe(
+      htmlMinimizer({
+        removeOptionalTags: true,
+      })
+    )
     .pipe(gulp.dest(source));
 });
 
