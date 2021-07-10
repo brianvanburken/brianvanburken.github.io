@@ -7,7 +7,7 @@
 </time>
 <br />
 {% assign sorted = include.post.tags | sort %} 🏷 {% for tag in sorted %}
-<a href="/tags#{{ tag | slugify }}" title="See all post for {{ tag }}">{{
+<a href="/tags/#{{ tag | slugify }}" title="See all post for {{ tag }}">{{
   tag
 }}</a
 >{% if forloop.last == false %},{% endif %} {% endfor %}
