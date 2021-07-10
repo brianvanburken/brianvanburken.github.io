@@ -1,10 +1,18 @@
 ---
-layout: null
+layout: default
 ---
 
-<html>
-  <head>
-    <meta http-equiv="refresh" content="0; url={{ site.posts.first.url }}">
-    <link rel="canonical" href="{{ site.posts.first.url }}" />
-  </head>
-</html>
+<h1>Writings</h1>
+
+{% for post in site.posts %}
+<article>
+  <p>
+    <a href="{{ post.url }}" title="Read this blog">
+      {{ post.title }}
+    </a>
+    – {{ post.excerpt }}
+    <br />
+    {%- include post-tag.html post=post -%}
+  </p>
+</article>
+{% endfor %}
