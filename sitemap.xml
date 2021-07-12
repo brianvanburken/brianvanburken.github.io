@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<url>
+<loc>https://brianvanburken.nl/blog/bulk-association-creation-in-rails/</loc>
+<lastmod>2015-08-22T00:00:00+00:00</lastmod>
+</url>
+<url>
+<loc>https://brianvanburken.nl/blog/maybe-dont-use-maybe/</loc>
+<lastmod>2018-08-13T00:00:00+00:00</lastmod>
+</url>
+<url>
+<loc>https://brianvanburken.nl/blog/solving-challenges-with-elixirs-compile-time-function/</loc>
+<lastmod>2019-05-01T00:00:00+00:00</lastmod>
+</url>
+<url>
+<loc>https://brianvanburken.nl/blog/become-a-fire-keramik-with-kotlin/</loc>
+<lastmod>2020-08-03T00:00:00+00:00</lastmod>
+</url>
+<url>
+<loc>https://brianvanburken.nl/</loc>
+</url>
+<url>
+<loc>https://brianvanburken.nl/tags/</loc>
+</url>
+<url>
+<loc>https://brianvanburken.nl/assets/become-a-fire-keramik-with-kotlin/lambdaconf_slfp.pdf</loc>
+<lastmod>2021-07-12T15:18:29+00:00</lastmod>
+</url>
+</urlset>

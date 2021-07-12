@@ -1,0 +1,635 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://brianvanburken.nl/feed.xml" rel="self" type="application/atom+xml" /><link href="https://brianvanburken.nl/" rel="alternate" type="text/html" /><updated>2021-07-12T15:18:35+00:00</updated><id>https://brianvanburken.nl/feed.xml</id><title type="html">Brian van Burken</title><entry><title type="html">Become a Fire Keramik with Kotlin</title><link href="https://brianvanburken.nl/blog/become-a-fire-keramik-with-kotlin/" rel="alternate" type="text/html" title="Become a Fire Keramik with Kotlin" /><published>2020-08-03T00:00:00+00:00</published><updated>2020-08-03T00:00:00+00:00</updated><id>https://brianvanburken.nl/blog/become-a-fire-keramik-with-kotlin</id><content type="html" xml:base="https://brianvanburken.nl/blog/become-a-fire-keramik-with-kotlin/">&lt;p&gt;I have noticed an interesting trend here at my work Avisi: an increasing number
+of teams are choosing Kotlin for their projects! Kotlin allows programmers to
+utilize more aspects of functional programming. This made me wonder, how far can
+you go with functional programming in Kotlin?&lt;/p&gt;
+
+&lt;p&gt;While searching for a definition of the basics of functional programming, I
+found an interesting PDF-file that was created by smart people from the
+functional programming community. The document is called “LambdaConf
+Standardised Ladder of Functional Programming” and you can &lt;a href=&quot;/assets/become-a-fire-keramik-with-kotlin/lambdaconf_slfp.pdf&quot;&gt;download it here&lt;/a&gt;
+(sadly the original host of the file has disappeared). It breaks down various
+concepts and skills into levels. The first level is called “Fire Keramik”, which
+inspired the title of this blog. There has been some &lt;a href=&quot;https://news.ycombinator.com/item?id=13067741&quot;&gt;criticism&lt;/a&gt; about this
+list, but in my opinion, it’s a good starting point and uses some of the fun of
+“skill trees” found in games. To become a “Fire Keramik”, you need to learn the
+following concepts and skills:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Concepts&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Immutable data&lt;/li&gt;
+  &lt;li&gt;Second-Order Functions&lt;/li&gt;
+  &lt;li&gt;Constructing &amp;amp; Destructuring&lt;/li&gt;
+  &lt;li&gt;Function Composition&lt;/li&gt;
+  &lt;li&gt;Higher-Order Functions &amp;amp; Lambdas&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;Skills&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Use second-order functions&lt;/li&gt;
+  &lt;li&gt;Destructuring values to access their components&lt;/li&gt;
+  &lt;li&gt;Use data-types to represent optionality&lt;/li&gt;
+  &lt;li&gt;Read basic type signatures&lt;/li&gt;
+  &lt;li&gt;Pass lambdas to second-order functions&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;In this blog post, I will explore the possibilities of using all these concepts
+and skills in Kotlin. For the sake of brevity, I won’t go into the details as to
+why you should apply it. Without further ado, let’s get into the first concept!&lt;/p&gt;
+
+&lt;h2 id=&quot;immutable-data&quot;&gt;Immutable data&lt;/h2&gt;
+
+&lt;p&gt;Immutable data is data that cannot be changed after it has been initialized. To
+“change” immutable data, you have to create a copy of the data and apply your
+change in the process. Kotlin has a similar concept using &lt;code&gt;val&lt;/code&gt; and &lt;code&gt;var&lt;/code&gt;. &lt;code&gt;val&lt;/code&gt;
+allows the programmer to mark a value as &lt;code&gt;read-only&lt;/code&gt; after its initialization.
+You won’t be able to override this in the code later and if you try to change
+its value, the compiler will throw an error at you. Kotlin won’t enforce
+immutability, so the choice between &lt;code&gt;val&lt;/code&gt; and &lt;code&gt;var&lt;/code&gt; is up to the programmer.&lt;/p&gt;
+
+&lt;pre class=&quot;language-kotlin&quot;&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;Birthday&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; day&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; Int&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; month&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; Int&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; year&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; Int&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;Person&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; name&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; String&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; age&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; Birthday&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; age &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;Birthday&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1970&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; person &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;Person&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;Nick&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; age&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+age&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;year &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2020&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;// Throws an compiler error&lt;/span&gt;
+person&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;age&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;year &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2020&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;// Throws an compiler error&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;use-data-types-to-represent-optionality&quot;&gt;Use data types to represent optionality&lt;/h2&gt;
+
+&lt;p&gt;In Java, optionality is represented by using &lt;code&gt;Optional&lt;/code&gt;. This is similar to
+Haskell’s &lt;code&gt;Maybe&lt;/code&gt; type. You won’t find these representations in Kotlin. Kotlin
+tries to solve the [“The Billion Dollar Mistake”] in another way by setting all
+values as non-nullable by default! You can explicitly mark values as optional by
+using the &lt;code&gt;?&lt;/code&gt; operator which makes it &lt;code&gt;nullable&lt;/code&gt;. The example code below shows
+that the value ‘email’ is optional.&lt;/p&gt;
+
+&lt;pre class=&quot;language-kotlin&quot;&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;User&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; username&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; String&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; password&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; String&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; email&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; String&lt;span class=&quot;token operator&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;// Returns the user if found, else null&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; user&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; User&lt;span class=&quot;token operator&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;getUserByUsername&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;username&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; email&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; String&lt;span class=&quot;token operator&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; user&lt;span class=&quot;token operator&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;email
+
+&lt;span class=&quot;token comment&quot;&gt;// Here we can create a new user and use the email from the previous user.&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;// If there isn't an user, we set a default email&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; newUser &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;User&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;username&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; password&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; email &lt;span class=&quot;token operator&quot;&gt;?:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;default@email.xyz&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;read-basic-type-signatures&quot;&gt;Read basic type signatures&lt;/h2&gt;
+
+&lt;p&gt;This is probably the easiest achievable skill to attain in Kotlin. Everything in
+Kotlin is strongly typed, which forces you to define the types. Below is an
+example containing a simple data-class in which the &lt;code&gt;Person&lt;/code&gt; class has typed
+parameters. You can see that &lt;code&gt;name&lt;/code&gt; is of type &lt;code&gt;String&lt;/code&gt; and &lt;code&gt;age&lt;/code&gt; is of type
+&lt;code&gt;Int&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre class=&quot;language-kotlin&quot;&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;Person&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; name&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; String&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; age&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; Int&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;constructing--destructuring&quot;&gt;Constructing &amp;amp; Destructuring&lt;/h2&gt;
+
+&lt;p&gt;Constructing is the process of putting values together and destructuring is a
+way to get the values back. A simple example is the &lt;code&gt;Pair&lt;/code&gt; class in Kotlin.&lt;/p&gt;
+
+&lt;pre class=&quot;language-kotlin&quot;&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; name &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Kotlin&quot;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; age &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;9&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; person &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;Pair&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;name&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; age&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;If you want to extract the values from the pair, you can destructure it on the
+left-hand side of the equation. The destructuring is done in the same order as
+the structuring. To make sure you only get certain specific values, you can use
+an underscore as a placeholder indicating that the value should be ignored.&lt;/p&gt;
+
+&lt;pre class=&quot;language-kotlin&quot;&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;_&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; age&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;Pair&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;Kotlin&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;9&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token function&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;age&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This also works for data classes in Kotlin.&lt;/p&gt;
+
+&lt;h2 id=&quot;higher-order-functions--lambdas&quot;&gt;Higher-Order Functions &amp;amp; Lambdas&lt;/h2&gt;
+
+&lt;p&gt;This is nothing more than a fancy name for a function that either takes a
+function as an argument, or has a function as its return value, or both! Still
+confused? The most used and well-known example of a higher-order function is
+&lt;code&gt;map&lt;/code&gt;. A &lt;code&gt;map&lt;/code&gt; function is a function that takes a lambda (a function), calls
+it, and returns a list with the results of the map function, applied to each
+element of the original list. Here is an example of the usage of &lt;code&gt;map&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre class=&quot;language-kotlin&quot;&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; squaredValues &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;listOf&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;map&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; it &lt;span class=&quot;token operator&quot;&gt;*&lt;/span&gt; it &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;second-order-functions&quot;&gt;Second-Order Functions&lt;/h2&gt;
+
+&lt;p&gt;These functions come right after the “Higher-Order Functions” and it takes a
+function that takes a function. Pretty abstract, right? You can find examples of
+this in mathematics where you create the formula for a parabola in code. A more
+widely used example is the concept of currying. Currying (sadly, it has nothing
+to do with the delicious dish) is the concept of breaking a function, which
+takes multiple arguments, into smaller functions which each take a single
+argument and return a new function. Currying is not supported out of the box,
+but it can be achieved by using helper functions.&lt;/p&gt;
+
+&lt;pre class=&quot;language-kotlin&quot;&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;fun&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;add&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;a&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; Int&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; b&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt;Int&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; Int &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; a &lt;span class=&quot;token operator&quot;&gt;+&lt;/span&gt; b
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;fun&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;A&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; B&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; C&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;partial2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;f&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;A&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; B&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; C&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; a&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; A&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;B&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; C &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; b&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; B &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;a&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; b&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;// Break up add and set its first input to 1. This will return a new function&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;// that always adds 1 to the next argument.&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; add1 &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;partial2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;::&lt;/span&gt;add&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; result &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;add1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;// result = 3&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;code&gt;Partial2&lt;/code&gt; takes a function and the first argument of that function. This will
+return a new function that waits for the second argument to finish up the
+calculation. The new function can be passed around and applied to other values.
+Alternatively, you can do it with an extension method:&lt;/p&gt;
+
+&lt;pre class=&quot;language-kotlin&quot;&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;fun&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;A&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;B&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;C&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; Function2&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;A&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;B&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt;C&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;partial&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;a&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; A&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;B&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; C &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;b &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;invoke&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;a&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; b&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; add1&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;Int&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; Int &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;::&lt;/span&gt;add&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;partial&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;functional-composition&quot;&gt;Functional Composition&lt;/h2&gt;
+
+&lt;p&gt;Composition is, in abstraction, creating something new by putting things
+together. In the example below, we will combine two functions into new
+functions. The new function can be composed with another function which allows
+you to build up a more powerful function from smaller functions. This isn’t
+something that comes out of the box in Kotlin, yet is still achievable! We can
+achieve it by using callable references and pass them to a compose helper
+function. This combines (composes) two functions together to get a new function.&lt;/p&gt;
+
+&lt;pre class=&quot;language-kotlin&quot;&gt;&lt;code class=&quot;language-kotlin&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;fun&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;isOdd&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;x&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; Int&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; x &lt;span class=&quot;token operator&quot;&gt;%&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;2&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;0&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;fun&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;s&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; String&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; s&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;length
+
+&lt;span class=&quot;token comment&quot;&gt;// Define a function that takes two functions and return a new one.&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;fun&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;A&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; B&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; C&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;compose&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;f&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;B&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; C&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; g&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;A&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; B&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;A&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; C &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; x &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;g&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;x&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;token comment&quot;&gt;// Combine isOdd and length methods and store the combined function&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;// as variable.&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; oddLength &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;compose&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;::&lt;/span&gt;isOdd&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;::&lt;/span&gt;length&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;val&lt;/span&gt; strings &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;listOf&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;a&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;ab&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;abc&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+strings&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;filter&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;oddLength&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;listOf&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;a&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;abc&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;closing-words&quot;&gt;Closing words&lt;/h2&gt;
+
+&lt;p&gt;Now you know all “beginner” concepts and skills to start writing functional code
+in Kotlin. All of this can be applied to existing code bases without much
+change. We looked at the basics and as you can read it is possible to code
+functionally in this language. We didn’t go deep, but this is at least a
+promising start. If you’re interested, The Standardized Ladder of Functional
+Programming discusses many other topics that can be applied to Kotlin with which
+you can dive deeper!&lt;/p&gt;</content><author><name></name></author><category term="Kotlin" /><category term="Functional Programming" /><summary type="html">At my work we started using Kotlin more and more. I wondered how far you could go in writing fully Functional in the language.</summary></entry><entry><title type="html">Solving Challenge with Elixir’s Compile-Time Functions</title><link href="https://brianvanburken.nl/blog/solving-challenges-with-elixirs-compile-time-function/" rel="alternate" type="text/html" title="Solving Challenge with Elixir’s Compile-Time Functions" /><published>2019-05-01T00:00:00+00:00</published><updated>2019-05-01T00:00:00+00:00</updated><id>https://brianvanburken.nl/blog/solving-challenges-with-elixirs-compile-time-function</id><content type="html" xml:base="https://brianvanburken.nl/blog/solving-challenges-with-elixirs-compile-time-function/">&lt;p&gt;I love solving small programming challenges. If you do too, I recommend
+&lt;a href=&quot;https://exercism.io/&quot;&gt;exercism.io&lt;/a&gt;. One of the many challenges on this website is about transcribing
+&lt;abbr title=&quot;DeoxyriboNucleic Acid&quot;&gt;DNA&lt;/abbr&gt; nucleotides to &lt;abbr title=&quot;RiboNucleic Acid&quot;&gt;RNA&lt;/abbr&gt; nucleotides. I was able to solve this by using Elixir. I
+also found that I could apply metaprogramming to improve my answer. In this blog
+post, I will walk you through this process of improvement.&lt;/p&gt;
+
+&lt;h2 id=&quot;basics&quot;&gt;Basics&lt;/h2&gt;
+
+&lt;p&gt;Before we can solve this challenge, we need to figure out the mapping between
+the nucleotides that make up a &lt;abbr title=&quot;DeoxyriboNucleic Acid&quot;&gt;DNA&lt;/abbr&gt; strand and the corresponding representation
+in &lt;abbr title=&quot;RiboNucleic Acid&quot;&gt;RNA&lt;/abbr&gt;. The mapping is A to U, G to C, T to A, and C to G. I’ve drawn out an
+example below:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/solving-challenges-with-elixirs-compile-time-function/rna_transcription.jpg&quot; alt=&quot;Drawing of DNA string conversion to RNA&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now let’s implement this in Elixir! We can define multiple functions with the
+same name which are referred to as same head functions. In addition, we can use
+pattern matching on the argument to represent the mapping between the
+nucleotides. Doing so, we end up with the code below:&lt;/p&gt;
+
+&lt;pre class=&quot;language-elixir&quot;&gt;&lt;code class=&quot;language-elixir&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;defmodule&lt;/span&gt; &lt;span class=&quot;token module class-name&quot;&gt;RNATranscription&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;to_rna&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;G&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;do:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;C&quot;&lt;/span&gt;
+  &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;to_rna&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;C&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;do:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;G&quot;&lt;/span&gt;
+  &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;to_rna&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;T&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;do:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;A&quot;&lt;/span&gt;
+  &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;to_rna&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;A&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;do:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;U&quot;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Following this, we can try out our module in the Elixir &lt;abbr title=&quot;Read-Evaluate-Print Loop&quot;&gt;REPL&lt;/abbr&gt; called &lt;abbr title=&quot;Interactive Elixir&quot;&gt;IEx&lt;/abbr&gt; and give
+it a valid &lt;abbr title=&quot;DeoxyriboNucleic Acid&quot;&gt;DNA&lt;/abbr&gt; nucleotide. As can be seen below, this returns the correct
+corresponding &lt;abbr title=&quot;RiboNucleic Acid&quot;&gt;RNA&lt;/abbr&gt; nucleotide:&lt;/p&gt;
+
+&lt;pre class=&quot;language-elixir&quot;&gt;&lt;code class=&quot;language-elixir&quot;&gt;iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;import_file&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;rna.ex&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;token module class-name&quot;&gt;RNATranscription&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;to_rna&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;T&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token string&quot;&gt;&quot;A&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now we can use this module to take a &lt;abbr title=&quot;DeoxyriboNucleic Acid&quot;&gt;DNA&lt;/abbr&gt; strand and split it into a list of &lt;abbr title=&quot;DeoxyriboNucleic Acid&quot;&gt;DNA&lt;/abbr&gt;
+nucleotides. Each of these nucleotides is then mapped to its &lt;abbr title=&quot;RiboNucleic Acid&quot;&gt;RNA&lt;/abbr&gt; equivalent and
+joined to produce the &lt;abbr title=&quot;RiboNucleic Acid&quot;&gt;RNA&lt;/abbr&gt; strand. One way to do this is by using the &lt;abbr title=&quot;Read-Evaluate-Print Loop&quot;&gt;REPL&lt;/abbr&gt;:&lt;/p&gt;
+
+&lt;pre class=&quot;language-elixir&quot;&gt;&lt;code class=&quot;language-elixir&quot;&gt;iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; strand &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;GCAATTA&quot;&lt;/span&gt;
+iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; strand &lt;span class=&quot;token operator&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;token module class-name&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;graphemes&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;token module class-name&quot;&gt;Enum&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;map&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;token module class-name&quot;&gt;RNATranscription&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;to_rna&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;token module class-name&quot;&gt;Enum&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;join&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token string&quot;&gt;&quot;CGUUAAU&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This bit of code could be placed in a method called “decode” and we would be
+done! But now imagine the discovery of new &lt;abbr title=&quot;RiboNucleic Acid&quot;&gt;RNA&lt;/abbr&gt; or &lt;abbr title=&quot;DeoxyriboNucleic Acid&quot;&gt;DNA&lt;/abbr&gt; nucleotides. This would
+mean that additional letters would have to be added to our code. We could write a
+few new functions matching these new &lt;abbr title=&quot;DeoxyriboNucleic Acid&quot;&gt;DNA&lt;/abbr&gt; nucleotides that will return the &lt;abbr title=&quot;RiboNucleic Acid&quot;&gt;RNA&lt;/abbr&gt;
+ones. Though doable by hand, we could leverage the power of Elixir
+metaprogramming and define functions from a mapping so future extensions are
+easy. Let’s have some fun!&lt;/p&gt;
+
+&lt;h2 id=&quot;metaprogramming&quot;&gt;Metaprogramming&lt;/h2&gt;
+
+&lt;p&gt;Before we get into applying metaprogramming to our example, I want to go a bit
+more in-depth on the subject. One amazing thing about Elixir is that it is
+mostly written in.. Elixir! According to Github, at the time of writing this
+blog post, it contains about 90% Elixir code and only 9% Erlang code. Having a
+language written in the same language as the source code makes it easier to read
+and contribute to because you already know the language. Most of it is built
+using metaprogramming on top of a small core. An example of this is &lt;code&gt;if/else&lt;/code&gt;.
+This is a simple macro for &lt;code&gt;case&lt;/code&gt;. So the example code below…&lt;/p&gt;
+
+&lt;pre class=&quot;language-elixir&quot;&gt;&lt;code class=&quot;language-elixir&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;is_thruthy?&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;token function&quot;&gt;do_something&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;else&lt;/span&gt;
+  &lt;span class=&quot;token function&quot;&gt;do_something_else&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;..gets compiled down in an intermitted step:&lt;/p&gt;
+
+&lt;pre class=&quot;language-elixir&quot;&gt;&lt;code class=&quot;language-elixir&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;is_thruthy?&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt;
+  x &lt;span class=&quot;token keyword&quot;&gt;when&lt;/span&gt; x &lt;span class=&quot;token operator&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;token boolean&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;nil&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;token function&quot;&gt;do_something_else&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+  _ &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;token function&quot;&gt;do_something&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;You can read more about the source code in the &lt;a href=&quot;https://github.com/elixir-lang/elixir/blob/master/lib/elixir/lib/kernel.ex#L3093&quot;&gt;&lt;code&gt;Kernel&lt;/code&gt;&lt;/a&gt; library. This will
+show you how Elixir works beautifully. You can see the only falsely values are
+&lt;code&gt;false&lt;/code&gt; and &lt;code&gt;nil&lt;/code&gt;, everything else is truthy.&lt;/p&gt;
+
+&lt;p&gt;To get a sense of how we can implement something like this, let’s try something
+out in the &lt;abbr title=&quot;Read-Evaluate-Print Loop&quot;&gt;REPL&lt;/abbr&gt;. Using &lt;a href=&quot;https://hexdocs.pm/elixir/Kernel.SpecialForms.html#unquote/1&quot;&gt;&lt;code&gt;unquote&lt;/code&gt;&lt;/a&gt; we can take an expression and make it
+static on compile time. And with &lt;a href=&quot;https://hexdocs.pm/elixir/Kernel.SpecialForms.html#quote/2&quot;&gt;&lt;code&gt;quote&lt;/code&gt;&lt;/a&gt; we can receive the &lt;abbr title=&quot;Abstract Syntax Tree&quot;&gt;AST&lt;/abbr&gt; from the
+block passed to check what we’ve created. The &lt;abbr title=&quot;Abstract Syntax Tree&quot;&gt;AST&lt;/abbr&gt; is what Elixir uses to
+represent our code before compiling down to Erlang. To see what the &lt;abbr title=&quot;Abstract Syntax Tree&quot;&gt;AST&lt;/abbr&gt;
+represents we use &lt;a href=&quot;https://hexdocs.pm/elixir/Macro.html#to_string/2&quot;&gt;&lt;code&gt;Macro.to_string/1&lt;/code&gt;&lt;/a&gt;.&lt;/p&gt;
+
+&lt;pre class=&quot;language-elixir&quot;&gt;&lt;code class=&quot;language-elixir&quot;&gt;iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; dna &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;G&quot;&lt;/span&gt;
+iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; ast &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;quote&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;token operator&quot;&gt;...&lt;/span&gt;&amp;gt; &lt;span class=&quot;token function&quot;&gt;unquote&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;dna&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token operator&quot;&gt;...&lt;/span&gt;&amp;gt; &lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; dna &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;C&quot;&lt;/span&gt;
+iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;token module class-name&quot;&gt;IO&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;puts &lt;span class=&quot;token module class-name&quot;&gt;Macro&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;to_string&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;ast&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token string&quot;&gt;&quot;G&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As you can see in the code above, the unquote function returns the value &lt;code&gt;&quot;G&quot;&lt;/code&gt;
+even if the value of &lt;code&gt;dna&lt;/code&gt; is changed afterward. Through additional
+experimenting, we can find out if this can be used to set the value to match the
+argument in our same head pattern matching. We do this by writing the &lt;code&gt;to_rna&lt;/code&gt;
+as we normally would but swapping out the argument and return value with the
+unquoted values of the &lt;abbr title=&quot;DeoxyriboNucleic Acid&quot;&gt;DNA&lt;/abbr&gt; and &lt;abbr title=&quot;RiboNucleic Acid&quot;&gt;RNA&lt;/abbr&gt;.&lt;/p&gt;
+
+&lt;pre class=&quot;language-elixir&quot;&gt;&lt;code class=&quot;language-elixir&quot;&gt;iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; dna &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;G&quot;&lt;/span&gt;
+iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; rna &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;C&quot;&lt;/span&gt;
+iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; ast &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;quote&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt;
+&lt;span class=&quot;token operator&quot;&gt;...&lt;/span&gt;&amp;gt; &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;to_rna&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;unquote&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;dna&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;do:&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;unquote&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;rna&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token operator&quot;&gt;...&lt;/span&gt;&amp;gt; &lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;token module class-name&quot;&gt;IO&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;puts &lt;span class=&quot;token module class-name&quot;&gt;Macro&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;to_string&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;ast&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token function&quot;&gt;def&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;to_rna&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;G&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt;
+  &lt;span class=&quot;token string&quot;&gt;&quot;C&quot;&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As you can see, the value &lt;code&gt;&quot;G&quot;&lt;/code&gt; is set as the argument and &lt;code&gt;&quot;C&quot;&lt;/code&gt; is set as the
+return value. This looks exactly like one of the functions we wrote by hand. But
+instead of writing it manually, we’ve used the value of &lt;code&gt;dna&lt;/code&gt; to set the value
+on which the &lt;code&gt;to_rna&lt;/code&gt; function needs to match and &lt;code&gt;rna&lt;/code&gt; to set as the return
+value. Knowing this, we can bring everything together and create functions for
+our mapping. We can create the &lt;abbr title=&quot;DeoxyriboNucleic Acid&quot;&gt;DNA&lt;/abbr&gt; to &lt;abbr title=&quot;RiboNucleic Acid&quot;&gt;RNA&lt;/abbr&gt; mapping by creating a function for each
+key and value pair that matches on the &lt;abbr title=&quot;DeoxyriboNucleic Acid&quot;&gt;DNA&lt;/abbr&gt; and returns the &lt;abbr title=&quot;RiboNucleic Acid&quot;&gt;RNA&lt;/abbr&gt;. We’ll use a
+simple &lt;code&gt;for&lt;/code&gt;-comprehension for looping through our mapping:&lt;/p&gt;
+
+&lt;pre class=&quot;language-elixir&quot;&gt;&lt;code class=&quot;language-elixir&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;defmodule&lt;/span&gt; &lt;span class=&quot;token module class-name&quot;&gt;RNATranscription&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt;
+  mapping &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;G&quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;C&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;C&quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;G&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;T&quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;A&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;A&quot;&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;U&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+  &lt;span class=&quot;token keyword&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; dna&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; rna &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;-&lt;/span&gt; mapping &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;to_rna&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;unquote&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;dna&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token attr-name&quot;&gt;do:&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;unquote&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;rna&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;After loading the file in the &lt;abbr title=&quot;Read-Evaluate-Print Loop&quot;&gt;REPL&lt;/abbr&gt;, it gets compiled and all functions get defined:&lt;/p&gt;
+
+&lt;pre class=&quot;language-elixir&quot;&gt;&lt;code class=&quot;language-elixir&quot;&gt;iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;token function&quot;&gt;import_file&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;rna.ex&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+iex&lt;span class=&quot;token operator&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;token module class-name&quot;&gt;RNATranscription&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token function&quot;&gt;to_rna&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;T&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token string&quot;&gt;&quot;A&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And there you go, we’ve created compile-time functions! We could take the
+automation even further by hosting the mapping somewhere, using a hook to create
+an Elixir package when it changes, and publish it without the interference of a
+developer.&lt;/p&gt;
+
+&lt;h2 id=&quot;in-conclusion&quot;&gt;In conclusion&lt;/h2&gt;
+
+&lt;p&gt;Elixir macros allow us to create awesome stuff. Though this awesomeness does come
+with a word of caution. It might be harder to understand what your code does and
+where some functions come from. New developers to your project with macros might
+have a hard time finding their way around. It is a tradeoff you have to make.
+Some might argue that using macros for a small mapping such as in our example
+above might be overkill. And I won’t argue with that. However, it is fun to
+write and show you how you can define compile-time functions.&lt;/p&gt;
+
+&lt;p&gt;If you are interested in learning more about macros in Elixir I highly recommend
+the book &lt;a href=&quot;https://amzn.to/2SidqJ9&quot;&gt;Metaprogramming Elixir&lt;/a&gt; which goes deeper into the subject.&lt;/p&gt;</content><author><name></name></author><category term="Elixir" /><category term="Macro" /><category term="AST" /><category term="Compile Time" /><summary type="html">I love solving small programming challenges. One of the many challenges on this website is about transcribing DNA nucleotides to RNA nucleotides. I was able to solve this by using Elixir.</summary></entry><entry><title type="html">Maybe Don’t Use Maybe?</title><link href="https://brianvanburken.nl/blog/maybe-dont-use-maybe/" rel="alternate" type="text/html" title="Maybe Don’t Use Maybe?" /><published>2018-08-13T00:00:00+00:00</published><updated>2018-08-13T00:00:00+00:00</updated><id>https://brianvanburken.nl/blog/maybe-dont-use-maybe</id><content type="html" xml:base="https://brianvanburken.nl/blog/maybe-dont-use-maybe/">&lt;p&gt;Your code could be littered with branches that result in invalid data and should
+never happen, but are allowed. We found such a case, at my work, where we allowed
+multiple variants of data, and it broke our code logic. We use &lt;a href=&quot;http://elm-lang.org/&quot;&gt;Elm&lt;/a&gt; and fixed
+it using its type system. Although we describe the solution for Elm in this blog,
+the cases and fixes also apply to other similar languages like &lt;a href=&quot;https://www.haskell.org/&quot;&gt;Haskell&lt;/a&gt; and
+&lt;a href=&quot;http://www.purescript.org/&quot;&gt;PureScript&lt;/a&gt;. In this blog post we find the seemly impossible bug using
+examples written in Elm and go through a step by step progress to fix it. At the
+end, you could find similar cases in your application and know a way to fix
+them. Before we go fix our bug let’s get clear on the domain model.&lt;/p&gt;
+
+&lt;h2 id=&quot;how-did-we-get-here&quot;&gt;How did we get here?&lt;/h2&gt;
+
+&lt;p&gt;Our domain contains the model “Question” which can have exactly one “Answer” or
+is not answered yet. If the question has been answered then we receive the
+timestamp and content of the answer. This all will be sent by an API using JSON.
+Note: for this post, I’ve simplified our domain to this specific case.&lt;/p&gt;
+
+&lt;p&gt;Our back-end was built separate from the front-end and one of the decisions of
+the back-end team was to send out both fields on the root level of the JSON
+document. These fields will always be present and, when there is no answer yet,
+default to &lt;code&gt;null&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Our domain code started out like this:&lt;/p&gt;
+
+&lt;pre class=&quot;language-elm&quot;&gt;&lt;code class=&quot;language-elm&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;alias&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Question&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;String&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;date&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Date&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;String&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;answer&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token constant&quot;&gt;Maybe&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token constant&quot;&gt;Maybe&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Date&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Here we store both fields on the question at the same level as we received from
+the back-end. And our decoder looked like this:&lt;/p&gt;
+
+&lt;pre class=&quot;language-elm&quot;&gt;&lt;code class=&quot;language-elm&quot;&gt;&lt;span class=&quot;token import-statement&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; Json.Decode &lt;span class=&quot;token keyword&quot;&gt;as&lt;/span&gt; JD&lt;/span&gt;
+&lt;span class=&quot;token import-statement&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; DateTime&lt;/span&gt;  &lt;span class=&quot;token comment&quot;&gt;-- Note: DateTime contains our internal decoder for dates&lt;/span&gt;
+
+&lt;span class=&quot;token hvariable&quot;&gt;decoder&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;JD.Decoder&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Question&lt;/span&gt;
+&lt;span class=&quot;token hvariable&quot;&gt;decoder&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;
+    &lt;span class=&quot;token hvariable&quot;&gt;JD.map4&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Question&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.field&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;id&quot;&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;JD.string&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.field&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;date&quot;&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;DateTime.decoder&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.field&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;content&quot;&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;JD.string&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.map2&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt;
+            &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.field&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;answer&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.maybe&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;JD.string&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.field&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;answeredOn&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.maybe&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;DateTime.decoder&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+		&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;maybe-we-have-a-bug&quot;&gt;Maybe we have a bug?&lt;/h2&gt;
+
+&lt;p&gt;If we look closer at our &lt;code&gt;Answer&lt;/code&gt; type we see that it takes two &lt;code&gt;Maybe&lt;/code&gt;’s. If we
+think about it in terms of &lt;a href=&quot;https://codewords.recurse.com/issues/three/algebra-and-calculus-of-algebraic-data-types&quot;&gt;algebraic data types&lt;/a&gt; we can reason that this
+solution has four possible cases for our answer:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code&gt;Answer (Just _) (Just _)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;Answer (Just _) Nothing&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;Answer Nothing (Just _)&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code&gt;Answer Nothing Nothing&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Are all these cases valid? If we revisit the domain logic then it becomes more
+clear: if there is an answer we receive both &lt;code&gt;answer&lt;/code&gt; and &lt;code&gt;answeredOn&lt;/code&gt; filled
+in, else we receive both fields with a null value. This means we have only two
+possible cases:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;we have an answer and both fields are filled in&lt;/li&gt;
+  &lt;li&gt;we have no answer and both fields are empty&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;This is not what we represent in our code. There are four possible cases right
+now! We only want the two cases that are valid and we can’t express that right
+now. This allowed for a bug to slip in where one of the fields for an answer
+was set to &lt;code&gt;null&lt;/code&gt; and made our application show contradicting
+information to our users. Luckily for us, we can leverage Elm’s awesome type
+system to make the other cases impossible! Let’s improve our code.&lt;/p&gt;
+
+&lt;h2 id=&quot;maybe-this-will-fix-it&quot;&gt;Maybe this will fix it?&lt;/h2&gt;
+
+&lt;p&gt;We could wrap our &lt;code&gt;Answer&lt;/code&gt; type in a &lt;code&gt;Maybe&lt;/code&gt; and remove the &lt;code&gt;Maybe&lt;/code&gt; for both the
+values or another approach is to expand our &lt;code&gt;Answer&lt;/code&gt; type to a &lt;a href=&quot;https://guide.elm-lang.org/types/custom_types.html&quot;&gt;Custom Type&lt;/a&gt;
+(also called Union Type). Before we refactor our code let’s think about how our
+code looks in each approach. Compare both examples below one of each possible
+fix and look at how we would use it rendering our answer. First look at the
+approach using &lt;code&gt;Maybe&lt;/code&gt;:&lt;/p&gt;
+
+&lt;pre class=&quot;language-elm&quot;&gt;&lt;code class=&quot;language-elm&quot;&gt;&lt;span class=&quot;token import-statement&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; Html &lt;span class=&quot;token keyword&quot;&gt;exposing&lt;/span&gt; &lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token constant&quot;&gt;Html&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Date&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;alias&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Question&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;String&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;date&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Date&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;String&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;answer&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Maybe&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;token hvariable&quot;&gt;viewAnswer&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Maybe&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Html&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Never&lt;/span&gt;
+&lt;span class=&quot;token hvariable&quot;&gt;viewAnswer&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;possibleAnswer&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;possibleAnswer&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;of&lt;/span&gt;
+        &lt;span class=&quot;token constant&quot;&gt;Just&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;content&lt;/span&gt; _&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;token hvariable&quot;&gt;Html.text&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;content&lt;/span&gt;
+
+        &lt;span class=&quot;token constant&quot;&gt;Nothing&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;token hvariable&quot;&gt;Html.text&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;No answer yet&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;And our Union type approach:&lt;/p&gt;
+
+&lt;pre class=&quot;language-elm&quot;&gt;&lt;code class=&quot;language-elm&quot;&gt;&lt;span class=&quot;token import-statement&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; Html &lt;span class=&quot;token keyword&quot;&gt;exposing&lt;/span&gt; &lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token constant&quot;&gt;Html&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt;
+    &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answered&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Date&lt;/span&gt;
+    &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;NoAnswerYet&lt;/span&gt;
+
+
+&lt;span class=&quot;token keyword&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;alias&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Question&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;String&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;date&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Date&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;String&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;answer&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;token hvariable&quot;&gt;viewAnswer&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Html&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Never&lt;/span&gt;
+&lt;span class=&quot;token hvariable&quot;&gt;viewAnswer&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;answer&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;
+    &lt;span class=&quot;token keyword&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;answer&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;of&lt;/span&gt;
+        &lt;span class=&quot;token constant&quot;&gt;Answered&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;content&lt;/span&gt; _ &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;token hvariable&quot;&gt;Html.text&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;content&lt;/span&gt;
+
+        &lt;span class=&quot;token constant&quot;&gt;NoAnswerYet&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;-&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;token hvariable&quot;&gt;Html.text&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;No answer yet&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;As you can see our Union type approach is less code (you don’t have to write
+&lt;code&gt;Maybe&lt;/code&gt; and &lt;code&gt;Just&lt;/code&gt; for the value) and has more clarity. Using Maybe does fix it
+quickly. But, it adds an extra level of abstraction around our Answer type.
+Having to unwrap the Maybe first to get to our Answer type. With the Custom Type
+approach, it is clear that we have an answer or no answer, this shows more
+intent than a Maybe. Also, our code emits an uncertainty when using Maybe. A
+great talk about uncertainties in your Elm code can be watched here:
+&lt;a href=&quot;https://www.youtube.com/watch?v=43eM4kNbb6c&quot;&gt;Working with Maybe&lt;/a&gt; by Joël Quenneville. We don’t want any uncertainties in
+our code. We are certain that when decoded we either have an answer or have no
+answer.&lt;/p&gt;
+
+&lt;p&gt;On the downside, when going for the Custom Type approach, we do lose the
+possibility for using &lt;code&gt;Maybe.map&lt;/code&gt; and have to use case for everything. This boils
+down to having the power of mapping or clarity of intent in our code. Since we,
+developers, read code more than we write (said by Robert C. Martin in his book
+&lt;a href=&quot;https://amzn.to/30sr6WN&quot;&gt;Clean Code&lt;/a&gt; and by many others) it means that clarity of intent trumps power
+we decided to go with the Custom Type approach.&lt;/p&gt;
+
+&lt;h2 id=&quot;making-the-seemly-impossible-impossible&quot;&gt;Making the seemly impossible impossible&lt;/h2&gt;
+
+&lt;p&gt;First, we change our Answer type that represents our only two possible cases.&lt;/p&gt;
+
+&lt;pre class=&quot;language-elm&quot;&gt;&lt;code class=&quot;language-elm&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answer&lt;/span&gt;
+    &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answered&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Date&lt;/span&gt;
+    &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;NoAnswerYet&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Then we change our decoder to set return the Answered type if all is well and
+&lt;code&gt;NoAnswerYet&lt;/code&gt; for the other cases where one or more of the fields are &lt;code&gt;null&lt;/code&gt;.
+To make our code more concise we use &lt;a href=&quot;http://package.elm-lang.org/packages/elm-community/json-extra/2.7.0/Json-Decode-Extra#withDefault&quot;&gt;&lt;code&gt;Json.Decode.Extra.withDefault&lt;/code&gt;&lt;/a&gt; to set
+a fallback if one of our fields are &lt;code&gt;null&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre class=&quot;language-elm&quot;&gt;&lt;code class=&quot;language-elm&quot;&gt;&lt;span class=&quot;token import-statement&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;import&lt;/span&gt; Json.Decode.Extra &lt;span class=&quot;token keyword&quot;&gt;as&lt;/span&gt; JDE&lt;/span&gt;
+
+&lt;span class=&quot;token hvariable&quot;&gt;decoder&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;JD.Decoder&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Question&lt;/span&gt;
+&lt;span class=&quot;token hvariable&quot;&gt;decoder&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt;
+    &lt;span class=&quot;token hvariable&quot;&gt;JD.map4&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Question&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.field&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;id&quot;&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;JD.string&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.field&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;date&quot;&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;DateTime.decoder&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.field&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;content&quot;&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;JD.string&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.map2&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Answered&lt;/span&gt;
+            &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.field&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;answer&quot;&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;JD.string&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token hvariable&quot;&gt;JD.field&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;answeredOn&quot;&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;DateTime.decoder&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;token operator&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;token hvariable&quot;&gt;JDE.withDefault&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;NoAnswerYet&lt;/span&gt;
+        &lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now our code is safe from weird cases and is more expressive! Having fewer
+possible cases means fewer possible bugs, makes it easier to test, and easier
+to reason about what the code can do. Another small advantage is that you won’t
+have to write tests for the other weird cases. If you try to write such a test
+the compiler just won’t allow you. Thus, we don’t need to write any tests and
+save time. With this, we fixed our bug using the powerful Elm type system.&lt;/p&gt;
+
+&lt;p&gt;You can check out the final &lt;abbr title=&quot;Short, Self Contained, Correct (Compilable), Example&quot;&gt;SSCCE&lt;/abbr&gt; here:
+&lt;a href=&quot;https://ellie-app.com/PnhF7yzQtra1&quot;&gt;https://ellie-app.com/PnhF7yzQtra1&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;If you are interested in learning more about fixing similar problems in your Elm
+application I highly recommend to watch &lt;a href=&quot;https://www.youtube.com/watch?v=IcgmSRJHu_8&quot;&gt;Making Impossible States Impossible&lt;/a&gt;
+by Richard Feldman.&lt;/p&gt;</content><author><name></name></author><category term="Elm" /><category term="Custom Types" /><category term="Maybe" /><category term="Monads" /><summary type="html">At my work I've come across a code that had more branches than were possible in the logic of the domain.</summary></entry><entry><title type="html">Bulk Association Creation in Rails</title><link href="https://brianvanburken.nl/blog/bulk-association-creation-in-rails/" rel="alternate" type="text/html" title="Bulk Association Creation in Rails" /><published>2015-08-22T00:00:00+00:00</published><updated>2015-08-22T00:00:00+00:00</updated><id>https://brianvanburken.nl/blog/bulk-association-creation-in-rails</id><content type="html" xml:base="https://brianvanburken.nl/blog/bulk-association-creation-in-rails/">&lt;p&gt;During development of an application I stumbled across a situation that could be
+improved. The application contains posts that get tagged based on the content.
+Beneath you can see all the models in this situation.&lt;/p&gt;
+
+&lt;pre class=&quot;language-ruby&quot;&gt;&lt;code class=&quot;language-ruby&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;Post&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;ActiveRecord&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token constant&quot;&gt;Base&lt;/span&gt;
+  has_many &lt;span class=&quot;token symbol&quot;&gt;:taggings&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; as&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token symbol&quot;&gt;:taggable&lt;/span&gt;
+  has_many &lt;span class=&quot;token symbol&quot;&gt;:tags&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; through&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token symbol&quot;&gt;:taggings&lt;/span&gt;
+  after_save &lt;span class=&quot;token symbol&quot;&gt;:tag_content&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token symbol&quot;&gt;:content_changed?&lt;/span&gt;
+
+  &lt;span class=&quot;token keyword&quot;&gt;private&lt;/span&gt;
+
+  &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token method-definition&quot;&gt;&lt;span class=&quot;token function&quot;&gt;tag_content&lt;/span&gt;&lt;/span&gt;
+    words &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; content&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;strip&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;downcase&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;split&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token regex&quot;&gt;/\W+/&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;token constant&quot;&gt;TaggingService&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;new&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;tag&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;words&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;Tagging&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;ActiveRecord&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token constant&quot;&gt;Base&lt;/span&gt;
+  belongs_to &lt;span class=&quot;token symbol&quot;&gt;:taggable&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; polymorphic&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean&quot;&gt;true&lt;/span&gt;
+  belongs_to &lt;span class=&quot;token symbol&quot;&gt;:tag&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+
+&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;Tag&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;ActiveRecord&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;token constant&quot;&gt;Base&lt;/span&gt;
+  has_many &lt;span class=&quot;token symbol&quot;&gt;:taggings&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;When changing the content of a post it passes the words to a service which
+tags the post. It deletes all the current taggings to make sure irrelevant tags
+are no longer present. Then it walks through all the stored tags. Below is the
+tagging service which handles the automatic tagging.&lt;/p&gt;
+
+&lt;pre class=&quot;language-ruby&quot;&gt;&lt;code class=&quot;language-ruby&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;token class-name&quot;&gt;TaggingService&lt;/span&gt;
+  &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token method-definition&quot;&gt;&lt;span class=&quot;token function&quot;&gt;initialize&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;record&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;token variable&quot;&gt;@record&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;=&lt;/span&gt; record
+  &lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+
+  &lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token method-definition&quot;&gt;&lt;span class=&quot;token function&quot;&gt;tag&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;words&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;token variable&quot;&gt;@record&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;taggings&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;destroy_all
+    &lt;span class=&quot;token constant&quot;&gt;Tag&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;all&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;each&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt;tag&lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt;
+      record&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;tags &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt; tag &lt;span class=&quot;token keyword&quot;&gt;if&lt;/span&gt; words&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;include&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;?&lt;/span&gt; tag&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;name
+    &lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+  &lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The problem with this service is that it walks through all the tags, even
+the ones that aren’t present in the content. We could improve this by only
+fetching relevant tags. By changing the query we can skip the check for included
+tag names.&lt;/p&gt;
+
+&lt;pre class=&quot;language-ruby&quot;&gt;&lt;code class=&quot;language-ruby&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token method-definition&quot;&gt;&lt;span class=&quot;token function&quot;&gt;tag&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;words&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;token variable&quot;&gt;@record&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;taggings&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;destroy_all
+  &lt;span class=&quot;token constant&quot;&gt;Tag&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;where&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;name&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; words&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;token keyword&quot;&gt;each&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt;tag&lt;span class=&quot;token operator&quot;&gt;|&lt;/span&gt;
+    record&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;tags &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt; tag
+  &lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;It’s an improvement, but still walks through each tag and as a result produces
+N+1 queries. After looking through the source of Rails I’ve found that it’s
+possible to pass a &lt;code&gt;ActiveRecord::Relation&lt;/code&gt; instance at the &lt;code&gt;CollectionProxy&lt;/code&gt; of
+the post instance. A CollectionProxy is an object that handles
+associating records, in this case the post with its taggings and tags.&lt;/p&gt;
+
+&lt;p&gt;Rails would use the &lt;code&gt;ActiveRecord::Relation&lt;/code&gt; instance to generate a query and
+skip fetching data from the database. This would reduce the time spent in Ruby
+code. To improve our example we pass in the query we improved earlier.&lt;/p&gt;
+
+&lt;pre class=&quot;language-ruby&quot;&gt;&lt;code class=&quot;language-ruby&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;token method-definition&quot;&gt;&lt;span class=&quot;token function&quot;&gt;tag&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;words&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;token variable&quot;&gt;@record&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;taggings&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;destroy_all
+  &lt;span class=&quot;token variable&quot;&gt;@record&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;tags &lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;token operator&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;token constant&quot;&gt;Tag&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;.&lt;/span&gt;where&lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;name&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; words&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;This generates a nice SQL &lt;code&gt;INSERT&lt;/code&gt; query that would look like the query below.&lt;/p&gt;
+
+&lt;pre class=&quot;language-sql&quot;&gt;&lt;code class=&quot;language-sql&quot;&gt;&lt;span class=&quot;token keyword&quot;&gt;INSERT&lt;/span&gt; &lt;span class=&quot;token keyword&quot;&gt;INTO&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;taggings&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;taggable_type&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;taggable_id&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;tag_id&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;created_at&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;updated_at&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;token keyword&quot;&gt;VALUES&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;token string&quot;&gt;&quot;Post&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token number&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;2015-08-22 00:00:00.000000&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;2015-08-22 00:00:00.000000&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;</content><author><name></name></author><category term="Rails" /><category term="Ruby" /><category term="ActiveRecord" /><summary type="html">During development of an application I stumbled across a situation where it produced N+1 queries and I set out on an adventure improve it.</summary></entry></feed>
