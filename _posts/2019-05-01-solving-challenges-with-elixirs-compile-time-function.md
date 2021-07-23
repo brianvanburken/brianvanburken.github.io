@@ -181,7 +181,7 @@ above might be overkill. And I won't argue with that. However, it is fun to
 write and show you how you can define compile-time functions.
 
 If you are interested in learning more about macros in Elixir I highly recommend
-the book [Metaprogramming Elixir][6] which goes deeper into the subject.
+the book Metaprogramming Elixir which goes deeper into the subject.
 
 *[DNA]: DeoxyriboNucleic Acid
 *[RNA]: RiboNucleic Acid
@@ -194,4 +194,3 @@ the book [Metaprogramming Elixir][6] which goes deeper into the subject.
 [3]: https://hexdocs.pm/elixir/Kernel.SpecialForms.html#unquote/1
 [4]: https://hexdocs.pm/elixir/Kernel.SpecialForms.html#quote/2
 [5]: https://hexdocs.pm/elixir/Macro.html#to_string/2
-[6]: https://amzn.to/2SidqJ9

@@ -164,7 +164,7 @@ On the downside, when going for the Custom Type approach, we do lose the
 possibility for using `Maybe.map` and have to use case for everything. This boils
 down to having the power of mapping or clarity of intent in our code. Since we,
 developers, read code more than we write (said by Robert C. Martin in his book
-[Clean Code][7] and by many others) it means that clarity of intent trumps power
+Clean Code and by many others) it means that clarity of intent trumps power
 we decided to go with the Custom Type approach.
 
 ## Making the seemly impossible impossible
@@ -180,7 +180,7 @@ type Answer
 
 Then we change our decoder to set return the Answered type if all is well and
 `NoAnswerYet` for the other cases where one or more of the fields are `null`.
-To make our code more concise we use [`Json.Decode.Extra.withDefault`][8] to set
+To make our code more concise we use [`Json.Decode.Extra.withDefault`][7] to set
 a fallback if one of our fields are `null`.
 
 ```elm
@@ -210,7 +210,7 @@ You can check out the final SSCCE here:
 <https://ellie-app.com/PnhF7yzQtra1>
 
 If you are interested in learning more about fixing similar problems in your Elm
-application I highly recommend to watch [Making Impossible States Impossible][9]
+application I highly recommend to watch [Making Impossible States Impossible][8]
 by Richard Feldman.
 
 *[SSCCE]: Short, Self Contained, Correct (Compilable), Example
@@ -221,6 +221,5 @@ by Richard Feldman.
 [4]: https://codewords.recurse.com/issues/three/algebra-and-calculus-of-algebraic-data-types
 [5]: https://guide.elm-lang.org/types/custom_types.html
 [6]: https://www.youtube.com/watch?v=43eM4kNbb6c
-[7]: https://amzn.to/30sr6WN
-[8]: http://package.elm-lang.org/packages/elm-community/json-extra/2.7.0/Json-Decode-Extra#withDefault
-[9]: https://www.youtube.com/watch?v=IcgmSRJHu_8
+[7]: http://package.elm-lang.org/packages/elm-community/json-extra/2.7.0/Json-Decode-Extra#withDefault
+[8]: https://www.youtube.com/watch?v=IcgmSRJHu_8
