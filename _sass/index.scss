@@ -1,24 +1,279 @@
-@charset "utf-8";
+$primary: #f90;
 
-// Settings
-@import "settings/colors";
+/* apply a natural box layout model to all elements, but allowing components to change */
+// https://www.paulirish.com/2012/box-sizing-border-box-ftw/
+html {
+  box-sizing: border-box;
+  line-height: 1.5;
+}
 
-// Generic
-@import "generic/prism";
+* {
+  box-sizing: inherit;
+}
 
-// Elements
-@import "elements/abbreviation";
-@import "elements/body";
-@import "elements/code";
-@import "elements/heading";
-@import "elements/html";
-@import "elements/image";
-@import "elements/link";
-@import "elements/nav";
-@import "elements/paragraph";
+body {
+  font-family: sans-serif;
+  height: 100%;
+  color: #555;
 
-// Objects
+  width: 100%;
+  max-width: 50rem;
+  margin: 0 auto;
+  padding: 0 0.75rem;
+}
 
-// Components
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #181818;
+    color: #eee;
+  }
 
-// Utilities
+  h1,
+  h2,
+  h3 {
+    color: #fff;
+  }
+}
+
+abbr[title] {
+  text-decoration-color: $primary;
+  cursor: help;
+}
+
+h1,
+h2,
+h3 {
+  color: #333;
+
+  &:target {
+    color: $primary;
+  }
+}
+
+h1 {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+h2 {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+h2,
+h3 {
+  font-weight: 400;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+img {
+  max-width: 100%;
+}
+
+a {
+  color: $primary;
+  text-decoration: none;
+
+  &:focus,
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:visited,
+  &:visited code {
+    color: gray;
+  }
+
+  code {
+    color: $primary;
+  }
+}
+
+h1,
+nav,
+p,
+pre {
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+nav {
+  display: flex;
+
+  a {
+    margin-left: 1.5rem;
+    margin-right: 0.75rem;
+  }
+}
+
+p {
+  text-align: justify;
+  line-height: 1.5rem;
+}
+
+/*
+ Solarized Color Schemes originally by Ethan Schoonover
+ http://ethanschoonover.com/solarized
+
+ Ported for PrismJS by Hector Matos
+ Website: https://krakendev.io
+ Twitter Handle: https://twitter.com/allonsykraken)
+*/
+
+// Solarized colors
+$base03: #002b36;
+$base02: #073642;
+$base01: #586e75;
+$base00: #657b83;
+$base0: #839496;
+$base1: #93a1a1;
+$base2: #eee8d5;
+$base3: #fdf6e3;
+$yellow: #b58900;
+$orange: #cb4b16;
+$red: #dc322f;
+$magenta: #d33682;
+$violet: #6c71c4;
+$blue: #268bd2;
+$cyan: #2aa198;
+$green: #859900;
+
+code,
+pre {
+  color: $base00;
+  background-color: $base3;
+  border-color: $base3;
+  font-size: 1rem;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  tab-size: 4;
+
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+
+pre::selection,
+pre ::selection,
+code::selection,
+code ::selection {
+  background: $base03;
+}
+
+/* Code blocks */
+pre {
+  overflow: auto;
+  padding: 1.5rem 0.75rem;
+}
+
+:not(pre) > code {
+  border-style: solid;
+  border-width: 2px 3px;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: $base1;
+}
+
+.token.punctuation {
+  color: $base01;
+}
+
+.token.namespace {
+  opacity: 0.7;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: $blue;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.url,
+.token.inserted {
+  color: $cyan;
+}
+
+.token.entity {
+  color: $base00;
+  background: $base2;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: $green;
+}
+
+.token.function,
+.token.class-name {
+  color: $yellow;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: $orange;
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+.token.italic {
+  font-style: italic;
+}
+
+.token.entity {
+  cursor: help;
+}
+
+@media (prefers-color-scheme: dark) {
+  pre,
+  code {
+    color: $base0;
+    background-color: $base03;
+    border-color: $base03;
+  }
+
+  .token.comment,
+  .token.prolog,
+  .token.doctype,
+  .token.cdata {
+    color: $base01;
+  }
+
+  .token.punctuation {
+    color: $base01;
+  }
+
+  .token.entity {
+    color: $base0;
+    background: $base02;
+  }
+
+  pre::selection,
+  pre ::selection,
+  code::selection,
+  code ::selection {
+    background: $base3;
+  }
+}

@@ -64,6 +64,7 @@ exclude:
   - .github
   - .jekyll-cache/
   - .sass-cache/
+  - tags
   - Gemfile
   - Gemfile.lock
   - Makefile
