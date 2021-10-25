@@ -1,17 +1,18 @@
 ---
 layout: post
 title: Detecting Output Listeners in Angular
-excerpt: "We wanted to detect listeners on a EventEmitter in an Angular component"
+excerpt: "Detecting listeners on an EventEmitter in an Angular component."
 tags:
   - Angular
   - EventEmitter
 ---
 
-Sometimes you want to check if you have listeners attached to your `@Output` in
-order for your component to behave different. But, how would you do that?
+Sometimes you want to check if you have listeners attached to your `@Output` for your component to behave differently.
+It is possible to take the current `EventEmitter` and get the number of listeners back.
+In this blog post, I will exploit that to change the behavior of a component.
 
-Well, let's start with a new Angular component. We will add a simple message
-that shows if we are static, that means no listeners attached, or interactive.
+Well, let's start with a new Angular project and generate a new component called `ExampleComponent`.
+We will add a simple message that shows that we are static, which means no listeners are attached or interactive.
 
 ```typescript
 import { Component } from "@angular/core";
@@ -23,8 +24,7 @@ import { Component } from "@angular/core";
 export class Example {}
 ```
 
-Next, we will add an EventEmitter with the name `myEvent` to the component to
-which other components can attach themselves to.
+Next, we will add an EventEmitter with the name `myEvent` to the component to which other components can attach themselves.
 
 ```typescript
 import { Component, EventEmitter, Output } from "@angular/core";
@@ -38,12 +38,9 @@ export class Example {
 }
 ```
 
-Now we can use this to check if we have attached listeners so we can let our
-component react to it. We will add `ngOnInit` to our component in which we
-check for listeners and set a flag on our component indicating that we have
-listeners. When another component listens to our event like so
-`<app-example (myEvent)="handle($event)"></app-example>` we check if there is an
-observer attached and we set our flag if we have any listeners.
+Now we can use this to check if we have attached listeners to let our component react to it.
+We will add `ngOnInit` to our component in which we check for listeners and set a flag on our component indicating that we have listeners.
+When another component listens to our event like so `<app-example (myEvent)="handle($event)"></app-example>`, we check if an observer is attached and set our flag if we have any listeners.
 
 ```typescript
 import { Component, EventEmitter, OnInit, Output } from "@angular/core";
@@ -63,8 +60,8 @@ export class Example implements OnInit {
 }
 ```
 
-Now that we have our flag, we can finish up our component and swap our static
-message with another one to show that we are interactive.
+Now that we have our flag, we can finish up our component and swap our static message with the interactive one.
+Below we have a fully functional component that changes text based on listeners.
 
 ```typescript
 import { Component, EventEmitter, OnInit, Output } from "@angular/core";
@@ -86,5 +83,3 @@ export class Example implements OnInit {
   }
 }
 ```
-
-TODO: check if multiple instances make them all interactive?
