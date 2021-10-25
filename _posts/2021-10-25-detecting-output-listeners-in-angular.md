@@ -21,7 +21,7 @@ import { Component } from "@angular/core";
   selector: "app-example",
   template: `<span>I'm a static message</span>`,
 })
-export class Example {}
+export class ExampleComponent {}
 ```
 
 Next, we will add an EventEmitter with the name `myEvent` to the component to which other components can attach themselves.
@@ -33,7 +33,7 @@ import { Component, EventEmitter, Output } from "@angular/core";
   selector: "app-example",
   template: `<span>I'm a static message</span>`,
 })
-export class Example {
+export class ExampleComponent {
   @Output() public myEvent = new EventEmitter<void>();
 }
 ```
@@ -49,7 +49,7 @@ import { Component, EventEmitter, OnInit, Output } from "@angular/core";
   selector: "app-example",
   template: `<span>I'm a static message</span>`,
 })
-export class Example implements OnInit {
+export class ExampleComponent implements OnInit {
   @Output() public myEvent = new EventEmitter<void>();
 
   public isInteractive = false;
@@ -73,7 +73,7 @@ import { Component, EventEmitter, OnInit, Output } from "@angular/core";
     <span *ngIf="isInteractive">I'm an interactive message.</span>
   `,
 })
-export class Example implements OnInit {
+export class ExampleComponent implements OnInit {
   @Output() public myEvent = new EventEmitter<void>();
 
   public isInteractive = false;
