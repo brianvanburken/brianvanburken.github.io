@@ -1,5 +1,3 @@
-$primary: #f90;
-
 /* apply a natural box layout model to all elements, but allowing components to change */
 // https://www.paulirish.com/2012/box-sizing-border-box-ftw/
 html {
@@ -22,6 +20,23 @@ body {
   padding: 0 0.75rem;
 }
 
+a {
+  color: gold;
+}
+
+a:visited {
+  color: orange;
+}
+
+a:hover,
+a:focus {
+  color: orangered;
+}
+
+a code {
+  color: gold;
+}
+
 @media (prefers-color-scheme: dark) {
   body {
     background: #181818;
@@ -36,7 +51,7 @@ body {
 }
 
 abbr[title] {
-  text-decoration-color: $primary;
+  text-decoration-color: gold;
   cursor: help;
 }
 
@@ -46,7 +61,7 @@ h3 {
   color: #333;
 
   &:target {
-    color: $primary;
+    color: gold;
   }
 }
 
@@ -76,21 +91,11 @@ img {
 }
 
 a {
-  color: $primary;
   text-decoration: none;
 
   &:focus,
   &:hover {
     text-decoration: underline;
-  }
-
-  &:visited,
-  &:visited code {
-    color: gray;
-  }
-
-  code {
-    color: $primary;
   }
 }
 
