@@ -20,21 +20,8 @@ body {
   padding: 0 0.75rem;
 }
 
-a {
-  color: gold;
-}
-
-a:visited {
-  color: orange;
-}
-
-a:hover,
-a:focus {
-  color: orangered;
-}
-
 a code {
-  color: gold;
+  color: inherit;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,6 +34,19 @@ a code {
   h2,
   h3 {
     color: #fff;
+  }
+
+  a {
+    color: gold;
+
+    &:hover,
+    &:focus {
+      color: orangered;
+    }
+
+    &:visited {
+      color: orange;
+    }
   }
 }
 
@@ -88,15 +88,6 @@ h3 {
 
 img {
   max-width: 100%;
-}
-
-a {
-  text-decoration: none;
-
-  &:focus,
-  &:hover {
-    text-decoration: underline;
-  }
 }
 
 h1,
