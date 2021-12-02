@@ -14,7 +14,7 @@ gem "minima", "~> 2.5"
 
 # These are needed for pre-compiling prism output
 gem "execjs", "~> 2.7"
-gem "therubyracer", platforms: :ruby
+gem "mini_racer", "~> 0.5.0"
 
 # If you have any plugins, put them here!
 group :jekyll_plugins do
