@@ -220,6 +220,6 @@ by Richard Feldman.
 [3]: http://www.purescript.org/
 [4]: https://codewords.recurse.com/issues/three/algebra-and-calculus-of-algebraic-data-types
 [5]: https://guide.elm-lang.org/types/custom_types.html
-[6]: https://www.youtube.com/watch?v=43eM4kNbb6c
+[6]: https://youtu.be/43eM4kNbb6c
 [7]: http://package.elm-lang.org/packages/elm-community/json-extra/2.7.0/Json-Decode-Extra#withDefault
-[8]: https://www.youtube.com/watch?v=IcgmSRJHu_8
+[8]: https://youtu.be/IcgmSRJHu_8
