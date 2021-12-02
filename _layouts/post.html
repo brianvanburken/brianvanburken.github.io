@@ -7,10 +7,12 @@ layout: default
     <h1 itemprop="name headline">
       {{ page.title | escape }}
     </h1>
-    <p>{%- include post-tag.html post=page -%}</p>
   </header>
 
   <section itemprop="articleBody">
     {{ content }}
   </section>
+
+  <hr />
+  <small>{%- include post-metadata.html post=page -%}</small>
 </article>

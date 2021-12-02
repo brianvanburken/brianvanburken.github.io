@@ -25,7 +25,7 @@ url: "https://brianvanburken.nl" # the base hostname & protocol for your site, e
 date_format: "%Y-%m-%d"
 
 # Build settings
-permalink: "/blog/:title/"
+permalink: "/:title/"
 
 defaults:
     -   scope:

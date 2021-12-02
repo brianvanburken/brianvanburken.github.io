@@ -1,23 +1,23 @@
 body {
   font-family: sans-serif;
-  height: 100%;
-  color: #555;
-
-  width: 100%;
-  max-width: 50rem;
-  margin: 0 auto;
-  padding: 1.5rem;
-  box-sizing: border-box;
-
+  font-size: 16px;
   line-height: 1.5;
+  max-width: 80ch;
+
+  margin: 0 auto;
+  padding: 1rem;
 }
 
 a code {
   color: inherit;
 }
 
+img {
+  max-width: 100%;
+}
+
 @media (prefers-color-scheme: dark) {
-  body {
+  html {
     background: #0e0e0e;
     color: #eee;
   }
@@ -34,21 +34,6 @@ a code {
       color: orange;
     }
   }
-}
-
-abbr[title] {
-  cursor: help;
-}
-
-img {
-  max-width: 100%;
-}
-
-nav {
-  margin-bottom: 1.5rem;
-
-  display: flex;
-  gap: 1.5rem;
 }
 
 /*
@@ -83,7 +68,7 @@ pre {
   color: $base00;
   background-color: $base3;
   border-color: $base3;
-  font-size: 1rem;
+  font-size: 14px;
   word-spacing: normal;
   word-break: normal;
   word-wrap: normal;

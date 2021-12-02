@@ -2,17 +2,10 @@
 layout: default
 ---
 
-<h1>Writings</h1>
+<h1>Articles</h1>
 
-{% for post in site.posts %}
-<article>
-  <p>
-    <a href="{{ post.url }}" title="Read this blog">
-      {{ post.title }}
-    </a>
-    – {{ post.excerpt }}
-    <br />
-    {%- include post-tag.html post=post -%}
-  </p>
-</article>
-{% endfor %}
+<p>
+  {% for post in site.posts %} {%- include post-link.html post=page -%}
+  <br />
+  {% endfor %}
+</p>
