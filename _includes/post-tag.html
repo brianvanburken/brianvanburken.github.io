@@ -1,9 +1,9 @@
+🗓
 <time
   datetime="{{ include.post.date | date_to_xmlschema }}"
   itemprop="datePublished"
 >
-  {%- assign date_format = site.minima.date_format | default: "%Y-%m-%d" -%} 🗓
-  {{ include.post.date | date: date_format }}
+  {{ include.post.date | date: site.date_format }}
 </time>
 <br />
 {% assign sorted = include.post.tags | sort %} 🏷 {% for tag in sorted %}
