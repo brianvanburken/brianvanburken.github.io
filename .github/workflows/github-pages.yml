@@ -8,13 +8,13 @@ on:
 
 jobs:
     github-pages:
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-latest
         steps:
             # Prepare
             - uses: actions/checkout@master
             - uses: actions/setup-node@v1
               with:
-                  node-version: '12'
+                  node-version: '16'
             - uses: actions/setup-ruby@v1
               with:
                   ruby-version: '2.7'
