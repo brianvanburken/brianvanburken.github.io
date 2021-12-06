@@ -2,7 +2,7 @@
 layout: post
 title: Pre-render Syntax Highlighting with Prism in Jekyll
 excerpt: "To get a considerable performance boost for this blog, I decided to pre-render all the code when building. So no need for a large JavaScript file."
-tags: ["Ruby", "Jekyll", "Prism"]
+tags: ["Ruby", "Jekyll", "Prism", "Sustainablity"]
 ---
 
 One of the most significant slowdowns of this blog was using [Prism][1] for syntax highlighting of code blocks.
