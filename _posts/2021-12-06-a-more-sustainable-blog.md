@@ -119,9 +119,6 @@ Most blog posts I come across have a large image hero image to portray the blogp
 But, in many cases, it doesn't have much value, in my opinion.
 Instead, it wastes the users' mobile data and electricity in those cases.
 
-After these changes, my biggest blog post, [Pre-render Syntax Highlighting with Prism in Jekyll][4], is reduced from 5.52kb compressed transfer and 20,48kb on disk to 0kb compressed and 0kb on disk.
-That is an improvement of 100%!
-
 Hopefully, I have inspired you to think a bit more about a website's carbon footprint and start making small improvements.
 
 [1]: https://abookapart.com/products/sustainable-web-design
