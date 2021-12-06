@@ -1,11 +1,9 @@
 body {
-  font-family: sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 18px;
   max-width: 80ch;
 
   margin: 0 auto;
-  padding: 1rem;
+  padding: 1em;
 }
 
 a code {
@@ -18,20 +16,20 @@ img {
 
 @media (prefers-color-scheme: dark) {
   html {
-    background: #0e0e0e;
-    color: #eee;
+    background: #000;
+    color: #fff;
   }
 
   a {
     color: gold;
 
+    &:visited {
+      color: orange;
+    }
+
     &:hover,
     &:focus {
       color: orangered;
-    }
-
-    &:visited {
-      color: orange;
     }
   }
 }
