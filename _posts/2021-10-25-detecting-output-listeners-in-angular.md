@@ -5,6 +5,7 @@ excerpt: "Detecting listeners on an EventEmitter in an Angular component."
 tags:
   - Angular
   - EventEmitter
+  - TypeScript
 ---
 
 Sometimes you want to check if you have listeners attached to your `@Output` for your component to behave differently.

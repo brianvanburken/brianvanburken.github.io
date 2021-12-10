@@ -3,7 +3,7 @@ export EXECJS_RUNTIME=Node
 .PHONEY: default build
 
 default: clean
-	bundle exec jekyll serve --livereload --drafts --incremental
+	bundle exec jekyll serve --livereload --drafts --incremental --future
 
 build: clean
 	JEKYLL_ENV=production bundle exec jekyll build --verbose --profile --trace && npx gulp
