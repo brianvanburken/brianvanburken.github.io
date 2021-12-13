@@ -187,7 +187,7 @@ function Builder<T>() {
 
         const prop = property.charAt(4).toLowerCase() + property.slice(5);
         return (x: unknown) => {
-          state[prop.toString()] = x;
+          state[prop] = x;
           return Builder;
         };
       },
