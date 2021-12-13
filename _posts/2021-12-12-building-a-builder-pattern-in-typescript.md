@@ -176,7 +176,7 @@ The part "intercept and redefine fundamental operations" is what we are interest
 After working with Proxy objects, I came up with the following implementation.
 
 ```typescript
-function Builder<T>(): AbstractBuilder<T> {
+function Builder<T>() {
   const Builder = new Proxy(
     {},
     {
@@ -186,15 +186,15 @@ function Builder<T>(): AbstractBuilder<T> {
         }
 
         const prop = property.charAt(4).toLowerCase() + property.slice(5);
-        return (x: unknown): AbstractBuilder<T> => {
+        return (x: unknown) => {
           state[prop.toString()] = x;
-          return Builder as AbstractBuilder<T>;
+          return Builder;
         };
       },
     }
-  );
+  ) as AbstractBuilder<T>;
 
-  return Builder as AbstractBuilder<T>;
+  return Builder;
 }
 ```
 
