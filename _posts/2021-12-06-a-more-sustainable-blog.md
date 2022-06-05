@@ -1,6 +1,7 @@
 ---
 layout: post
 title: A More Sustainable Blog
+excerpt: After reading Sustainable Web Design, I started looking for ways to reduce the carbon footprint of this blog.
 tags: ["HTML", "Design", "Sustainablity"]
 ---
 
@@ -120,6 +121,8 @@ But, in many cases, it doesn't have much value, in my opinion.
 Instead, it wastes the users' mobile data and electricity in those cases.
 
 Hopefully, I have inspired you to think a bit more about a website's carbon footprint and start making small improvements.
+
+**Update(2022-06-05):** after a discussion with a UX-designer, I've tweaked the design to make it more readable and attractive. I still keep the lessons learned from the book in mind with the update.
 
 [1]: https://abookapart.com/products/sustainable-web-design
 [2]: https://gulpjs.com

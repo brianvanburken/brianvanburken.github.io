@@ -1,5 +1,5 @@
 body {
-  font-size: 18px;
+  font: 18px/1.5 sans-serif;
   max-width: 80ch;
 
   margin: 0 auto;
@@ -14,23 +14,31 @@ img {
   max-width: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    background: #000;
-    color: #fff;
+h1 {
+  font-size: 2.5em;
+  line-height: 1.2;
+}
+
+h2, h3 {
+  margin-top: 2em;
+}
+
+article {
+  margin: 2em 0;
+}
+
+$link-color: rgb(0, 128, 0);
+
+a {
+  color: $link-color;
+
+  &:visited {
+    color: darken($link-color, 10%);
   }
 
-  a {
-    color: gold;
-
-    &:visited {
-      color: orange;
-    }
-
-    &:hover,
-    &:focus {
-      color: orangered;
-    }
+  &:hover,
+  &:focus {
+    color: lighten($link-color, 10%);
   }
 }
 
