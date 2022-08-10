@@ -1,9 +1,18 @@
 body {
-  font: 18px/1.5 sans-serif;
-  max-width: 80ch;
+  font-family: "Avenir Next", "Open Sans", Helvetica, sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
 
+  max-width: 70ch;
   margin: 0 auto;
   padding: 1em;
+
+  color: #fff;
+  background-color: #0b0e14;
+}
+
+p {
+  text-align: justify;
 }
 
 a code {
@@ -15,11 +24,12 @@ img {
 }
 
 h1 {
-  font-size: 2.5em;
+  font-size: 40px;
   line-height: 1.2;
 }
 
-h2, h3 {
+h2,
+h3 {
   margin-top: 2em;
 }
 
@@ -27,7 +37,7 @@ article {
   margin: 2em 0;
 }
 
-$link-color: rgb(0, 128, 0);
+$link-color: #ffaa33;
 
 a {
   color: $link-color;
@@ -42,164 +52,26 @@ a {
   }
 }
 
-/*
- Solarized Color Schemes originally by Ethan Schoonover
- http://ethanschoonover.com/solarized
-
- Ported for PrismJS by Hector Matos
- Website: https://krakendev.io
- Twitter Handle: https://twitter.com/allonsykraken)
-*/
-
-// Solarized colors
-$base03: #002b36;
-$base02: #073642;
-$base01: #586e75;
-$base00: #657b83;
-$base0: #839496;
-$base1: #93a1a1;
-$base2: #eee8d5;
-$base3: #fdf6e3;
-$yellow: #b58900;
-$orange: #cb4b16;
-$red: #dc322f;
-$magenta: #d33682;
-$violet: #6c71c4;
-$blue: #268bd2;
-$cyan: #2aa198;
-$green: #859900;
-
+/* Code blocks */
 code,
 pre {
-  color: $base00;
-  background-color: $base3;
-  border-color: $base3;
   font-size: 14px;
   word-spacing: normal;
   word-break: normal;
   word-wrap: normal;
-  tab-size: 4;
 
   -webkit-hyphens: none;
   -ms-hyphens: none;
   hyphens: none;
+
+  color: #bfbdb6;
 }
 
-pre::selection,
-pre ::selection,
-code::selection,
-code ::selection {
-  background: $base03;
-}
-
-/* Code blocks */
 pre {
   overflow: auto;
   padding: 1.5rem 0.75rem;
 }
 
 :not(pre) > code {
-  border-style: solid;
-  border-width: 2px 3px;
-}
-
-.token.comment,
-.token.prolog,
-.token.doctype,
-.token.cdata {
-  color: $base1;
-}
-
-.token.punctuation {
-  color: $base01;
-}
-
-.token.namespace {
-  opacity: 0.7;
-}
-
-.token.property,
-.token.tag,
-.token.boolean,
-.token.number,
-.token.constant,
-.token.symbol,
-.token.deleted {
-  color: $blue;
-}
-
-.token.selector,
-.token.attr-name,
-.token.string,
-.token.char,
-.token.builtin,
-.token.url,
-.token.inserted {
-  color: $cyan;
-}
-
-.token.entity {
-  color: $base00;
-  background: $base2;
-}
-
-.token.atrule,
-.token.attr-value,
-.token.keyword {
-  color: $green;
-}
-
-.token.function,
-.token.class-name {
-  color: $yellow;
-}
-
-.token.regex,
-.token.important,
-.token.variable {
-  color: $orange;
-}
-
-.token.important,
-.token.bold {
-  font-weight: bold;
-}
-.token.italic {
-  font-style: italic;
-}
-
-.token.entity {
-  cursor: help;
-}
-
-@media (prefers-color-scheme: dark) {
-  pre,
-  code {
-    color: $base0;
-    background-color: $base03;
-    border-color: $base03;
-  }
-
-  .token.comment,
-  .token.prolog,
-  .token.doctype,
-  .token.cdata {
-    color: $base01;
-  }
-
-  .token.punctuation {
-    color: $base01;
-  }
-
-  .token.entity {
-    color: $base0;
-    background: $base02;
-  }
-
-  pre::selection,
-  pre ::selection,
-  code::selection,
-  code ::selection {
-    background: $base3;
-  }
+  padding: 2px 3px;
 }

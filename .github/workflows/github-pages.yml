@@ -41,7 +41,7 @@ jobs:
 
             - name: Install NPM dependencies
               if: steps.npm_cache.outputs.cache-hit != 'true'
-              run: npm ci --ignore-scripts --legacy-peer-deps
+              run: npm ci --ignore-scripts
 
             # Build
             - run: EXECJS_RUNTIME=Node JEKYLL_ENV=production bundle exec jekyll build -s ${GITHUB_WORKSPACE}/ -d build

@@ -1,68 +1,16 @@
-const gulp = require("gulp"),
-  posthtml = require("gulp-posthtml"),
-  postcss = require("gulp-postcss"),
-  unescapeHtml = require("gulp-unescape-html");
+const gulp = require("gulp");
+const posthtml = require("gulp-posthtml");
+const postcss = require("gulp-postcss");
 const htmlMinimizer = require("gulp-html-minimizer");
+const { transform } = require("gulp-html-transform");
+const uncss = require("uncss");
+const through = require("through2");
+const shiki = require("shiki");
 
 const source = process.env.BUILD_DIR || "_site";
 
-const prismClasses = [];
-
-gulp.task("html", function () {
-  const plugins = [
-    require("posthtml-external-link").posthtmlExternalLink(),
-    require("posthtml-inline-assets")({
-      cwd: __dirname + "/" + source,
-      root: __dirname + "/" + source,
-    }),
-    require("posthtml-minify-classnames")({
-      filter: new RegExp("^(" + prismClasses.concat("#.").join("|") + ")"),
-    }),
-    require("htmlnano")({
-      collapseWhitespace: "aggressive",
-      removeComments: true,
-    }),
-  ];
-
-  return gulp
-    .src(source + "/**/*.html")
-    .pipe(posthtml(plugins))
-    .pipe(uncssStyles())
-    .pipe(
-      htmlMinimizer({
-        removeOptionalTags: true,
-      })
-    )
-    .pipe(gulp.dest(source));
-});
-
-gulp.task("css", function () {
-  const csso = require("postcss-csso")({
-    forceMediaMerge: true,
-    comments: false,
-  });
-  const plugins = [
-    csso,
-    require("@fullhuman/postcss-purgecss")({
-      content: [source + "/**/*.html"],
-      safelist: prismClasses.map((c) => c.replace(".", "")),
-    }),
-    csso,
-  ];
-
-  return gulp
-    .src(source + "/**/*.css")
-    .pipe(postcss(plugins))
-    .pipe(gulp.dest(source));
-});
-
-gulp.task("default", gulp.series(["css", "html"]));
-
-const uncss = require("uncss");
-const through = require("through2");
-
 function uncssStyles() {
-  return through.obj(function (file, encoding, cb) {
+  return through.obj(function (file, _encoding, cb) {
     if (file.isNull() || !file.isBuffer()) {
       return cb(null, file);
     }
@@ -92,3 +40,119 @@ function uncssStyles() {
     }
   });
 }
+
+async function convertCode($) {
+  const theme = await shiki.loadTheme("../../shiki-themes/ayu-dark.json");
+  const highlighter = await shiki.getHighlighter({ theme });
+
+  $("code").each(function () {
+    const $code = $(this);
+    const $parent = $code.parent();
+    const isInlineCode = $parent[0].name !== "pre";
+    const cls = $code.attr("class");
+    const lang = cls ? cls.toString().replace("language-", "").trim() : "text";
+    const content = $code.text();
+
+    const highlighted = highlighter.codeToHtml(content, { lang });
+
+    if (isInlineCode) {
+      $code.attr("style", $(highlighted).attr("style"));
+    } else {
+      $parent.replaceWith(highlighted);
+    }
+  });
+
+  // Now we replace all inline styles with classes to save space
+  let css = "";
+  let css_map = {};
+
+  $("*[style]").each(function (index) {
+    const style_content = $(this).attr("style").trim();
+    const styles = style_content.split(";");
+
+    for (let i = 0; i < styles.length; i++) {
+      const style_key = styles[i].replace(/[\s:;]/g, "").toUpperCase();
+
+      const class_name = css_map.hasOwnProperty(style_key)
+        ? css_map[style_key]
+        : `shiki_${index}_${i}`;
+
+      css += ` .${class_name} { ${styles[i]}; }\n`;
+      css_map[style_key] = css_map[style_key] || class_name;
+
+      $(this).addClass(class_name);
+      $(this).removeAttr("style");
+    }
+  });
+
+  const style_tag = $(`<style type="text/css">${css}</style>`);
+  $("body").append(style_tag);
+
+  // Remove empty span tags created by Shiki
+  $("span:empty").remove();
+
+  // Remove wrapper span tags created by Shiki
+  $("span > span:first-child").each(function () {
+    const content = $(this).parent().html();
+    $(this).parent().replaceWith(content);
+  });
+
+  // Remove wrapper spans around whitespace
+  $("span").each(function () {
+    const content = $(this).text();
+    if (content.trim() === "") {
+      $(this).replaceWith(content);
+    }
+  });
+}
+
+gulp.task("html", function () {
+  const plugins = [
+    require("posthtml-external-link").posthtmlExternalLink(),
+    require("posthtml-inline-assets")({
+      cwd: __dirname + "/" + source,
+      root: __dirname + "/" + source,
+    }),
+    require("posthtml-minify-classnames")(),
+    require("htmlnano")({
+      collapseWhitespace: "aggressive",
+      removeComments: true,
+      removeEmptyAttributes: true,
+      removeAttributeQuotes: true,
+    }),
+  ];
+
+  return gulp
+    .src(source + "/**/*.html")
+    .pipe(transform(convertCode))
+    .pipe(uncssStyles())
+    .pipe(posthtml(plugins))
+    .pipe(
+      htmlMinimizer({
+        removeOptionalTags: true,
+      })
+    )
+    .pipe(uncssStyles())
+    .pipe(gulp.dest(source));
+});
+
+gulp.task("css", function () {
+  const csso = require("postcss-csso")({
+    forceMediaMerge: true,
+    comments: false,
+  });
+  const plugins = [
+    csso,
+    require("@fullhuman/postcss-purgecss")({
+      content: [source + "/**/*.html"],
+    }),
+    csso,
+  ];
+
+  return gulp
+    .src(source + "/**/*.css")
+    .pipe(postcss(plugins))
+    .pipe(gulp.dest(source));
+});
+
+gulp.task("default", gulp.series(["css", "html"]));
