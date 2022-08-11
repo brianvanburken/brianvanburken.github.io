@@ -116,8 +116,7 @@ async function convertCode($) {
   const default_italic_class = css_map[italic_key];
   default_italic_class &&
     $(`.${default_italic_class}`).each(function () {
-      const content = $(this).html();
-      $(this).replaceWith(content);
+      $(this).removeClass(default_italic_class);
     });
 
   // Remove background color on pre/code
