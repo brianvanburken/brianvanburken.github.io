@@ -7,6 +7,7 @@
     "gulp-html-transform": "^2.3.2",
     "gulp-postcss": "^9.0.1",
     "gulp-posthtml": "^3.0.5",
+    "gulp-replace-string": "^0.6.1",
     "gulp-unescape-html": "^1.0.2",
     "htmlnano": "^1.0.0",
     "postcss-csso": "^5.0.1",
