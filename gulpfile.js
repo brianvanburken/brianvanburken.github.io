@@ -136,7 +136,9 @@ gulp.task("html", function () {
       cwd: __dirname + "/" + source,
       root: __dirname + "/" + source,
     }),
-    require("posthtml-minify-classnames")(),
+    require("posthtml-minify-classnames")({
+      genNameId: false,
+    }),
     require("htmlnano")({
       collapseWhitespace: "aggressive",
       removeComments: true,
