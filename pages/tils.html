@@ -1,0 +1,9 @@
+---
+permalink: /tils/
+title: Today I Learned
+---
+
+<h1>Today I Learned</h1>
+
+{% for post in site.tils %} {%- include post-link.html post=page -%}<br/> {% endfor
+%}

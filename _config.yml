@@ -33,6 +33,11 @@ defaults:
         values:
             layout: "default"
 
+# Make sure that TIL's are loaded
+collections:
+  tils:
+    output: true
+
 highlighter: none
 
 sass:
