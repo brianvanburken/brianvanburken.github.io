@@ -55,8 +55,9 @@ assets:
 
 plugins:
     - jekyll-feed
-    - jekyll-sitemap
+    - jekyll-last-modified-at
     - jekyll-seo-tag
+    - jekyll-sitemap
     - jekyll-target-blank
 
 # Exclude from processing.
