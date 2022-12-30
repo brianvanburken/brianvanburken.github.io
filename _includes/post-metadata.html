@@ -6,19 +6,6 @@ Published on
   {{ include.post.date | date: site.date_format }}
 </time>
 
-{%- assign publish_at = include.post.date | date: "%Y-%m-%d" -%}
-{%- assign modified_at = include.post.last_modified_at | date: "%Y-%m-%d" -%}
-{% if publish_at != modified_at %}
-<br />
-Last modified on
-<time
-  datetime="{{ include.post.last_modified_at | date_to_xmlschema }}"
-  itemprop="dateModified"
->
-  {{ include.post.last_modified_at | date: site.date_format }}
-</time>
-{% endif %}
-
 {% if include.post.collection != "tils" %}
 <br />
 Tags: {%- include tags-list.html tags=include.post.tags -%}
