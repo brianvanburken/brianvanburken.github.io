@@ -5,5 +5,7 @@ title: Today I Learned
 
 <h1>Today I Learned</h1>
 
-{% for post in site.tils %} {%- include post-link.html post=page -%}<br/> {% endfor
-%}
+{% assign sorted = site.tils | sort: 'date' | reverse %}
+{% for post in sorted %}
+  {%- include post-link.html post=page -%}<br />
+{% endfor %}
