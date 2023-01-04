@@ -1,3 +1,8 @@
+:root {
+  --bg: #0b0e14;
+  --fg: #fff;
+}
+
 body {
   font-family: "Avenir Next", "Open Sans", Helvetica, sans-serif;
   font-size: 18px;
@@ -7,8 +12,8 @@ body {
   margin: 0 auto;
   padding: 1em;
 
-  color: #fff;
-  background-color: #0b0e14;
+  color: var(--fg);
+  background-color: var(--bg);
 }
 
 p {
@@ -79,3 +84,17 @@ pre {
 :not(pre) > code {
   padding: 2px 3px;
 }
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #fff;
+    --fg: #0b0e14;
+  }
+
+  code,
+  pre {
+    background: var(--fg);
+    border-radius: 0.375rem;
+  }
+}
+
