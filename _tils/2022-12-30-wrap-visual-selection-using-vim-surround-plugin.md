@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Wrap visual selection using the vim-surround plugin
-tag: vim
+tag: Vim
 ---
 
 One nice thing I've discovered using the [vim-surround][1] plugin for vim is that you can wrap a visual selection.

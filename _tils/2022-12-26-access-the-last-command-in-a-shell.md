@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Access the last argument of the last command in a shell
-tag: command-line
+tag: Command-line
 ---
 
 Using `$_`, you can access the last argument of the last command executed.

@@ -2,15 +2,14 @@
 permalink: /tags/
 ---
 
-{% capture tags %}{% for tag in site.tags %}{{ tag[0] }}|{% endfor %}{%
-endcapture %} {% assign sortedtags = tags | split:'|' | trim | filter | sort %}
-
 <h1>Tags</h1>
 
+{% assign sortedtags = site.documents | map: 'tags' | uniq | sort_natural %}
 {% for tag in sortedtags %}
 <h2 id="{{ tag | slugify }}">{{ tag }}</h2>
 <p>
-  {% for post in site.tags[tag] %} {%- include post-link.html post=page -%}
+  {% assign posts = site.documents | where: 'tags', tag %}
+  {% for post in posts %} {%- include post-link.html post=page -%}
   <br />
   {% endfor %}
 </p>

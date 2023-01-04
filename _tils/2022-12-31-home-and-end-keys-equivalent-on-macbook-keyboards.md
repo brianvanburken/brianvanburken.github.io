@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Home and End keys equivalent on MacBook keyboards
-tag: macos
+tag: macOS
 ---
 
 The MacBooks have a shortened keyboard where some keys are left out.

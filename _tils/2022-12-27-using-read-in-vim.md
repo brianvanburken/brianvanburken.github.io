@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Using :read in Vim
-tag: vim
+tag: Vim
 ---
 
 The vim command [`:read`][1] (or shorter `:r`) allows you to input anything from a file into the current buffer.

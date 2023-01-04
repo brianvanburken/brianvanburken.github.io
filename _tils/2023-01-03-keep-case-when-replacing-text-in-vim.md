@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Keep case when replacing text in Vim using vim-abolish
-tag: vim
+tag: Vim
 ---
 
 [vim-abolish][1] is a plugin that allows users to easily search for and replace text while also providing the option to keep the original case of the text.
