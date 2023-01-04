@@ -24,6 +24,8 @@ url: "https://brianvanburken.nl" # the base hostname & protocol for your site, e
 
 date_format: "%Y-%m-%d"
 
+github_source: https://github.com/brianvanburken/brianvanburken.github.io/tree/master/
+
 # Build settings
 permalink: "/:title/"
 
