@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Access the last command in a shell
-tag: Command-line
+tag: Shell
 ---
 
 Using `!!`, you can access the last command executed.
