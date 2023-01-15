@@ -1,11 +1,11 @@
 ---
 layout: post
 title: Changing Angular Components for Printing
-excerpt: "When the user is printing a page, we wanted our components to behave differently without using CSS."
+excerpt: When the user is printing a page, we wanted our components to behave differently without using CSS.
 tags:
-    - Angular
-    - EventListener
-    - TypeScript
+  - Angular
+  - EventListener
+  - TypeScript
 ---
 
 To save the user, the environment, ink when printing, we can use the handy `@media print` in CSS to hide/show elements and change the styling of the page.

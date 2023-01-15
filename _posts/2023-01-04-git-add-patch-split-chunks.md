@@ -1,7 +1,9 @@
 ---
 layout: post
 title: Manually editing chunks in git add --patch
-tag: Git
+excerpt: Git allows to stage smaller chunks of code for creating more atomic commits.
+tags:
+  - Git
 ---
 
 Using `git add --patch`, git can stage smaller chunks of code for creating more atomic commits.

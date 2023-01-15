@@ -2,7 +2,10 @@
 layout: post
 title: A More Sustainable Blog
 excerpt: After reading Sustainable Web Design, I started looking for ways to reduce the carbon footprint of this blog.
-tags: ["HTML", "Design", "Sustainablity"]
+tags: 
+  - HTML
+  - Design
+  - Sustainablity
 ---
 
 After reading the book [Sustainable Web Design][1] by Tom Greenwood, I started questioning the impact of this blog on the environment.

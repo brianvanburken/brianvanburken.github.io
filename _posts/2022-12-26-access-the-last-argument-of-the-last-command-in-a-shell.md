@@ -1,7 +1,9 @@
 ---
 layout: post
 title: Access the last command in a shell
-tag: Shell
+excerpt: Using !!, you can access the last command executed. Useful for rerunning a previous command.
+tags:
+  - Shell
 ---
 
 Using `!!`, you can access the last command executed.

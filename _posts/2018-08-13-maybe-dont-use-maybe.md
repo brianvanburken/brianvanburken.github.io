@@ -1,14 +1,12 @@
 ---
 layout: post
-affiliate: true
 title: Maybe Don't Use Maybe?
-excerpt: "At my work I've come across a code that had more branches than were
-possible in the logic of the domain."
+excerpt: At my work I've come across a code that had more branches than were possible in the logic of the domain.
 tags:
-    - Elm
-    - Custom Types
-    - Maybe
-    - Monads
+  - Elm
+  - Custom Types
+  - Maybe
+  - Monads
 ---
 
 Your code could be littered with branches that result in invalid data and should

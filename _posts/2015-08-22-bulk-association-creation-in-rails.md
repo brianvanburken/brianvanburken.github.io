@@ -1,12 +1,11 @@
 ---
 layout: post
-title: "Bulk Association Creation in Rails"
-excerpt: "During development of an application I stumbled across a situation
-where it produced N+1 queries and I set out on an adventure improve it."
+title: Bulk Association Creation in Rails
+excerpt: During development of an application I stumbled across a situation where it produced N+1 queries and I set out on an adventure improve it.
 tags:
-    - Rails
-    - Ruby
-    - ActiveRecord
+  - Rails
+  - Ruby
+  - ActiveRecord
 ---
 
 During development of an application I stumbled across a situation that could be

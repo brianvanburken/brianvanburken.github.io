@@ -1,11 +1,10 @@
 ---
 layout: post
 title: Become a Fire Keramik with Kotlin
-excerpt: "At my work we started using Kotlin more and more. I wondered how far
-you could go in writing fully Functional in the language."
+excerpt: At my work we started using Kotlin more and more. I wondered how far you could go in writing fully Functional in the language.
 tags:
-    - Kotlin
-    - Functional Programming
+  - Kotlin
+  - Functional Programming
 ---
 
 I have noticed an interesting trend here at my work Avisi: an increasing number
