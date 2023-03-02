@@ -144,6 +144,7 @@ gulp.task("html", function () {
       removeComments: true,
       removeEmptyAttributes: true,
       removeAttributeQuotes: true,
+      mergeStyles: true,
     }),
   ];
 

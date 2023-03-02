@@ -1,8 +1,8 @@
 {
   "name": "brianvanburken.github.io",
   "dependencies": {
-    "@fullhuman/postcss-purgecss": "^4.1.3",
-    "cssnano": "^3.10.0",
+    "@fullhuman/postcss-purgecss": "^5.0.0",
+    "cssnano": "^5.1.15",
     "gulp": "^4.0.2",
     "gulp-html-minimizer": "^2.0.1",
     "gulp-html-transform": "^2.3.2",
@@ -10,13 +10,13 @@
     "gulp-posthtml": "^3.0.5",
     "gulp-replace-string": "^0.6.1",
     "gulp-unescape-html": "^1.0.2",
-    "htmlnano": "^1.0.0",
-    "postcss-csso": "^5.0.1",
+    "htmlnano": "^2.0.3",
+    "postcss-csso": "^6.0.1",
     "posthtml": "^0.16.6",
     "posthtml-external-link": "^0.1.2",
     "posthtml-inline-assets": "^3.1.0",
     "posthtml-minify-classnames": "^0.3.0",
-    "purgecss": "^4.1.3",
+    "purgecss": "^5.0.0",
     "shiki": "^0.14.1",
     "through2": "^4.0.2",
     "uncss": "^0.17.3"
