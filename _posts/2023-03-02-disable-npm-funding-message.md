@@ -54,6 +54,12 @@ Or expose it as a shell environment variable:
 export NPM_CONFIG_FUND=false
 ```
 
+Or, if you want to run it once, disable it for installation using the flag `--no-fund`:
+
+```bash
+npm install --no-fund
+```
+
 ## Bonus tip:
 
 While these fund messages are one of the many ways these messages get displayed in the terminal, you can [add the following][3] to your shell to disable those as well.
