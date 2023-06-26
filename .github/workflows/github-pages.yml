@@ -8,7 +8,7 @@ on:
 
 jobs:
     github-pages:
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-latest
         steps:
             # Prepare
             - uses: actions/checkout@master
