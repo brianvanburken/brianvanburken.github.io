@@ -1,59 +1,45 @@
 # https://jekyllrb.com/docs/continuous-integration/github-actions/
 name: Build and deploy Jekyll site to GitHub Pages
-
 on:
-    push:
-        branches:
-            - master
-
+  push:
+    branches:
+      - master
 jobs:
-    github-pages:
-        runs-on: ubuntu-latest
-        steps:
-            # Prepare
-            - uses: actions/checkout@master
-            - uses: actions/setup-node@v1
-              with:
-                  node-version: '16'
-            - uses: ruby/setup-ruby@v1
-              with:
-                  ruby-version: '2.7'
-
-            # Caching
-            - uses: actions/cache@v2
-              id: gems_cache
-              with:
-                  path: vendor/bundle
-                  key: ${{ runner.os }}-gems-${{ hashFiles('**/Gemfile.lock') }}
-                  restore-keys: |
-                      ${{ runner.os }}-gems-
-            - uses: actions/cache@v2
-              id: npm_cache
-              with:
-                  path: ./node_modules
-                  key: ${{ runner.os}}-npm-${{ hashFiles('package-lock.json') }}
-
-            # Setup
-            - run: bundle config path vendor/bundle
-            - name: Install Gems
-              if: steps.gems_cache.outputs.cache-hit != 'true'
-              run: bundle install --jobs 4 --retry 3
-
-            - name: Install NPM dependencies
-              if: steps.npm_cache.outputs.cache-hit != 'true'
-              run: npm ci --ignore-scripts --no-audit --no-fund
-
-            # Build
-            - run: EXECJS_RUNTIME=Node JEKYLL_ENV=production bundle exec jekyll build -s ${GITHUB_WORKSPACE}/ -d build
-            - run: BUILD_DIR=build npx gulp
-            - run: cp CNAME ./build
-
-            # Publish
-            - name: Deploy to GitHub Pages
-              uses: peaceiris/actions-gh-pages@v3
-              with:
-                  github_token: ${{ secrets.GITHUB_TOKEN }}
-                  publish_dir: ./build
-                  force_orphan: true
-                  user_name: 'github-actions[bot]'
-                  user_email: 'github-actions[bot]@users.noreply.github.com'
+  github-pages:
+    runs-on: ubuntu-latest
+    steps:
+      # Prepare
+      - uses: actions/checkout@master
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "16"
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "2.7"
+          bundler-cache: true
+      # Caching
+      - uses: actions/cache@v2
+        id: npm_cache
+        with:
+          path: ./node_modules
+          key: ${{ runner.os}}-npm-${{ hashFiles('package-lock.json') }}
+      # Dependencies
+      - name: Install NPM dependencies
+        if: steps.npm_cache.outputs.cache-hit != 'true'
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      # Build
+      - run: bundle exec jekyll build -s "${GITHUB_WORKSPACE}/" -d build
+        env:
+          EXECJS_RUNTIME: node
+          JEKYLL_ENV: production
+      - run: BUILD_DIR=build npx gulp
+      - run: cp CNAME ./build
+      # Publish
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build
+          force_orphan: true
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
