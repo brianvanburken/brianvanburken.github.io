@@ -10,9 +10,10 @@ jobs:
     steps:
       # Prepare
       - uses: actions/checkout@master
-      - uses: actions/setup-node@v1
+      - uses: actions/setup-node@v3
         with:
           node-version: "16"
+          cache: "npm"
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "2.7"
