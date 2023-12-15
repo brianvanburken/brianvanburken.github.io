@@ -35,6 +35,7 @@ jobs:
           JEKYLL_ENV: production
       - run: BUILD_DIR=build npx gulp
       - run: cp CNAME ./build
+      - run: cp robots.txt ./build
       # Publish
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
