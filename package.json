@@ -15,7 +15,7 @@
     "posthtml": "^0.16.6",
     "posthtml-external-link": "^0.1.2",
     "posthtml-inline-assets": "^3.1.0",
-    "posthtml-minify-classnames": "^0.3.0",
+    "posthtml-minify-classnames": "^0.4.0",
     "purgecss": "^5.0.0",
     "shiki": "^0.14.7",
     "through2": "^4.0.2",
