@@ -5,11 +5,11 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm"
+  - package-ecosystem: npm
     directory: "/"
     schedule:
-      interval: "weekly"
-  - package-ecosystem: "bundler"
+      interval: daily
+  - package-ecosystem: bundler
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: daily
