@@ -6,7 +6,7 @@
     "gulp": "^4.0.2",
     "gulp-html-minimizer": "^2.0.1",
     "gulp-html-transform": "^2.3.2",
-    "gulp-postcss": "^9.0.1",
+    "gulp-postcss": "^9.1.0",
     "gulp-posthtml": "^3.0.5",
     "gulp-replace-string": "^0.6.1",
     "gulp-unescape-html": "^1.0.2",
