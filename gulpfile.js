@@ -51,9 +51,23 @@ function uncssStyles() {
 }
 
 async function convertCode($) {
-  const highlighter = await getHighlighter({});
-	const theme = JSON.parse(fs.readFileSync("./shiki-themes/ayu-dark.json", 'utf8'))
-  await highlighter.loadTheme(theme);
+  const theme = JSON.parse(fs.readFileSync("./shiki-themes/ayu-dark.json", 'utf8'))
+  const highlighter = await getHighlighter({
+    themes: [ theme ],
+    langs: [
+      'css',
+      'diff',
+      'elixir',
+      'elm',
+      'html',
+      'ini',
+      'javascript',
+      'json',
+      'kotlin',
+      'ruby',
+      'typescript',
+    ],
+  });
 
   $("code").each(function () {
     const $code = $(this);
