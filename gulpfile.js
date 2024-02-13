@@ -1,14 +1,22 @@
-const gulp = require("gulp");
-const posthtml = require("gulp-posthtml");
-const postcss = require("gulp-postcss");
-const htmlMinimizer = require("gulp-html-minimizer");
-const { transform } = require("gulp-html-transform");
-const uncss = require("uncss");
-const through = require("through2");
-const shiki = require("shiki");
-const replace = require("gulp-replace-string");
+import fs from 'fs';
+import gulp from "gulp";
+import htmlMinimizer from "gulp-html-minimizer";
+import htmlnano from "htmlnano";
+import postHtmlExternalLink from "posthtml-external-link";
+import postHtmlInlineAssets from "posthtml-inline-assets";
+import postHtmlMinifyClassnames from "posthtml-minify-classnames";
+import postcss from "gulp-postcss";
+import postcssCsso from "postcss-csso";
+import postcssPurgecss from "@fullhuman/postcss-purgecss";
+import posthtml from "gulp-posthtml";
+import replace from "gulp-replace-string";
+import through from "through2";
+import uncss from "uncss";
+import { getHighlighter } from 'shiki';
+import { transform } from "gulp-html-transform";
 
 const source = process.env.BUILD_DIR || "_site";
+const dirname = new URL('.', import.meta.url).pathname;
 
 function uncssStyles() {
   return through.obj(function (file, _encoding, cb) {
@@ -43,8 +51,9 @@ function uncssStyles() {
 }
 
 async function convertCode($) {
-  const theme = await shiki.loadTheme("../../shiki-themes/ayu-dark.json");
-  const highlighter = await shiki.getHighlighter({ theme });
+  const highlighter = await getHighlighter({});
+	const theme = JSON.parse(fs.readFileSync("./shiki-themes/ayu-dark.json", 'utf8'))
+  await highlighter.loadTheme(theme);
 
   $("code").each(function () {
     const $code = $(this);
@@ -54,7 +63,7 @@ async function convertCode($) {
     const lang = cls ? cls.toString().replace("language-", "").trim() : "text";
     const content = $code.text();
 
-    const highlighted = highlighter.codeToHtml(content, { lang });
+    const highlighted = highlighter.codeToHtml(content, { lang, theme: 'ayu-dark' });
 
     if (isInlineCode) {
       $code.attr("style", $(highlighted).attr("style"));
@@ -131,15 +140,15 @@ async function convertCode($) {
 
 gulp.task("html", function () {
   const plugins = [
-    require("posthtml-external-link").posthtmlExternalLink(),
-    require("posthtml-inline-assets")({
-      cwd: __dirname + "/" + source,
-      root: __dirname + "/" + source,
+    postHtmlExternalLink.posthtmlExternalLink(),
+    postHtmlInlineAssets({
+      cwd: dirname + "/" + source,
+      root: dirname + "/" + source,
     }),
-    require("posthtml-minify-classnames")({
+    postHtmlMinifyClassnames({
       genNameId: false,
     }),
-    require("htmlnano")({
+    htmlnano({
       collapseWhitespace: "aggressive",
       removeComments: true,
       removeEmptyAttributes: true,
@@ -176,13 +185,13 @@ gulp.task("html", function () {
 });
 
 gulp.task("css", function () {
-  const csso = require("postcss-csso")({
+  const csso = postcssCsso({
     forceMediaMerge: true,
     comments: false,
   });
   const plugins = [
     csso,
-    require("@fullhuman/postcss-purgecss")({
+    postcssPurgecss({
       content: [source + "/**/*.html"],
     }),
     csso,

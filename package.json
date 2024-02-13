@@ -1,5 +1,6 @@
 {
   "name": "brianvanburken.github.io",
+  "type": "module",
   "dependencies": {
     "@fullhuman/postcss-purgecss": "^5.0.0",
     "cssnano": "^6.0.3",
