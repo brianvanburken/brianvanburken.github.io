@@ -2,7 +2,7 @@
   "name": "brianvanburken.github.io",
   "type": "module",
   "dependencies": {
-    "@fullhuman/postcss-purgecss": "^5.0.0",
+    "@fullhuman/postcss-purgecss": "^6.0.0",
     "cssnano": "^6.1.2",
     "gulp": "^4.0.2",
     "gulp-html-minimizer": "^2.0.1",
