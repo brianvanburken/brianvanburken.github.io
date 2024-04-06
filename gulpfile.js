@@ -85,7 +85,7 @@ async function convertCode($) {
     if (isInlineCode) {
       $code.attr("style", $(highlighted).attr("style"));
     } else {
-      $parent.replaceWith(`<pre>${highlighted}</pre>`);
+      $parent.replaceWith(`${highlighted}`);
     }
   });
 
