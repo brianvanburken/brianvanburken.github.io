@@ -17,6 +17,7 @@ import { transform } from "gulp-html-transform";
 
 const source = process.env.BUILD_DIR || "_site";
 const dirname = new URL(".", import.meta.url).pathname;
+const theme = "rose-pine";
 
 function uncssStyles() {
   return through.obj(function (file, _encoding, cb) {
@@ -52,7 +53,7 @@ function uncssStyles() {
 
 async function convertCode($) {
   const highlighter = await getHighlighter({
-    theme: "rose-pine",
+    theme,
     langs: [
       "css",
       "diff",
@@ -78,7 +79,7 @@ async function convertCode($) {
 
     const highlighted = highlighter.codeToHtml(content, {
       lang,
-      theme: "ayu-dark",
+      theme,
     });
 
     if (isInlineCode) {
