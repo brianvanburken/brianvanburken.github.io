@@ -1,7 +1,6 @@
 import fs from "fs";
 import gulp from "gulp";
 import htmlMinimizer from "gulp-html-minimizer";
-gul;
 import htmlnano from "htmlnano";
 import postHtmlExternalLink from "posthtml-external-link";
 import postHtmlInlineAssets from "posthtml-inline-assets";
