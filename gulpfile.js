@@ -53,7 +53,7 @@ function uncssStyles() {
 
 async function convertCode($) {
   const highlighter = await getHighlighter({
-    theme,
+    themes: [theme],
     langs: [
       "css",
       "diff",
