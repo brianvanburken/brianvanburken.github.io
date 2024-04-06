@@ -53,7 +53,7 @@ function uncssStyles() {
 
 async function convertCode($) {
   const highlighter = await getHighlighter({
-    theme: "ayu-dark",
+    theme: "rose-pine",
     langs: [
       "css",
       "diff",
