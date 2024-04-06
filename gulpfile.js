@@ -1,6 +1,7 @@
-import fs from 'fs';
+import fs from "fs";
 import gulp from "gulp";
 import htmlMinimizer from "gulp-html-minimizer";
+gul;
 import htmlnano from "htmlnano";
 import postHtmlExternalLink from "posthtml-external-link";
 import postHtmlInlineAssets from "posthtml-inline-assets";
@@ -12,11 +13,11 @@ import posthtml from "gulp-posthtml";
 import replace from "gulp-replace-string";
 import through from "through2";
 import uncss from "uncss";
-import { getHighlighter } from 'shiki';
+import { getHighlighter } from "shiki";
 import { transform } from "gulp-html-transform";
 
 const source = process.env.BUILD_DIR || "_site";
-const dirname = new URL('.', import.meta.url).pathname;
+const dirname = new URL(".", import.meta.url).pathname;
 
 function uncssStyles() {
   return through.obj(function (file, _encoding, cb) {
@@ -37,7 +38,7 @@ function uncssStyles() {
       uncss(html, { raw: css }, (error, output) => {
         if (output) {
           file.contents = Buffer.from(
-            content.replace(styleSelector, `<style>${output}</style>`)
+            content.replace(styleSelector, `<style>${output}</style>`),
           );
           cb(null, file);
         } else {
@@ -51,21 +52,20 @@ function uncssStyles() {
 }
 
 async function convertCode($) {
-  const theme = JSON.parse(fs.readFileSync("./shiki-themes/ayu-dark.json", 'utf8'))
   const highlighter = await getHighlighter({
-    themes: [ theme ],
+    theme: "ayu-dark",
     langs: [
-      'css',
-      'diff',
-      'elixir',
-      'elm',
-      'html',
-      'ini',
-      'javascript',
-      'json',
-      'kotlin',
-      'ruby',
-      'typescript',
+      "css",
+      "diff",
+      "elixir",
+      "elm",
+      "html",
+      "ini",
+      "javascript",
+      "json",
+      "kotlin",
+      "ruby",
+      "typescript",
     ],
   });
 
@@ -77,7 +77,10 @@ async function convertCode($) {
     const lang = cls ? cls.toString().replace("language-", "").trim() : "text";
     const content = $code.text();
 
-    const highlighted = highlighter.codeToHtml(content, { lang, theme: 'ayu-dark' });
+    const highlighted = highlighter.codeToHtml(content, {
+      lang,
+      theme: "ayu-dark",
+    });
 
     if (isInlineCode) {
       $code.attr("style", $(highlighted).attr("style"));
@@ -191,7 +194,7 @@ gulp.task("html", function () {
       .pipe(
         htmlMinimizer({
           removeOptionalTags: true,
-        })
+        }),
       )
       .pipe(uncssStyles())
       .pipe(gulp.dest(source))
