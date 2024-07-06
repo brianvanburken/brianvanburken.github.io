@@ -3,7 +3,7 @@
   "type": "module",
   "dependencies": {
     "@fullhuman/postcss-purgecss": "^6.0.0",
-    "cssnano": "^7.0.3",
+    "cssnano": "^7.0.4",
     "gulp": "^5.0.0",
     "gulp-html-minimizer": "^2.0.1",
     "gulp-html-transform": "^2.3.2",
