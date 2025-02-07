@@ -63,7 +63,8 @@ env:
 
 ### 2. Add a cache rule for the `.elm` directory
 
-Use the [GitHub cache action](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows) in your GitHub Actions workflow to cache dependencies efficiently. Additionally, define the ELM_HOME path at the root level for consistency across runs. Here, we set it to the project’s root:
+Use the [GitHub cache action](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows) to persist dependencies between workflow runs.
+This should go in the `steps:` section of the workflow file.
 
 ```yaml
 - name: Cache Elm dependencies
@@ -81,7 +82,8 @@ This ensures that dependencies are only redownloaded when `elm.json` changes, as
 
 ### 3. Install dependencies using the temporary file trick
 
-To ensure all dependencies are installed before the main build step, use the following command to create a temporary file and compile it, forcing dependency installation. This should be included in the `steps:` section of your workflow file:
+To ensure all dependencies are installed before the main build step, use the following command to create a temporary file and compile it, forcing dependency installation.
+This should also be included in the `steps:` section of the workflow file.
 
 ```yaml
 - name: Install Elm dependencies
