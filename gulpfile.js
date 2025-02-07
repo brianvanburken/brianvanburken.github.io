@@ -31,6 +31,7 @@ const highlighter = await createHighlighter({
     "kotlin",
     "ruby",
     "typescript",
+    "shell",
   ],
 });
 
@@ -133,11 +134,17 @@ async function convertCode($) {
     $(this).parent().replaceWith(content);
   });
 
-  // Remove wrapper spans around whitespace
   $("span").each(function () {
+    // Remove wrapper spans around whitespace
     const content = $(this).text();
     if (content.trim() === "") {
       $(this).replaceWith(content);
+    }
+
+    // Remove span around code without any style
+    if (!$(this).attr("class") && !$(this).attr("style")) {
+      const html = $(this).html();
+      $(this).replaceWith(html);
     }
   });
 
