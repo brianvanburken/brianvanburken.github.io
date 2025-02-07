@@ -71,9 +71,11 @@ Use the [GitHub cache action](https://docs.github.com/en/actions/writing-workflo
   uses: actions/cache@v3
   with:
     path: .elm
+{% raw %}
     key: elm-${{ runner.os }}-${{ hashFiles('elm.json') }}
     restore-keys: |
       elm-${{ runner.os }}-
+{% endraw %}
 ```
 
 This ensures that dependencies are only redownloaded when `elm.json` changes, as its content is used as the cache key. We set an `id` so that we can reference it to check for cache hits.
