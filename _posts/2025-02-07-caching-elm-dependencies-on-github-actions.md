@@ -48,20 +48,20 @@ elm make Temp.elm --output=/dev/null
 
 Elm does not have the concept of a “lockfile.” Instead, the `elm.json` file stores exact package versions. This means we can base the cache on the `elm.json` file. However, one downside is that any modification to elm.json—such as changing the Elm package version—will trigger a cache invalidation, even if dependencies remain unchanged.
 
-## Adding Caching to GitHub Actions
+## Adding caching to GitHub Actions
 
 Now, let’s put everything together in a GitHub Actions pipeline.
 
 ### 1. Set the `ELM_HOME` Environment Variable
 
-Modify your GitHub Actions workflow to define the ELM_HOME path at the root level for consistency across runs. Here, we set it to the project’s root:
+Modify your GitHub Actions workflow to define the `ELM_HOME` path at the root level for consistency across runs. Here, we set it to the project’s root:
 
 ```yaml
 env:
   ELM_HOME: ".elm"
 ```
 
-### 2. Add a Cache Rule for the `.elm` Directory
+### 2. Add a cache rule for the `.elm` directory
 
 Use the [GitHub cache action](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows) in your GitHub Actions workflow to cache dependencies efficiently. Additionally, define the ELM_HOME path at the root level for consistency across runs. Here, we set it to the project’s root:
 
@@ -79,7 +79,7 @@ Use the [GitHub cache action](https://docs.github.com/en/actions/writing-workflo
 
 This ensures that dependencies are only redownloaded when `elm.json` changes, as its content is used as the cache key. We set an `id` so that we can reference it to check for cache hits.
 
-### 3. Install Dependencies Using the Temporary File Trick
+### 3. Install dependencies using the temporary file trick
 
 To ensure all dependencies are installed before the main build step, use the following command to create a temporary file and compile it, forcing dependency installation. This should be included in the `steps:` section of your workflow file:
 
