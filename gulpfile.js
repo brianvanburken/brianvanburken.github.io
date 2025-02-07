@@ -1,4 +1,3 @@
-import fs from "fs";
 import gulp from "gulp";
 import htmlMinimizer from "gulp-html-minimizer";
 import htmlnano from "htmlnano";
@@ -12,12 +11,28 @@ import posthtml from "gulp-posthtml";
 import replace from "gulp-replace-string";
 import through from "through2";
 import uncss from "uncss";
-import { getHighlighter } from "shiki";
+import { createHighlighter } from "shiki";
 import { transform } from "gulp-html-transform";
 
 const source = process.env.BUILD_DIR || "_site";
 const dirname = new URL(".", import.meta.url).pathname;
 const theme = "ayu-dark";
+const highlighter = await createHighlighter({
+  themes: [theme],
+  langs: [
+    "css",
+    "diff",
+    "elixir",
+    "elm",
+    "html",
+    "ini",
+    "javascript",
+    "json",
+    "kotlin",
+    "ruby",
+    "typescript",
+  ],
+});
 
 function uncssStyles() {
   return through.obj(function (file, _encoding, cb) {
@@ -52,23 +67,6 @@ function uncssStyles() {
 }
 
 async function convertCode($) {
-  const highlighter = await getHighlighter({
-    themes: [theme],
-    langs: [
-      "css",
-      "diff",
-      "elixir",
-      "elm",
-      "html",
-      "ini",
-      "javascript",
-      "json",
-      "kotlin",
-      "ruby",
-      "typescript",
-    ],
-  });
-
   $("code").each(function () {
     const $code = $(this);
     const $parent = $code.parent();
