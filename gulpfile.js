@@ -17,7 +17,7 @@ import { transform } from "gulp-html-transform";
 
 const source = process.env.BUILD_DIR || "_site";
 const dirname = new URL(".", import.meta.url).pathname;
-const theme = "ayu-dark";
+const theme = "rose-pine";
 
 function uncssStyles() {
   return through.obj(function (file, _encoding, cb) {
