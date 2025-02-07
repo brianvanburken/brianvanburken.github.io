@@ -71,8 +71,7 @@ Use the [GitHub cache action](https://docs.github.com/en/actions/writing-workflo
   uses: actions/cache@v3
   with:
     path: .elm
-{% raw %}
-    key: elm-${{ runner.os }}-${{ hashFiles('elm.json') }}
+{% raw %}    key: elm-${{ runner.os }}-${{ hashFiles('elm.json') }}
     restore-keys: |
       elm-${{ runner.os }}-
 {% endraw %}
