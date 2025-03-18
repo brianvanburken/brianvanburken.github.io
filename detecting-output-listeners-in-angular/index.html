@@ -1,0 +1,50 @@
+<!DOCTYPE html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><style>body{background:#0b0e14;color:#fff;font-family:Avenir Next,Open Sans,Helvetica,sans-serif;font-size:18px;line-height:1.5;margin:0 auto;max-width:70ch;padding:1em}p{text-align:justify}img{max-width:100%}h1{font-size:40px;line-height:1.2}article{margin:2em 0}a{color:#fa3}a:visited{color:#ff9500}a:focus,a:hover{color:#ffbf66}code,pre{font-size:14px;word-break:normal;word-spacing:normal;word-wrap:normal;background:#0b0e14;color:#bfbdb6;-webkit-hyphens:none;-ms-hyphens:none;hyphens:none}pre{overflow:auto;padding:1.5rem .75rem}:not(pre)>code{padding:2px 3px}@media (prefers-color-scheme:light){body{background:#fff;color:#0b0e14}code,pre{border-radius:.375rem}}.d{color:#aad94c}.h{color:#59c2ff}.f{color:#e6b673}.c{color:#ff8f40}.g{color:#ffb454}.j{color:#39bae6}.i{color:#f29668}.k{color:#d2a6ff}.e{color:#bfbdb6b3}</style><link type="application/atom+xml" rel="alternate" href="https://brianvanburken.nl/feed.xml" title="Brian van Burken"><title>Detecting Output Listeners in Angular | Brian van Burken</title><meta name="generator" content="Jekyll v4.4.1"><meta property="og:title" content="Detecting Output Listeners in Angular"><meta property="og:locale" content="en_US"><meta name="description" content="Detecting listeners on an EventEmitter in an Angular component."><meta property="og:description" content="Detecting listeners on an EventEmitter in an Angular component."><link rel="canonical" href="https://brianvanburken.nl/detecting-output-listeners-in-angular/"><meta property="og:url" content="https://brianvanburken.nl/detecting-output-listeners-in-angular/"><meta property="og:site_name" content="Brian van Burken"><meta property="og:type" content="article"><meta property="article:published_time" content="2021-10-25T00:00:00+00:00"><meta name="twitter:card" content="summary"><meta property="twitter:title" content="Detecting Output Listeners in Angular"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2025-03-18T17:24:59+00:00","datePublished":"2021-10-25T00:00:00+00:00","description":"Detecting listeners on an EventEmitter in an Angular component.","headline":"Detecting Output Listeners in Angular","mainEntityOfPage":{"@type":"WebPage","@id":"https://brianvanburken.nl/detecting-output-listeners-in-angular/"},"url":"https://brianvanburken.nl/detecting-output-listeners-in-angular/"}</script><a href="/" title="Overview of all my writings">Writings</a> | <a href="https://github.com/brianvanburken" title="Visit my GitHub profile" target="_blank" rel="noopener noreferrer">GitHub</a> | <a href="https://linkedin.com/in/brianvanburken" title="Visit my LinkedIn profile" target="_blank" rel="noopener noreferrer">LinkedIn</a><article itemscope itemtype="http://schema.org/BlogPosting"><h1 itemprop="name headline">Detecting Output Listeners in Angular</h1><section itemprop="articleBody"><p>Sometimes you want to check if you have listeners attached to your <code>@Output</code> for your component to behave differently. It is possible to take the current <code>EventEmitter</code> and get the number of listeners back. In this blog post, I will exploit that to change the behavior of a component.<p>Well, let’s start with a new Angular project and generate a new component called <code>ExampleComponent</code>. We will add a simple message that shows that we are static, which means no listeners are attached or interactive.<pre tabindex="0"><code><span class="c">import</span> { Component } <span class="c">from</span><span class="d"> "@angular/core"</span><span class="e">;</span>
+
+<span class="f">@</span><span class="g">Component</span>({
+  selector<span class="e">:</span><span class="d"> "app-example"</span><span class="e">,</span>
+  template<span class="e">:</span><span class="d"> `&lt;span&gt;I'm a static message&lt;/span&gt;`</span><span class="e">,</span>
+})
+<span class="c">export class</span><span class="h"> ExampleComponent</span> {}
+</code></pre><p>Next, we will add an EventEmitter with the name <code>myEvent</code> to the component to which other components can attach themselves.<pre tabindex="0"><code><span class="c">import</span> { Component<span class="e">,</span> EventEmitter<span class="e">,</span> Output } <span class="c">from</span><span class="d"> "@angular/core"</span><span class="e">;</span>
+
+<span class="f">@</span><span class="g">Component</span>({
+  selector<span class="e">:</span><span class="d"> "app-example"</span><span class="e">,</span>
+  template<span class="e">:</span><span class="d"> `&lt;span&gt;I'm a static message&lt;/span&gt;`</span><span class="e">,</span>
+})
+<span class="c">export class</span><span class="h"> ExampleComponent</span> {
+<span class="f">  @</span><span class="g">Output</span>() <span class="c">public</span> myEvent <span class="i">= new</span><span class="g"> EventEmitter</span>&lt;<span class="j">void</span>&gt;()<span class="e">;</span>
+}
+</code></pre><p>Now we can use this to check if we have attached listeners to let our component react to it. We will add <code>ngOnInit</code> to our component in which we check for listeners and set a flag on our component indicating that we have listeners. When another component listens to our event like so <code>&lt;app-example (myEvent)="handle($event)"&gt;&lt;/app-example&gt;</code>, we check if an observer is attached and set our flag if we have any listeners.<pre tabindex="0"><code><span class="c">import</span> { Component<span class="e">,</span> EventEmitter<span class="e">,</span> OnInit<span class="e">,</span> Output } <span class="c">from</span><span class="d"> "@angular/core"</span><span class="e">;</span>
+
+<span class="f">@</span><span class="g">Component</span>({
+  selector<span class="e">:</span><span class="d"> "app-example"</span><span class="e">,</span>
+  template<span class="e">:</span><span class="d"> `&lt;span&gt;I'm a static message&lt;/span&gt;`</span><span class="e">,</span>
+})
+<span class="c">export class</span><span class="h"> ExampleComponent</span><span class="c"> implements</span><span class="j"> OnInit</span> {
+<span class="f">  @</span><span class="g">Output</span>() <span class="c">public</span> myEvent <span class="i">= new</span><span class="g"> EventEmitter</span>&lt;<span class="j">void</span>&gt;()<span class="e">;</span>
+
+<span class="c">  public</span> isInteractive <span class="i">=</span><span class="k"> false</span><span class="e">;</span>
+
+<span class="c">  public</span><span class="g"> ngOnInit</span>() {
+<span class="j">    this</span><span class="i">.</span>isInteractive <span class="i">=</span><span class="j"> this</span><span class="i">.</span>myEvent<span class="i">.</span>observers<span class="i">.</span>length <span class="i">&gt;</span><span class="k"> 0</span><span class="e">;</span>
+  }
+}
+</code></pre><p>Now that we have our flag, we can finish up our component and swap our static message with the interactive one. Below we have a fully functional component that changes text based on listeners.<pre tabindex="0"><code><span class="c">import</span> { Component<span class="e">,</span> EventEmitter<span class="e">,</span> OnInit<span class="e">,</span> Output } <span class="c">from</span><span class="d"> "@angular/core"</span><span class="e">;</span>
+
+<span class="f">@</span><span class="g">Component</span>({
+  selector<span class="e">:</span><span class="d"> "app-example"</span><span class="e">,</span>
+  template<span class="e">:</span><span class="d"> `
+    &lt;span *ngIf="!isInteractive"&gt;I'm a static message.&lt;/span&gt;
+    &lt;span *ngIf="isInteractive"&gt;I'm an interactive message.&lt;/span&gt;
+  `</span><span class="e">,</span>
+})
+<span class="c">export class</span><span class="h"> ExampleComponent</span><span class="c"> implements</span><span class="j"> OnInit</span> {
+<span class="f">  @</span><span class="g">Output</span>() <span class="c">public</span> myEvent <span class="i">= new</span><span class="g"> EventEmitter</span>&lt;<span class="j">void</span>&gt;()<span class="e">;</span>
+
+<span class="c">  public</span> isInteractive <span class="i">=</span><span class="k"> false</span><span class="e">;</span>
+
+<span class="c">  public</span><span class="g"> ngOnInit</span>()<span class="i">:</span><span class="j"> void</span> {
+<span class="j">    this</span><span class="i">.</span>isInteractive <span class="i">=</span><span class="j"> this</span><span class="i">.</span>myEvent<span class="i">.</span>observers<span class="i">.</span>length <span class="i">&gt;</span><span class="k"> 0</span><span class="e">;</span>
+  }
+}
+</code></pre></section><hr><footer>Published on <time datetime="2021-10-25T00:00:00+00:00" itemprop="datePublished">2021-10-25 </time><br>Tags: <a href="/tags/#angular" title="See all post for Angular">Angular</a>, <a href="/tags/#eventemitter" title="See all post for EventEmitter">EventEmitter</a>, <a href="/tags/#typescript" title="See all post for TypeScript">TypeScript</a><br>Source <a href="https://github.com/brianvanburken/brianvanburken.github.io/tree/master/_posts/2021-10-25-detecting-output-listeners-in-angular.md" target="_blank" rel="noopener noreferrer">on Github</a></footer></article><script data-goatcounter="https://brianvanburken.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><noscript><img src="https://brianvanburken.goatcounter.com/count?p=/detecting-output-listeners-in-angular/"></noscript>
