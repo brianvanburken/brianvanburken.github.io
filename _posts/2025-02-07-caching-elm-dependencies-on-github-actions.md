@@ -88,6 +88,7 @@ This should also be included in the `steps:` section of the workflow file.
   run: |
     echo "module A exposing (a)\na=0" > Temp.elm
     elm make Temp.elm --output=/dev/null
+    rm Temp.elm
 ```
 
 This step will be skipped if the cache is hit, meaning `elm.json` has not changed.
