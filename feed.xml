@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="https://brianvanburken.nl/feed.xml" rel="self" type="application/atom+xml" /><link href="https://brianvanburken.nl/" rel="alternate" type="text/html" /><updated>2025-07-18T13:28:31+00:00</updated><id>https://brianvanburken.nl/feed.xml</id><title type="html">Brian van Burken</title><entry><title type="html">Caching Elm dependencies on Github Actions</title><link href="https://brianvanburken.nl/caching-elm-dependencies-on-github-actions/" rel="alternate" type="text/html" title="Caching Elm dependencies on Github Actions" /><published>2025-02-07T00:00:00+00:00</published><updated>2025-07-18T13:27:56+00:00</updated><id>https://brianvanburken.nl/caching-elm-dependencies-on-github-actions</id><content type="html" xml:base="https://brianvanburken.nl/caching-elm-dependencies-on-github-actions/"><![CDATA[<p>When working with Elm in GitHub Actions, caching dependencies efficiently can significantly speed up CI runs and improve reliability, as it prevents downloading dependencies every time, reducing exposure to outages and network failures.</p>
+
+<h2 id="where-does-elm-store-its-dependencies">Where does Elm store its dependencies?</h2>
+
+<p>Elm stores downloaded dependencies inside a hidden <code>.elm</code> directory in the user’s home folder by default. On most systems, this directory is located at:</p>
+
+<pre><code class="language-sh">~/.elm
+</code></pre>
+
+<p>We can change the location where dependencies are stored by setting the <code>ELM_HOME</code> environment variable in your shell. This allows us to relocate the <code>.elm</code> directory to a location we control.</p>
+
+<p>For example, we can move it to follow the <a href="https://specifications.freedesktop.org/basedir-spec/latest/">XDG Base Directory Specification</a>:</p>
+
+<pre><code class="language-sh">export ELM_HOME="$HOME/.cache/elm"
+</code></pre>
+
+<h2 id="how-can-we-only-install-elm-dependencies">How can we only install Elm dependencies?</h2>
+
+<p>Unlike other package managers, Elm does not have a separate install command to fetch dependencies without compiling a project. Dependencies are only downloaded when Elm compiles a file in the project. Compiling the entire project could work, but it may be slow. However, there is a trick to circumvent this.</p>
+
+<h3 id="using-a-temporary-file">Using a temporary file</h3>
+
+<p>A workaround is to create a minimal valid Elm file that triggers dependency installation without requiring the compilation of the entire project. Below is an example:</p>
+
+<pre><code class="language-elm">module A exposing (a)
+a = 0
+</code></pre>
+
+<p>Then, we create this file and compile it to download dependencies without affecting the main project. The compilation result is directed to <code>/dev/null</code>, so it is discarded automatically without leaving any artifacts:</p>
+
+<pre><code class="language-sh">elm make Temp.elm --output=/dev/null
+</code></pre>
+
+<h3 id="no-lockfile">No Lockfile?</h3>
+
+<p>Elm does not have the concept of a “lockfile.” Instead, the <code>elm.json</code> file stores exact package versions. This means we can base the cache on the <code>elm.json</code> file. However, one downside is that any modification to elm.json—such as changing the Elm package version—will trigger a cache invalidation, even if dependencies remain unchanged.</p>
+
+<h2 id="adding-caching-to-github-actions">Adding caching to GitHub Actions</h2>
+
+<p>Now, let’s put everything together in a GitHub Actions pipeline.</p>
+
+<h3 id="1-set-the-elm_home-environment-variable">1. Set the <code>ELM_HOME</code> Environment Variable</h3>
+
+<p>Modify your GitHub Actions workflow to define the <code>ELM_HOME</code> path at the root level for consistency across runs. Here, we set it to the project’s root:</p>
+
+<pre><code class="language-yaml">env:
+  ELM_HOME: ".elm"
+</code></pre>
+
+<h3 id="2-add-a-cache-rule-for-the-elm-directory">2. Add a cache rule for the <code>.elm</code> directory</h3>
+
+<p>Use the <a href="https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows">GitHub cache action</a> to persist dependencies between workflow runs.
+This should go in the <code>steps:</code> section of the workflow file.</p>
+
+<pre><code class="language-yaml">- name: Cache Elm dependencies
+  id: elm_cache
+  uses: actions/cache@v3
+  with:
+    path: .elm
+    key: elm-${{ runner.os }}-${{ hashFiles('elm.json') }}
+</code></pre>
+
+<p>This ensures that dependencies are only redownloaded when <code>elm.json</code> changes, as its content is used as the cache key. We set an <code>id</code> so that we can reference it to check for cache hits.</p>
+
+<h3 id="3-install-dependencies-using-the-temporary-file-trick">3. Install dependencies using the temporary file trick</h3>
+
+<p>To ensure all dependencies are installed before the main build step, use the following command to create a temporary file and compile it, forcing dependency installation.
+This should also be included in the <code>steps:</code> section of the workflow file.</p>
+
+<pre><code class="language-yaml">- name: Install Elm dependencies
+  if: steps.elm_cache.outputs.cache-hit != 'true'
+  run: |
+    echo "module A exposing (a)\na=0" &gt; Temp.elm
+    elm make Temp.elm --output=/dev/null
+    rm Temp.elm
+</code></pre>
+
+<p>This step will be skipped if the cache is hit, meaning <code>elm.json</code> has not changed.</p>]]></content><author><name></name></author><category term="Github Actions" /><category term="Elm" /><summary type="html"><![CDATA[Caching dependencies efficiently can significantly speed up CI runs and improve reliability, as it prevents downloading dependencies every time, reducing exposure to outages and network failures.]]></summary></entry><entry><title type="html">Disable NPM fund message</title><link href="https://brianvanburken.nl/disable-npm-funding-message/" rel="alternate" type="text/html" title="Disable NPM fund message" /><published>2023-03-02T00:00:00+00:00</published><updated>2025-07-18T13:27:56+00:00</updated><id>https://brianvanburken.nl/disable-npm-funding-message</id><content type="html" xml:base="https://brianvanburken.nl/disable-npm-funding-message/"><![CDATA[<p>Whenever you install packages using NPM, you get a message that the packages seek funding.
+This functionality was introduced back in NPM version <a href="https://blog.npmjs.org/post/188841555980/updates-to-community-docs-more">6.13</a>.
+It looks like this:</p>
+
+<pre><code>$ npm install
+3 packages are looking for funding.
+Run "npm fund" to find out more.
+</code></pre>
+
+<p>Running <code>npm fund</code> shows which packages are looking for funding.
+Here is a quick preview of what the output looks like:</p>
+
+<pre><code>$ npm fund
+tmp@1.0.0
+├─┬ fund-dev-dep@1.0.0
+│ ├── type: dev dep
+│ └── url: http://example.com/fund
+├─┬ fund-project@1.0.0
+│ ├── type: individual
+│ └── url: https://example.com/project/support
+└─┬ sub-fund-foo@1.0.0
+  ├── type: corporate
+  └── url: https://corp.example.com/sponsor
+</code></pre>
+
+<p>While the idea is excellent, you should always <a href="https://opensource.guide">support open-source projects</a> in any way possible!
+It can generate unwanted noise, especially in <abbr title="Continuous Integration">CI</abbr> environments.
+If you want, you can disable it by running the following command:</p>
+
+<pre><code class="language-bash">npm config set fund false
+</code></pre>
+
+<p>Or add the following line manually to your <a href="https://docs.npmjs.com/cli/v9/configuring-npm/npmrc"><code>.npmrc</code></a>.</p>
+
+<pre><code class="language-ini">fund=false
+</code></pre>
+
+<p>Or expose it as a shell environment variable:</p>
+
+<pre><code class="language-bash">export NPM_CONFIG_FUND=false
+</code></pre>
+
+<p>Or, if you want to run it once, disable it for installation using the flag <code>--no-fund</code>:</p>
+
+<pre><code class="language-bash">npm install --no-fund
+</code></pre>
+
+<h2 id="bonus-tip">Bonus tip:</h2>
+
+<p>While these fund messages are one of the many ways these messages get displayed in the terminal, you can <a href="https://news.ycombinator.com/item?id=20791266">add the following</a> to your shell to disable those as well.</p>
+
+<pre><code class="language-bash">export ADBLOCK=true
+export DISABLE_OPENCOLLECTIVE=true
+export OPEN_SOURCE_CONTRIBUTOR=true
+</code></pre>]]></content><author><name></name></author><category term="Shell" /><summary type="html"><![CDATA[If you find NPM's funding messages distracting, you can disable them by setting a configuration in different ways.]]></summary></entry><entry><title type="html">Flatten a directory on Unix systems</title><link href="https://brianvanburken.nl/flatten-directory-on-unix/" rel="alternate" type="text/html" title="Flatten a directory on Unix systems" /><published>2023-01-15T00:00:00+00:00</published><updated>2025-07-18T13:27:56+00:00</updated><id>https://brianvanburken.nl/flatten-directory-on-unix</id><content type="html" xml:base="https://brianvanburken.nl/flatten-directory-on-unix/"><![CDATA[<p>When cleaning up a bit on my computer, I wanted to flatten a directory structure.
+Not wanting to move everything by hand, I searched for a way to automate it.
+On macOS and Linux, there is a command <a href="https://man7.org/linux/man-pages/man1/find.1.html"><code>find</code></a> that lets you find files deeply nested.</p>
+
+<h2 id="moving-files">Moving files</h2>
+
+<p>The command above finds all nested files with at least one directory down and then passes the arguments to the move <a href="https://man7.org/linux/man-pages/man1/mv.1.html"><code>mv</code></a> command.
+Here the <code>/path/to/directory</code> directory is the directory we want to flatten.</p>
+
+<pre><code class="language-shell">find /path/to/directory -mindepth 2 -type f -exec mv '{}' /path/to/directory \;
+</code></pre>
+
+<p>With <code>-type f</code>, we only find files in the given directory where we want it to look at least from a depth of two.
+The move will overwrite files with the same name.
+To control which one to overwrite or not, add <code>-i</code> to the <code>mv</code> command to interactively approve overwrites or <code>-f</code> to force overwrites.</p>
+
+<h3 id="example">Example</h3>
+
+<pre><code>/path/to/directory
+|-- subdir1/
+|   |-- subsubdir1/
+|   |   |-- file1.txt
+|   |   |-- file2.txt
+|   |-- subsubdir2/
+|       |-- file3.txt
+|-- subdir2/
+    |-- file4.txt
+    |-- subsubdir3/
+        |-- file5.txt
+        |-- file6.txt
+</code></pre>
+
+<p>After running the command, the directory will look like this:</p>
+
+<pre><code>/path/to/directory
+|-- subdir1/
+|   |-- subsubdir1/
+|   |-- subsubdir2/
+|-- subdir2/
+|   |-- subsubdir3/
+|-- file1.txt
+|-- file2.txt
+|-- file3.txt
+|-- file4.txt
+|-- file5.txt
+|-- file6.txt
+</code></pre>
+
+<h2 id="cleaning-up">Cleaning up</h2>
+
+<p>After moving, I still had a lot of empty directories.
+Deleting them by hand would be little work, but what if I could also automate it?
+We can use the <code>find</code> command again to remove all directories using <code>-delete</code>.
+With <code>-empty</code>, we ensure that we do not delete non-empty directories when something goes wrong.
+The command also needs the <code>-depth</code> and <code>-mindepth 1</code> flags to recursively find the deepest directories first, as there are possible subdirectories in it and thus not empty.</p>
+
+<pre><code class="language-shell">find /path/to/directory -type d -depth -mindepth 1 -empty -delete
+</code></pre>
+
+<p>It will give us a directory with all files in the root and no subdirectories.</p>
+
+<pre><code>/path/to/directory
+|-- file1.txt
+|-- file2.txt
+|-- file3.txt
+|-- file4.txt
+|-- file5.txt
+|-- file6.txt
+</code></pre>
+
+<h2 id="combining-both">Combining both</h2>
+
+<p>We can combine both commands to flatten a directory and clean it up in succession.
+The following command is a combination of both steps at once.
+Using <code>-o</code> means that <code>find</code> will only execute the second command if the first fails.</p>
+
+<pre><code class="language-shell">find /path/to/directory -mindepth 2 -type f -exec mv '{}' /path/to/directory \; \
+  -o -type d -depth -mindepth 1 -empty -delete
+</code></pre>]]></content><author><name></name></author><category term="Shell" /><category term="macOS" /><summary type="html"><![CDATA[When cleaning up a bit on my computer, I wanted to flatten a directory structure. Not wanting to move everything by hand, I searched for a way to automate it.]]></summary></entry><entry><title type="html">Manually editing chunks in git add –patch</title><link href="https://brianvanburken.nl/git-add-patch-split-chunks/" rel="alternate" type="text/html" title="Manually editing chunks in git add –patch" /><published>2023-01-04T00:00:00+00:00</published><updated>2025-07-18T13:27:56+00:00</updated><id>https://brianvanburken.nl/git-add-patch-split-chunks</id><content type="html" xml:base="https://brianvanburken.nl/git-add-patch-split-chunks/"><![CDATA[<p>Using <code>git add --patch</code>, git can stage smaller chunks of code for creating more atomic commits.
+The interactive mode provides chunks, and each can be staged using <code>y</code> or rejected using <code>n</code>.
+But sometimes, a more granular chunk is needed, and that is where <code>s</code> and <code>e</code> come into play.
+Where <code>s</code> tries to split it into smaller chunks, it might not always work wanted.
+You can then use <code>e</code> to <a href="https://git-scm.com/docs/git-add#_editing_patches">manually edit a patch</a>.</p>
+
+<p>The desired change in the following example would be only to commit changes around variable <code>z</code>:</p>
+
+<pre><code class="language-diff">--- a/main.rs
++++ b/main.rs
+@@ -1,5 +1,5 @@
+ fn main() {
+     let x = 5;
+-    let y = 6;
+-    let z = 7;
++    let y = 7;
++    let z = 8;
+     println!("{} {} {}", x, y, z);
+ }
+</code></pre>
+
+<p>We can use the <code>e</code> command to edit the chunk in a text editor manually.
+To only commit the changes for variable <code>z</code>, we need to remove the line <code>+ let y = 7;</code> and change the <code>-</code> before <code>let y = 6</code> into a space ` `.
+The patch should then look like this:</p>
+
+<pre><code class="language-diff"> fn main() {
+     let x = 5;
+     let y = 6;
+-    let z = 7;
++    let z = 8;
+     println!("{} {} {}", x, y, z);
+ }
+</code></pre>
+
+<p>After saving and closing the editor, git will stage the modified patch, allowing you to create a commit with only the changes to variable <code>z</code>.</p>]]></content><author><name></name></author><category term="Git" /><summary type="html"><![CDATA[Git allows to stage smaller chunks of code for creating more atomic commits.]]></summary></entry><entry><title type="html">Keep case when replacing text in Vim using vim-abolish</title><link href="https://brianvanburken.nl/keep-case-when-replacing-text-in-vim/" rel="alternate" type="text/html" title="Keep case when replacing text in Vim using vim-abolish" /><published>2023-01-03T00:00:00+00:00</published><updated>2025-07-18T13:27:56+00:00</updated><id>https://brianvanburken.nl/keep-case-when-replacing-text-in-vim</id><content type="html" xml:base="https://brianvanburken.nl/keep-case-when-replacing-text-in-vim/"><![CDATA[<p><a href="https://github.com/tpope/vim-abolish">vim-abolish</a> is a plugin that allows users to easily search for and replace text while also providing the option to keep the original case of the text.
+You can use the <code>:Subvert</code> or shortened <code>:S</code> command. It acts as a replacement for the default search command.</p>
+
+<p>For example, to replace all occurrences of the word “cat” with the word “dog”, regardless of the case of the text, you would enter the following command:</p>
+
+<p><code>:%S/cat/dog/gi</code></p>
+
+<p>All occurrences of “cat” or “Cat” or “CAT” will be replaced with “dog” while keeping the case intact, so “Cat” becomes “Dog” and “CAT” becomes “DOG”.</p>]]></content><author><name></name></author><category term="Vim" /><summary type="html"><![CDATA[vim-abolish is a plugin that allows users to easily search for and replace text while also providing the option to keep the original case of the text.]]></summary></entry><entry><title type="html">Home and End keys equivalent on MacBook keyboards</title><link href="https://brianvanburken.nl/home-and-end-keys-equivalent-on-macbook-keyboards/" rel="alternate" type="text/html" title="Home and End keys equivalent on MacBook keyboards" /><published>2022-12-31T00:00:00+00:00</published><updated>2025-07-18T13:27:56+00:00</updated><id>https://brianvanburken.nl/home-and-end-keys-equivalent-on-macbook-keyboards</id><content type="html" xml:base="https://brianvanburken.nl/home-and-end-keys-equivalent-on-macbook-keyboards/"><![CDATA[<p>The MacBooks have a shortened keyboard where some keys are left out.
+A few of these keys are “Home” and “End”, which I needed to test some functionality.</p>
+
+<p>Apple has cleverly hidden these keys behind shortcuts. Using the <code>Fn</code> key, we can access those.</p>
+
+<p>For “Home”, we need to press <code>Fn</code> and arrow left key. And for “End”, <code>Fn</code> with the right arrow key.</p>
+
+<p>As for a bonus, the <code>Fn</code> with arrow up and down keys map to “Page Up” and “Page Down”.</p>
+
+<p>You can read more about the shortcuts <a href="https://support.apple.com/guide/mac-help/windows-keys-on-a-mac-keyboard-cpmh0152/mac">here</a>.</p>]]></content><author><name></name></author><category term="macOS" /><summary type="html"><![CDATA[The MacBooks have a shortened keyboard where some keys are left out. Apple has cleverly hidden these keys behind shortcuts.]]></summary></entry><entry><title type="html">Wrap visual selection using the vim-surround plugin</title><link href="https://brianvanburken.nl/wrap-visual-selection-using-vim-surround-plugin/" rel="alternate" type="text/html" title="Wrap visual selection using the vim-surround plugin" /><published>2022-12-30T00:00:00+00:00</published><updated>2025-07-18T13:27:56+00:00</updated><id>https://brianvanburken.nl/wrap-visual-selection-using-vim-surround-plugin</id><content type="html" xml:base="https://brianvanburken.nl/wrap-visual-selection-using-vim-surround-plugin/"><![CDATA[<p>One nice thing I’ve discovered using the <a href="https://github.com/tpope/vim-surround">vim-surround</a> plugin for vim is that you can wrap a visual selection.</p>
+
+<p>The <code>S</code> key lets you wrap the visual selection with the input afterwards.</p>
+
+<p>For example, the following text when visually selected in vim:</p>
+
+<pre><code>Hello world
+</code></pre>
+
+<p>After pressing <code>S</code> followed up by <code>"</code> will result in the following:</p>
+
+<pre><code>"Hello world"
+</code></pre>
+
+<p>It works as well with <code>(</code> and <code>[</code>. And one more great thing is that it also works with HTML tags!
+Given the same text as before, pressing <code>S</code> and then typing <code>&lt;b&gt;</code> will create:</p>
+
+<pre><code>&lt;b&gt;Hello world&lt;b&gt;
+</code></pre>
+
+<p>It pays to sometimes dive into the documentation by typing <code>:help surround</code> or in the <a href="https://github.com/tpope/vim-surround/blob/master/doc/surround.txt">source code</a> to find better ways.</p>]]></content><author><name></name></author><category term="Vim" /><summary type="html"><![CDATA[One nice thing I've discovered using the vim-surround plugin for vim is that you can wrap a visual selection.]]></summary></entry><entry><title type="html">Using :read in Vim</title><link href="https://brianvanburken.nl/using-read-in-vim/" rel="alternate" type="text/html" title="Using :read in Vim" /><published>2022-12-27T00:00:00+00:00</published><updated>2025-07-18T13:27:56+00:00</updated><id>https://brianvanburken.nl/using-read-in-vim</id><content type="html" xml:base="https://brianvanburken.nl/using-read-in-vim/"><![CDATA[<p>The vim command <a href="https://vimdoc.sourceforge.net/htmldoc/insert.html#:read"><code>:read</code></a> (or shorter <code>:r</code>) allows you to input anything from a file into the current buffer.
+Useful if you want to copy things from another file.
+For example, the following command <code>:read template.md</code> will load the entire content of the file <code>template.md</code> into the buffer.</p>
+
+<p>You can even combine it with the <code>!</code> command to instead output the result of the shell command.
+E.g. <code>:r ! ls</code>, will put the output of <a href="https://man7.org/linux/man-pages/man1/ls.1.html"><code>ls</code></a>, the list of all files and directories in the current folder, into the buffer.</p>]]></content><author><name></name></author><category term="Vim" /><summary type="html"><![CDATA[The vim command :read allows you to input anything from a file into the current buffer. Useful if you want to copy things from another file.]]></summary></entry><entry><title type="html">Access the last command in a shell</title><link href="https://brianvanburken.nl/access-the-last-argument-of-the-last-command-in-a-shell/" rel="alternate" type="text/html" title="Access the last command in a shell" /><published>2022-12-26T00:00:00+00:00</published><updated>2025-07-18T13:27:56+00:00</updated><id>https://brianvanburken.nl/access-the-last-argument-of-the-last-command-in-a-shell</id><content type="html" xml:base="https://brianvanburken.nl/access-the-last-argument-of-the-last-command-in-a-shell/"><![CDATA[<p>Using <code>!!</code>, you can access the last command executed.
+Useful for rerunning a command with <code>sudo</code>-privilege.</p>
+
+<p>Example:</p>
+
+<pre><code>$ make_me_a_sandwich
+What? Make it yourself
+</code></pre>
+
+<p>Rerun it using <code>!!</code></p>
+
+<pre><code>$ sudo !!
+$ sudo make_me_a_sandwich
+Okay.
+</code></pre>]]></content><author><name></name></author><category term="Shell" /><summary type="html"><![CDATA[Using !!, you can access the last command executed. Useful for rerunning a previous command.]]></summary></entry><entry><title type="html">Access the last argument of the last command in a shell</title><link href="https://brianvanburken.nl/access-the-last-command-in-a-shell/" rel="alternate" type="text/html" title="Access the last argument of the last command in a shell" /><published>2022-12-26T00:00:00+00:00</published><updated>2025-07-18T13:27:56+00:00</updated><id>https://brianvanburken.nl/access-the-last-command-in-a-shell</id><content type="html" xml:base="https://brianvanburken.nl/access-the-last-command-in-a-shell/"><![CDATA[<p>Using <code>$_</code>, you can access the last argument of the last command executed.</p>
+
+<p>Example:</p>
+
+<pre><code>$ echo "Have a nice day!"
+Have a nice day!
+
+$ echo $_
+Have a nice day!
+</code></pre>]]></content><author><name></name></author><category term="Shell" /><summary type="html"><![CDATA[Using `$_`, you can access the last argument of the last command executed.]]></summary></entry></feed>
