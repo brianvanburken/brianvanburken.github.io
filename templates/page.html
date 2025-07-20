@@ -1,0 +1,27 @@
+{% extends "index.html" %}
+
+
+{% block content %}
+<article itemscope itemtype="http://schema.org/BlogPosting">
+  <h1 itemprop="name headline">
+    {{ page.title }}
+  </h1>
+
+  <section itemprop="articleBody">
+    {{ page.content | safe }}
+  </section>
+
+  <hr />
+  <footer>
+    Published on
+    <time
+        datetime="{{ page.date }}"
+        itemprop="datePublished"
+        >
+        {{ page.date }}
+    </time>
+    <br />
+    Source <a href="{{config.extra.github_source}}{{page.path}}" href="View post source on Github">on Github</a>
+  </footer>
+</article>
+{% endblock content %}

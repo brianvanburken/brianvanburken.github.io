@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <link rel="icon" href="data:," />
+      <title>{% block title %}{{ config.title }}{% endblock title %}</title>
+
+      <link rel="stylesheet" href="{{ get_url(path="style.css", trailing_slash=false) }}">
+      {% if config.generate_feed %}
+        <link rel="alternate" type={% if config.feed_filename == "atom.xml" %}"application/atom+xml"{% else %}"application/rss+xml"{% endif %} title="RSS" href="{{ get_url(path=config.feed_filename) | safe }}">
+      {% endif %}
+      {% block extra_head %}
+      {% endblock extra_head %}
+    </head>
+    <body>
+      <a href="/" title="Overview of all my writings">Writings</a>
+      |
+      <a href="https://github.com/brianvanburken" title="Visit my GitHub profile" rel="noopener nofollow noreferrer" target="_blank">GitHub</a>
+      |
+      <a href="https://linkedin.com/in/brianvanburken" title="Visit my LinkedIn profile" rel="noopener nofollow noreferrer" target="_blank">LinkedIn</a>
+
+      {% block content %}
+      <h1>Writings</h1>
+      {% for page in section.pages %}
+        <article>
+          <a href="{{ page.permalink }}">{{ page.title }}</a>
+          {% if page.extra.excerpt is defined %}
+          &mdash;
+          {{page.extra.excerpt}}
+          {% endif %}
+          <br/>
+          🗓 {{ page.date }}
+        </article>
+      {% endfor %}
+      {% endblock content %}
+
+      <script data-goatcounter="https://brianvanburken.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+      <noscript>
+        <!-- <img src="https://brianvanburken.goatcounter.com/count?p=/todo"> -->
+      </noscript>
+    </body>
+</html>
