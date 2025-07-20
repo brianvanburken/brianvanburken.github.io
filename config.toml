@@ -1,11 +1,14 @@
 base_url = "https://brianvanburken.nl"
 title = "Brian van Burken"
+author = "Brian van Burken"
 description = ""
 default_language = "en"
 compile_sass = true
 generate_sitemap = true
 generate_robots_txt = true
 build_search_index = false
+generate_feeds = true
+feed_filenames = ["rss.xml"]
 
 [markdown]
 highlight_code = false
