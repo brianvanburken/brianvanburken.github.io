@@ -5,7 +5,11 @@
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="icon" href="data:," />
       <title>{% block title %}{{ config.title }}{% endblock title %}</title>
+      {% if zola.is_live_reloading %}
       <link rel="stylesheet" href="{{ get_url(path="style.css", trailing_slash=false) }}">
+      {% else %}
+      <style>{{ load_data(path="public/style.css") | trim | safe }}</style>
+      {% endif %}
     </head>
     <body>
       <a href="/" title="Overview of all my writings">Writings</a>

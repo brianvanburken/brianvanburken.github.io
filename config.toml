@@ -9,6 +9,7 @@ generate_robots_txt = true
 build_search_index = false
 generate_feeds = true
 feed_filenames = ["rss.xml"]
+minify_html = true
 
 [markdown]
 highlight_code = false
