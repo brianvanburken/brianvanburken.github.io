@@ -6,7 +6,7 @@ default: clean
 	zola serve
 
 build: clean
-	zola build && pnpm gulp && cp CNAME ${BUILD_DIR}/ && rm ${BUILD_DIR}/style.css
+	zola build && pnpm gulp && cp CNAME ${BUILD_DIR}/
 
 clean:
 	rm -rf ${BUILD_DIR}

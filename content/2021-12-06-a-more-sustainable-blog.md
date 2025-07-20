@@ -126,6 +126,5 @@ Hopefully, I have inspired you to think a bit more about a website's carbon foot
 [1]: https://abookapart.com/products/sustainable-web-design
 [2]: https://gulpjs.com
 [3]: https://tdarb.org/css-js-mistake
-[4]: https://brianvanburken.nl/pre-render-syntax-highlighting-with-prism-in-jekyll
 
-[^1]: I even wrote a blogpost about this: [Pre-render Syntax Highlighting with Prism in Jekyll][4]
+[^1]: I even wrote a blogpost about this: [Pre-render Syntax Highlighting with Prism in Jekyll](/pre-render-syntax-highlighting-with-prism-in-jekyll)

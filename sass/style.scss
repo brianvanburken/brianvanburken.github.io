@@ -3,7 +3,7 @@ $fg: #fff;
 
 body {
   font-family: "Avenir Next", "Open Sans", Helvetica, sans-serif;
-  font-size: 18px;
+  font-size: 1.125rem;
   line-height: 1.5;
 
   max-width: 70ch;
@@ -27,7 +27,7 @@ img {
 }
 
 h1 {
-  font-size: 40px;
+  font-size: 2.5rem;
   line-height: 1.2;
 }
 
@@ -62,7 +62,7 @@ a {
 /* Code blocks */
 code,
 pre {
-  font-size: 14px;
+  font-size: 0.875rem;
   word-spacing: normal;
   word-break: normal;
   word-wrap: normal;
@@ -81,7 +81,7 @@ pre {
 }
 
 :not(pre) > code {
-  padding: 2px 3px;
+  padding: 0.25rem;
 }
 
 @media (prefers-color-scheme: light) {
@@ -92,6 +92,6 @@ pre {
 
   code,
   pre {
-    border-radius: 0.375rem;
+    border-radius: 0.25rem;
   }
 }
