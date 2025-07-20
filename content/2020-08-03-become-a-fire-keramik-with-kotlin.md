@@ -12,10 +12,10 @@ you go with functional programming in Kotlin?
 While searching for a definition of the basics of functional programming, I
 found an interesting PDF-file that was created by smart people from the
 functional programming community. The document is called "LambdaConf
-Standardised Ladder of Functional Programming" and you can [download it here][1]
+Standardised Ladder of Functional Programming" and you can [download it here](lambdaconf_slfp.pdf)
 (sadly the original host of the file has disappeared). It breaks down various
 concepts and skills into levels. The first level is called "Fire Keramik", which
-inspired the title of this blog. There has been some [criticism][2] about this
+inspired the title of this blog. There has been some [criticism][1] about this
 list, but in my opinion, it's a good starting point and uses some of the fun of
 "skill trees" found in games. To become a "Fire Keramik", you need to learn the
 following concepts and skills:
@@ -209,5 +209,4 @@ promising start. If you're interested, The Standardized Ladder of Functional
 Programming discusses many other topics that can be applied to Kotlin with which
 you can dive deeper!
 
-[1]: /assets/become-a-fire-keramik-with-kotlin/lambdaconf_slfp.pdf
-[2]: https://news.ycombinator.com/item?id=13067741
+[1]: https://news.ycombinator.com/item?id=13067741

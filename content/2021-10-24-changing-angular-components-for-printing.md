@@ -155,7 +155,7 @@ Now that the JavaScript runtime waits for the print dialog to close, we can see 
 Below is the final result when a user triggers the "print" button.
 You'll get to see the message.
 
-![Screenshot of a printing dialog showing text only visible when printing](/assets/changing-angular-components-for-printing/screenshot.jpg)
+![Screenshot of a printing dialog showing text only visible when printing](screenshot.jpg)
 
 [1]: https://developer.mozilla.org/en-US/docs/Web/API/Window/print
 [2]: https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeprint

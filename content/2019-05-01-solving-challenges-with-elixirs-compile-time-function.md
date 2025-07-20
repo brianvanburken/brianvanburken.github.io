@@ -20,7 +20,7 @@ the nucleotides that make up a DNA strand and the corresponding representation
 in RNA. The mapping is A to U, G to C, T to A, and C to G. I've drawn out an
 example below:
 
-![Drawing of DNA string conversion to RNA](/assets/solving-challenges-with-elixirs-compile-time-function/rna_transcription.jpg)
+![Drawing of DNA string conversion to RNA](rna_transcription.jpg)
 
 Now let's implement this in Elixir! We can define multiple functions with the
 same name which are referred to as same head functions. In addition, we can use
