@@ -1,0 +1,59 @@
+<!DOCTYPE html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,"><style>body{background:#0b0e14;color:#fff;font-family:Avenir Next,Open Sans,Helvetica,sans-serif;font-size:18px;line-height:1.5;margin:0 auto;max-width:70ch;padding:1em}p{text-align:justify}img{max-width:100%}h1{font-size:40px;line-height:1.2}h2{margin-top:2em}article{margin:2em 0}a{color:#fa3}a:visited{color:#ff9500}a:focus,a:hover{color:#ffbf66}code,pre{font-size:14px;word-break:normal;word-spacing:normal;word-wrap:normal;background:#0b0e14;color:#bfbdb6;-webkit-hyphens:none;-ms-hyphens:none;hyphens:none}pre{overflow:auto;padding:1.5rem .75rem}:not(pre)>code{padding:2px 3px}@media (prefers-color-scheme:light){body{background:#fff;color:#0b0e14}code,pre{border-radius:.375rem}}.f{color:#d2a6ff}.c{color:#39bae6}.i{color:#59c2ff}.j{color:#ffb454}.d{color:#bfbdb6b3}.e{color:#aad94c}.h{color:#f29668}.g{color:#ff8f40}</style><link type="application/atom+xml" rel="alternate" href="https://brianvanburken.nl/feed.xml" title="Brian van Burken"><title>JSON Properties as a List when Decoding in Elm | Brian van Burken</title><meta name="generator" content="Jekyll v4.4.1"><meta property="og:title" content="JSON Properties as a List when Decoding in Elm"><meta property="og:locale" content="en_US"><meta name="description" content="Storing JSON properties as a List when decoding in Elm"><meta property="og:description" content="Storing JSON properties as a List when decoding in Elm"><link rel="canonical" href="https://brianvanburken.nl/rest-of-json-properties-as-list-when-decoding-in-elm/"><meta property="og:url" content="https://brianvanburken.nl/rest-of-json-properties-as-list-when-decoding-in-elm/"><meta property="og:site_name" content="Brian van Burken"><meta property="og:type" content="article"><meta property="article:published_time" content="2021-11-20T00:00:00+00:00"><meta name="twitter:card" content="summary"><meta property="twitter:title" content="JSON Properties as a List when Decoding in Elm"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2025-09-08T15:06:20+00:00","datePublished":"2021-11-20T00:00:00+00:00","description":"Storing JSON properties as a List when decoding in Elm","headline":"JSON Properties as a List when Decoding in Elm","mainEntityOfPage":{"@type":"WebPage","@id":"https://brianvanburken.nl/rest-of-json-properties-as-list-when-decoding-in-elm/"},"url":"https://brianvanburken.nl/rest-of-json-properties-as-list-when-decoding-in-elm/"}</script><a href="/" title="Overview of all my writings">Writings</a> | <a href="https://github.com/brianvanburken" title="Visit my GitHub profile" target="_blank" rel="noopener noreferrer">GitHub</a> | <a href="https://linkedin.com/in/brianvanburken" title="Visit my LinkedIn profile" target="_blank" rel="noopener noreferrer">LinkedIn</a><article itemscope itemtype="http://schema.org/BlogPosting"><h1 itemprop="name headline">JSON Properties as a List when Decoding in Elm</h1><section itemprop="articleBody"><p>While working on an Elm application, I stumbled across a situation where I needed to decode a result from an API and store the rest of the properties that aren’t part of the model as a list.<h2 id="setting-the-domain">Setting the domain</h2><p>The API returns a list of videos, and each video has an <code>id</code> and <code>title</code>. Each video also has any number of properties that are “metadata.” These properties are what we want to store in a list of key-value pairs. An example video would look like this in JSON.<pre tabindex="0"><code>{
+<span class="c">  "id"</span><span class="d">:</span><span class="e"> "1"</span><span class="d">,</span>
+<span class="c">  "duration"</span><span class="d">:</span><span class="f"> 126</span><span class="d">,</span>
+<span class="c">  "language"</span><span class="d">:</span><span class="e"> "EN"</span><span class="d">,</span>
+<span class="c">  "title"</span><span class="d">:</span><span class="e"> "Example title"</span>
+}
+</code></pre><p>We then define the model where we store the metadata in a list of tuples. Each tuple contains the key and the value.<pre tabindex="0"><code><span class="g">type alias Video</span><span class="h"> =</span>
+    { <span class="i">id</span><span class="g"> : String</span>
+<span class="d">    ,</span><span class="i"> title</span><span class="g"> : String</span>
+<span class="d">    ,</span><span class="i"> metadata</span><span class="g"> : List</span> ( <span class="g">String</span><span class="d">,</span><span class="g"> String</span> )
+    }
+</code></pre><p>Using standard decoding in Elm, we first pass the JSON fields <code>id</code> and <code>title</code> to the model. And as of last, we pass a custom decoder.<pre tabindex="0"><code><span class="g">import</span> Json<span class="g">.</span>Decode <span class="g">as</span> JD
+
+<span class="j">decoder</span><span class="g"> :</span> JD<span class="g">.Decoder Video</span>
+<span class="j">decoder</span><span class="g"> =</span>
+    JD<span class="g">.</span>map3 Video
+        (JD<span class="g">.</span>field <span class="e">"id"</span> JD<span class="g">.</span>string)
+        (JD<span class="g">.</span>field <span class="e">"title"</span> JD<span class="g">.</span>string)
+        metadataDecoder
+</code></pre><h2 id="extracting-the-rest-of-json-properties">Extracting the rest of JSON properties</h2><p>Our custom decoder gets the whole JSON object and decodes it as a list of key-value pairs. We convert all the values to a <code>String</code> with the <code>valueToString</code> function, so all are the same type. However, this does mean that we lose the information. You could fix this by writing a <a href="https://guide.elm-lang.org/types/custom_types.html" target="_blank" rel="noopener noreferrer">Custom Type</a> for each value type; not needed for this case.<pre tabindex="0"><code><span class="j">metadataDecoder</span><span class="g"> :</span> JD<span class="g">.Decoder</span> (<span class="g">List</span> ( <span class="g">String</span><span class="d">,</span><span class="g"> String</span> ))
+<span class="j">metadataDecoder</span><span class="g"> =</span>
+    JD<span class="g">.</span>keyValuePairs valueToString
+
+<span class="j">valueToString</span><span class="g"> :</span> JD<span class="g">.Decoder String</span>
+<span class="j">valueToString</span><span class="g"> =</span>
+    JD<span class="g">.</span>oneOf
+        [ JD<span class="g">.</span>string
+<span class="d">        ,</span> JD<span class="g">.</span>float <span class="h">|&gt;</span> JD<span class="g">.</span>map String<span class="g">.</span>fromFloat
+<span class="d">        ,</span> JD<span class="g">.</span>bool
+<span class="h">            |&gt;</span> JD<span class="g">.</span>map
+                (<span class="g">\</span>boolean <span class="h">-&gt;</span>
+<span class="g">                    case </span>boolean <span class="g">of</span>
+                        True <span class="h">-&gt;</span>
+<span class="e">                            "true"</span>
+
+                        False <span class="h">-&gt;</span>
+<span class="e">                            "false"</span>
+                )
+<span class="d">        ,</span> JD<span class="g">.</span>null <span class="e">""</span>
+        ]
+</code></pre><p>So where done right? Well, we have everything as key-value pair. And I mean everything. We also added our <code>id</code> and <code>title</code> to <code>metadata</code>. Not ideal.<h2 id="block-unwanted-properties">Block unwanted properties</h2><p>To fix this, we need to filter out properties using a blocklist. We map our key-value pairs to a <code>filterMetadata</code> method. This method checks for each key against the blocklist. Instead of a blocklist, we could also use an allowlist to only add specific keys to the metadata.<pre tabindex="0"><code><span class="j">metadataDecoder</span><span class="g"> :</span> JD<span class="g">.Decoder</span> (<span class="g">List</span> ( <span class="g">String</span><span class="d">,</span><span class="g"> String</span> ))
+<span class="j">metadataDecoder</span><span class="g"> =</span>
+    JD<span class="g">.</span>keyValuePairs valueToString
+<span class="h">        |&gt;</span> JD<span class="g">.</span>map filterMetadata
+
+<span class="j">filterMetadata</span><span class="g"> : List</span> ( <span class="g">String</span><span class="d">,</span><span class="g"> String</span> ) <span class="h">-&gt;</span><span class="g"> List</span> ( <span class="g">String</span><span class="d">,</span><span class="g"> String</span> )
+<span class="j">filterMetadata</span><span class="g"> =
+    let</span>
+        blocklist <span class="g">=</span>
+            [ <span class="e">"id"</span><span class="d">,</span><span class="e"> "title"</span> ]
+
+        isBlocked <span class="g">=</span>
+            Tuple<span class="g">.</span>first
+<span class="h">                &gt;&gt;</span> (<span class="g">\</span>k <span class="h">-&gt;</span> List<span class="g">.</span>member k blocklist)
+<span class="h">                &gt;&gt;</span> not
+<span class="g">    in</span>
+    List<span class="g">.</span>filter isBlocked
+
+</code></pre><p>In the end, we have a correct model with all the rest of the properties from the JSON object.<p>You can check out the final <abbr title="Short, Self Contained, Correct (Compilable), Example">SSCCE</abbr> here: <a href="https://ellie-app.com/9Qxk3RDydTka1" target="_blank" rel="noopener noreferrer">https://ellie-app.com/9Qxk3RDydTka1</a></section><hr><footer>Published on <time datetime="2021-11-20T00:00:00+00:00" itemprop="datePublished">2021-11-20 </time><br>Tags: <a href="/tags/#decoding" title="See all post for Decoding">Decoding</a>, <a href="/tags/#elm" title="See all post for Elm">Elm</a>, <a href="/tags/#json" title="See all post for JSON">JSON</a><br>Source <a href="https://github.com/brianvanburken/brianvanburken.github.io/tree/master/_posts/2021-11-20-rest-of-json-properties-as-list-when-decoding-in-elm.md" target="_blank" rel="noopener noreferrer">on Github</a></footer></article><script data-goatcounter="https://brianvanburken.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script><noscript><img src="https://brianvanburken.goatcounter.com/count?p=/rest-of-json-properties-as-list-when-decoding-in-elm/"></noscript>
