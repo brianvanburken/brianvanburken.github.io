@@ -69,18 +69,18 @@ If we look closer at our `Answer` type we see that it takes two `Maybe`'s. If we
 think about it in terms of [algebraic data types][4] we can reason that this
 solution has four possible cases for our answer:
 
-- `Answer (Just _) (Just _)`
-- `Answer (Just _) Nothing`
-- `Answer Nothing (Just _)`
-- `Answer Nothing Nothing`
+1. `Answer (Just _) (Just _)`
+1. `Answer (Just _) Nothing`
+1. `Answer Nothing (Just _)`
+1. `Answer Nothing Nothing`
 
 Are all these cases valid? If we revisit the domain logic then it becomes more
 clear: if there is an answer we receive both `answer` and `answeredOn` filled
 in, else we receive both fields with a null value. This means we have only two
 possible cases:
 
-- we have an answer and both fields are filled in
-- we have no answer and both fields are empty
+1. we have an answer and both fields are filled in
+1. we have no answer and both fields are empty
 
 This is not what we represent in our code. There are four possible cases right
 now! We only want the two cases that are valid and we can’t express that right
