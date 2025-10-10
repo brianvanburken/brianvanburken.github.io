@@ -1,25 +1,52 @@
 $bg: #0b0e14;
 $fg: #fff;
+$baseline: 24px;
+$link-color: #fa3;
+
+html.debug {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 0, 0, 0.2) 0,
+    rgba(255, 0, 0, 0.2) 1px,
+    transparent 1px,
+    transparent $baseline
+  );
+  background-size: 100% $baseline;
+}
+
+html {
+  color: $fg;
+  background: $bg;
+  @media (prefers-color-scheme: light) {
+    color: $bg;
+    background: $fg;
+  }
+}
 
 body {
   font-family: "Avenir Next", "Open Sans", Helvetica, sans-serif;
   font-size: 18px;
-  line-height: 1.5;
 
   max-width: 70ch;
-  margin: 0 auto;
-  padding: 1em;
+  margin: $baseline auto;
+  padding: 0 $baseline;
+}
 
-  color: $fg;
-  background: $bg;
+ul, ol, p, h1, h2, h3, pre, code, footer, article {
+  margin: $baseline 0;
+  line-height: $baseline;
+}
+
+ul, ol {
+  padding-left: $baseline;
+}
+
+li {
+  line-height: $baseline;
 }
 
 p {
   text-align: justify;
-}
-
-a code {
-  color: inherit;
 }
 
 img {
@@ -28,27 +55,18 @@ img {
 
 h1 {
   font-size: 40px;
-  line-height: 1.2;
-}
-
-h2,
-h3 {
-  margin-top: 2em;
-}
-
-article {
-  margin: 2em 0;
+  line-height: $baseline * 2;
 }
 
 blockquote {
   font-style: italic;
 }
 
-$link-color: #ffaa33;
+a, a code {
+  color: $link-color;
+}
 
 a {
-  color: $link-color;
-
   &:visited {
     color: darken($link-color, 10%);
   }
@@ -59,39 +77,33 @@ a {
   }
 }
 
-/* Code blocks */
+footer {
+  $border: 1px;
+  border-top: $border solid #bfbdb6;
+  padding-top: ($baseline - $border);
+}
+
 code,
 pre {
   font-size: 14px;
   word-spacing: normal;
   word-break: normal;
   word-wrap: normal;
-
-  -webkit-hyphens: none;
-  -ms-hyphens: none;
   hyphens: none;
 
   color: #bfbdb6;
   background: $bg;
+  border-radius: 0.375rem;
 }
 
 pre {
   overflow: auto;
-  padding: 1.5rem 0.75rem;
+  padding: $baseline;
 }
 
-:not(pre) > code {
-  padding: 2px 3px;
+p code {
+  line-height: 1;
+  outline: 3px solid $bg;
+  margin: 0 2px;
 }
 
-@media (prefers-color-scheme: light) {
-  body {
-    color: $bg;
-    background: $fg;
-  }
-
-  code,
-  pre {
-    border-radius: 0.375rem;
-  }
-}

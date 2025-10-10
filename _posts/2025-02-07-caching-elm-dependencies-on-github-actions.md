@@ -52,7 +52,7 @@ Elm does not have the concept of a “lockfile.” Instead, the `elm.json` file 
 
 Now, let’s put everything together in a GitHub Actions pipeline.
 
-### 1. Set the `ELM_HOME` Environment Variable
+### 1. Set the ELM_HOME Environment Variable
 
 Modify your GitHub Actions workflow to define the `ELM_HOME` path at the root level for consistency across runs. Here, we set it to the project’s root:
 
@@ -61,7 +61,7 @@ env:
   ELM_HOME: ".elm"
 ```
 
-### 2. Add a cache rule for the `.elm` directory
+### 2. Add a cache rule for the .elm directory
 
 Use the [GitHub cache action](https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows) to persist dependencies between workflow runs.
 This should go in the `steps:` section of the workflow file.
