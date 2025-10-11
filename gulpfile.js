@@ -15,7 +15,7 @@ import { createHighlighter } from "shiki";
 import { transform } from "gulp-html-transform";
 import { deleteSync } from "del";
 
-const source = process.env.BUILD_DIR || "_site";
+const source = process.env.BUILD_DIR || "public";
 const dirname = new URL(".", import.meta.url).pathname;
 const theme = "ayu-dark";
 const highlighter = await createHighlighter({

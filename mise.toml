@@ -1,3 +1,3 @@
 [tools]
 node = "22"
-ruby = "2.7.7"
+zola = "0.21.0"
