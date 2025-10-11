@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Using :read in Vim
-excerpt: The vim command :read allows you to input anything from a file into the current buffer. Useful if you want to copy things from another file.
+extra:
+    excerpt: The vim command :read allows you to input anything from a file into the current buffer. Useful if you want to copy things from another file.
 tags:
  - Vim
 ---

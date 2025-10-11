@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Disable NPM fund message
-excerpt: If you find NPM's funding messages distracting, you can disable them by setting a configuration in different ways.
+extra:
+    excerpt: If you find NPM's funding messages distracting, you can disable them by setting a configuration in different ways.
 tags:
   - Shell
 ---

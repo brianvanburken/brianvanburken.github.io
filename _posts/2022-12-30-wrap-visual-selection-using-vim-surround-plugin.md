@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Wrap visual selection using the vim-surround plugin
-excerpt: One nice thing I've discovered using the vim-surround plugin for vim is that you can wrap a visual selection.
+extra:
+    excerpt: One nice thing I've discovered using the vim-surround plugin for vim is that you can wrap a visual selection.
 tags:
   - Vim
 ---

@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Maybe Don't Use Maybe?
-excerpt: At my work I've come across a code that had more branches than were possible in the logic of the domain.
+extra:
+    excerpt: At my work I've come across a code that had more branches than were possible in the logic of the domain.
 tags:
   - Elm
   - Custom Types

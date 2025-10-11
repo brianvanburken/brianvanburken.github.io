@@ -1,7 +1,8 @@
 ---
 layout: post
 title: JSON Properties as a List when Decoding in Elm
-excerpt: "Storing JSON properties as a List when decoding in Elm"
+extra:
+    excerpt: "Storing JSON properties as a List when decoding in Elm"
 tags:
   - Elm
   - JSON

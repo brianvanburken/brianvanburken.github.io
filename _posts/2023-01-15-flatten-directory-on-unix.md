@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Flatten a directory on Unix systems
-excerpt: When cleaning up a bit on my computer, I wanted to flatten a directory structure. Not wanting to move everything by hand, I searched for a way to automate it.
+extra:
+    excerpt: When cleaning up a bit on my computer, I wanted to flatten a directory structure. Not wanting to move everything by hand, I searched for a way to automate it.
 tags: 
   - Shell
   - macOS

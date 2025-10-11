@@ -2,9 +2,11 @@
 layout: post
 affiliate: true
 title: Solving Challenge with Elixir's Compile-Time Functions
-excerpt: "I love solving small programming challenges. One of the many
-challenges on this website is about transcribing DNA nucleotides to RNA
-nucleotides. I was able to solve this by using Elixir."
+extra:
+    excerpt: >-
+        I love solving small programming challenges. One of the many
+        challenges on this website is about transcribing DNA nucleotides to RNA
+        nucleotides. I was able to solve this by using Elixir."
 tags:
     - Elixir
     - Macro

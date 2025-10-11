@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Access the last command in a shell
-excerpt: Using !!, you can access the last command executed. Useful for rerunning a previous command.
+extra:
+    excerpt: Using !!, you can access the last command executed. Useful for rerunning a previous command.
 tags:
   - Shell
 ---

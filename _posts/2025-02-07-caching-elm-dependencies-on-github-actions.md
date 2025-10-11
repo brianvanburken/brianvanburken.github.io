@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Caching Elm dependencies on Github Actions
-excerpt: Caching dependencies efficiently can significantly speed up CI runs and improve reliability, as it prevents downloading dependencies every time, reducing exposure to outages and network failures.
+extra:
+    excerpt: Caching dependencies efficiently can significantly speed up CI runs and improve reliability, as it prevents downloading dependencies every time, reducing exposure to outages and network failures.
 tags:
   - Github Actions
   - Elm

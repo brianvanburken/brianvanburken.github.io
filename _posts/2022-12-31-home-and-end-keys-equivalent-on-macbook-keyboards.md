@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Home and End keys equivalent on MacBook keyboards
-excerpt: The MacBooks have a shortened keyboard where some keys are left out. Apple has cleverly hidden these keys behind shortcuts.
+extra:
+    excerpt: The MacBooks have a shortened keyboard where some keys are left out. Apple has cleverly hidden these keys behind shortcuts.
 tags:
   - macOS
 ---

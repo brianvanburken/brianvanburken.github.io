@@ -1,7 +1,8 @@
 ---
 layout: post
 title: A More Sustainable Blog
-excerpt: After reading Sustainable Web Design, I started looking for ways to reduce the carbon footprint of this blog.
+extra:
+    excerpt: After reading Sustainable Web Design, I started looking for ways to reduce the carbon footprint of this blog.
 tags: 
   - HTML
   - Design

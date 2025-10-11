@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Detecting Output Listeners in Angular
-excerpt: "Detecting listeners on an EventEmitter in an Angular component."
+extra:
+    excerpt: "Detecting listeners on an EventEmitter in an Angular component."
 tags:
   - Angular
   - EventEmitter

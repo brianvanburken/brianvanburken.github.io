@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Changing Angular Components for Printing
-excerpt: When the user is printing a page, we wanted our components to behave differently without using CSS.
+extra:
+    excerpt: When the user is printing a page, we wanted our components to behave differently without using CSS.
 tags:
   - Angular
   - EventListener

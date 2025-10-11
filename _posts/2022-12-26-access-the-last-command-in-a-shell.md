@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Access the last argument of the last command in a shell
-excerpt: Using `$_`, you can access the last argument of the last command executed.
+extra:
+    excerpt: Using `$_`, you can access the last argument of the last command executed.
 tags:
   - Shell
 ---

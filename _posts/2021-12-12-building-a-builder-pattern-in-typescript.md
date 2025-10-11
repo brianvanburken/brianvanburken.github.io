@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Building A Builder Pattern in TypeScript
-excerpt: Forcing types using type assertions leave your code open for wrong assumptions. I went looking for an alternative.
+extra:
+    excerpt: Forcing types using type assertions leave your code open for wrong assumptions. I went looking for an alternative.
 tags: ["TypeScript", "Pattern", "Generics"]
 ---
 

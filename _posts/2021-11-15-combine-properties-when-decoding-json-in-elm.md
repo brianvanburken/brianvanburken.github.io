@@ -1,7 +1,8 @@
 ---
 layout: post
 title: Combine Properties when Decoding JSON in Elm
-excerpt: "Combining two properties extracted from a JSON-object when decoding JSON in Elm."
+extra:
+    excerpt: "Combining two properties extracted from a JSON-object when decoding JSON in Elm."
 tags:
     - Elm
     - JSON
