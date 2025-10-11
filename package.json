@@ -8,6 +8,7 @@
   "dependencies": {
     "@fullhuman/postcss-purgecss": "^7.0.2",
     "cssnano": "^7.1.1",
+    "del": "^8.0.1",
     "gulp": "^5.0.1",
     "gulp-html-minimizer": "^2.0.1",
     "gulp-html-transform": "^2.3.2",

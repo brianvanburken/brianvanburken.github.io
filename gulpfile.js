@@ -13,6 +13,7 @@ import through from "through2";
 import uncss from "uncss";
 import { createHighlighter } from "shiki";
 import { transform } from "gulp-html-transform";
+import { deleteSync } from "del";
 
 const source = process.env.BUILD_DIR || "_site";
 const dirname = new URL(".", import.meta.url).pathname;
@@ -165,6 +166,11 @@ async function convertCode($) {
     });
 }
 
+gulp.task('clean', function(cb) {
+  deleteSync([source + '/**/*.css']);
+  cb();
+});
+
 gulp.task("html", function () {
   const plugins = [
     postHtmlExternalLink.posthtmlExternalLink(),
@@ -230,4 +236,4 @@ gulp.task("css", function () {
     .pipe(gulp.dest(source));
 });
 
-gulp.task("default", gulp.series(["css", "html"]));
+gulp.task("default", gulp.series(["css", "html", "clean"]));
