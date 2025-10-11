@@ -37,12 +37,13 @@ ul, ol, p, h1, h2, h3, pre, code, footer, article {
   line-height: $baseline;
 }
 
-ul, ol {
-  padding-left: $baseline;
+sub, sup {
+  line-height: 1;
+  font-size: 0.75rem;
 }
 
-li {
-  height: $baseline;
+ul, ol {
+  padding-left: $baseline;
 }
 
 p {
