@@ -63,7 +63,8 @@ h2 {
 }
 
 blockquote {
-  font-style: italic;
+  font-style: oblique;
+  margin: $baseline;
 }
 
 a, a code {
