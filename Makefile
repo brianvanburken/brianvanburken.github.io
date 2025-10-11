@@ -6,7 +6,7 @@ default: clean
 	bundle exec jekyll serve --livereload --drafts --incremental --future
 
 build: clean
-	JEKYLL_ENV=production bundle exec jekyll build --verbose --profile --trace && npx gulp
+	JEKYLL_ENV=production bundle exec jekyll build --verbose --profile --trace && pnpm gulp
 
 clean: clean_cache
 	bundle exec jekyll clean

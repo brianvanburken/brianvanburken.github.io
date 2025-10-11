@@ -10,30 +10,26 @@ jobs:
     steps:
       # Prepare
       - uses: actions/checkout@master
-      - uses: actions/setup-node@v4
+      - name: pnpm setup
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda
         with:
-          node-version: "16"
-          cache: "npm"
+          run_install: false
+      - name: Use Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22.14.0'
+          cache: 'pnpm'
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "2.7"
           bundler-cache: true
-      # Caching
-      - uses: actions/cache@v4
-        id: npm_cache
-        with:
-          path: ./node_modules
-          key: ${{ runner.os}}-npm-${{ hashFiles('package-lock.json') }}
-      # Dependencies
-      - name: Install NPM dependencies
-        if: steps.npm_cache.outputs.cache-hit != 'true'
-        run: npm ci --ignore-scripts --no-audit --no-fund --legacy-peer-deps
+      - run: pnpm install
       # Build
       - run: bundle exec jekyll build -s "${GITHUB_WORKSPACE}/" -d build
         env:
           EXECJS_RUNTIME: node
           JEKYLL_ENV: production
-      - run: BUILD_DIR=build npx gulp
+      - run: BUILD_DIR=build pnpm gulp
       - run: cp CNAME ./build
       - run: cp robots.txt ./build
       # Publish

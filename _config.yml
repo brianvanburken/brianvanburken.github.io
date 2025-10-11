@@ -69,7 +69,6 @@ exclude:
   - .github
   - .jekyll-cache/
   - .sass-cache/
-  - tags
   - Gemfile
   - Gemfile.lock
   - Makefile
@@ -78,8 +77,10 @@ exclude:
   - node_modules/
   - package-lock.json
   - package.json
+  - pnpm-lock.yaml
+  - shiki-themes/
+  - tags
   - vendor/bundle/
   - vendor/cache/
   - vendor/gems/
   - vendor/ruby/
-  - shiki-themes/
