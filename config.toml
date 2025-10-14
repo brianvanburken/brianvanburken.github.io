@@ -1,0 +1,33 @@
+base_url = "/"
+title = "Brian van Burken"
+author = "Brian van Burken"
+description = ""
+default_language = "en"
+compile_sass = true
+generate_sitemap = true
+generate_robots_txt = true
+build_search_index = false
+generate_feeds = true
+feed_filenames = ["rss.xml"]
+minify_html = true
+
+[markdown]
+highlight_code = false
+
+ignored_static = [
+  ".github",
+  "Makefile",
+  "gulpfile.js",
+  "node_modules/",
+  "package-lock.json",
+  "package.json"
+]
+
+external_links_target_blank = true
+external_links_no_follow = true
+external_links_no_referrer = true
+
+[extra]
+# Put all your custom variables here
+
+github_source = "https://github.com/brianvanburken/brianvanburken.github.io/tree/master/content"
