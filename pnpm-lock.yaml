@@ -45,17 +45,17 @@ importers:
         specifier: ^6.0.1
         version: 6.0.1(postcss@8.5.6)
       posthtml:
-        specifier: ^0.16.6
-        version: 0.16.6
+        specifier: ^0.16.7
+        version: 0.16.7
       posthtml-external-link:
         specifier: ^0.1.2
-        version: 0.1.2(posthtml@0.16.6)
+        version: 0.1.2(posthtml@0.16.7)
       posthtml-inline-assets:
         specifier: ^3.1.0
         version: 3.1.0
       posthtml-minify-classnames:
         specifier: ^0.4.0
-        version: 0.4.0(posthtml@0.16.6)
+        version: 0.4.0(posthtml@0.16.7)
       purgecss:
         specifier: ^7.0.2
         version: 7.0.2
@@ -2028,8 +2028,8 @@ packages:
     resolution: {integrity: sha512-C2hrAPzmRdpuL3iH0TDdQ6XCc9M7Dcc3zEW5BLerY65G4tWWszwv6nG/ksi6ul5i2mx22ubdljgktXCtNkydkw==}
     engines: {node: '>=6.0.0'}
 
-  posthtml@0.16.6:
-    resolution: {integrity: sha512-JcEmHlyLK/o0uGAlj65vgg+7LIms0xKXe60lcDOTU7oVX/3LuEuLwrQpW3VJ7de5TaFKiW4kWkaIpJL42FEgxQ==}
+  posthtml@0.16.7:
+    resolution: {integrity: sha512-7Hc+IvlQ7hlaIfQFZnxlRl0jnpWq2qwibORBhQYIb0QbNtuicc5ZxvKkVT71HJ4Py1wSZ/3VR1r8LfkCtoCzhw==}
     engines: {node: '>=12.0.0'}
 
   prelude-ls@1.1.2:
@@ -3850,7 +3850,7 @@ snapshots:
     dependencies:
       '@types/relateurl': 0.2.33
       cosmiconfig: 9.0.0
-      posthtml: 0.16.6
+      posthtml: 0.16.7
     optionalDependencies:
       cssnano: 7.1.1(postcss@8.5.6)
       postcss: 8.5.6
@@ -4685,9 +4685,9 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  posthtml-external-link@0.1.2(posthtml@0.16.6):
+  posthtml-external-link@0.1.2(posthtml@0.16.7):
     dependencies:
-      posthtml: 0.16.6
+      posthtml: 0.16.7
 
   posthtml-inline-assets@3.1.0:
     dependencies:
@@ -4703,11 +4703,11 @@ snapshots:
     dependencies:
       cosmiconfig: 2.2.2
 
-  posthtml-minify-classnames@0.4.0(posthtml@0.16.6):
+  posthtml-minify-classnames@0.4.0(posthtml@0.16.7):
     dependencies:
       postcss-safe-parser: 4.0.2
       postcss-selector-parser: 6.0.6
-      posthtml: 0.16.6
+      posthtml: 0.16.7
 
   posthtml-parser@0.11.0:
     dependencies:
@@ -4728,7 +4728,7 @@ snapshots:
       posthtml-parser: 0.4.2
       posthtml-render: 1.4.0
 
-  posthtml@0.16.6:
+  posthtml@0.16.7:
     dependencies:
       posthtml-parser: 0.11.0
       posthtml-render: 3.0.0
