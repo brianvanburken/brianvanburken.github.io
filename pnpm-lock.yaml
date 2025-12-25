@@ -39,8 +39,8 @@ importers:
         specifier: ^1.0.2
         version: 1.0.2
       htmlnano:
-        specifier: ^2.1.5
-        version: 2.1.5(cssnano@7.1.2(postcss@8.5.6))(postcss@8.5.6)(purgecss@7.0.2)(relateurl@0.2.7)(uncss@0.17.3)
+        specifier: ^3.0.0
+        version: 3.0.0(cssnano@7.1.2(postcss@8.5.6))(postcss@8.5.6)(purgecss@7.0.2)(relateurl@0.2.7)(uncss@0.17.3)
       postcss-csso:
         specifier: ^6.0.1
         version: 6.0.1(postcss@8.5.6)
@@ -75,8 +75,8 @@ packages:
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/helper-validator-identifier@7.27.1':
-    resolution: {integrity: sha512-D2hP9eA+Sqx1kBZgzxZh0y1trbuU+JoDkiEwqhQ36nodYqJwyEIhPSdMNd7lOm/4io72luTPWH20Yda0xOuUow==}
+  '@babel/helper-validator-identifier@7.28.5':
+    resolution: {integrity: sha512-qSs4ifwzKJSV39ucNjsvc6WVHs6b7S03sOh2OcHF9UHfVPqWWALUsNUVzhSBiItjRZoLHx7nIarVjqKVusUZ1Q==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.28.4':
@@ -545,6 +545,10 @@ packages:
   commander@12.1.0:
     resolution: {integrity: sha512-Vw8qHK3bZM9y/P10u3Vib8o/DdkvA2OtPtZvD871QKjy74Wj1WSKFILMPRPSdUSx5RFK1arlJzEtA4PkFgnbuA==}
     engines: {node: '>=18'}
+
+  commander@14.0.2:
+    resolution: {integrity: sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==}
+    engines: {node: '>=20'}
 
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
@@ -1135,8 +1139,9 @@ packages:
   html-void-elements@3.0.0:
     resolution: {integrity: sha512-bEqo66MRXsUGxWHV5IP0PUiAWwoEjba4VCzg0LjFJBpchPaTfyfCKTG6bc5F8ucKec3q5y6qOdGyYTSBEvhCrg==}
 
-  htmlnano@2.1.5:
-    resolution: {integrity: sha512-IXffzXq1beGQN2rsr03aIPK/rVU1jR2uwHymlAIEf97Tl5WdpG50IsQ5nWGvSGQJ+x6U7S6yac9rRiFgAg4/xQ==}
+  htmlnano@3.0.0:
+    resolution: {integrity: sha512-DCLN93CIG5r41Sv/rWk1u6XJ89oOtpHK2OzeXL8Aqa8719HWEPpggxRdDbceQQWrZTRIsh/5pF8Rrv1JKq0lpg==}
+    hasBin: true
     peerDependencies:
       cssnano: ^7.0.0
       postcss: ^8.3.11
@@ -1349,12 +1354,12 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  js-yaml@3.14.1:
-    resolution: {integrity: sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==}
+  js-yaml@3.14.2:
+    resolution: {integrity: sha512-PMSmkqxr106Xa156c2M265Z+FTrPl+oxd/rgOQy2tijQeK5TxQ43psO1ZCwhVOSdnn+RzkzlRz/eY4BgJBYVpg==}
     hasBin: true
 
-  js-yaml@4.1.0:
-    resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
+  js-yaml@4.1.1:
+    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
     hasBin: true
 
   jsbn@0.1.1:
@@ -2661,11 +2666,11 @@ snapshots:
 
   '@babel/code-frame@7.27.1':
     dependencies:
-      '@babel/helper-validator-identifier': 7.27.1
+      '@babel/helper-validator-identifier': 7.28.5
       js-tokens: 4.0.0
       picocolors: 1.1.1
 
-  '@babel/helper-validator-identifier@7.27.1': {}
+  '@babel/helper-validator-identifier@7.28.5': {}
 
   '@babel/runtime@7.28.4': {}
 
@@ -3146,6 +3151,8 @@ snapshots:
 
   commander@12.1.0: {}
 
+  commander@14.0.2: {}
+
   commander@2.20.3: {}
 
   commander@4.1.1: {}
@@ -3166,7 +3173,7 @@ snapshots:
   cosmiconfig@2.2.2:
     dependencies:
       is-directory: 0.3.1
-      js-yaml: 3.14.1
+      js-yaml: 3.14.2
       minimist: 1.2.8
       object-assign: 4.1.1
       os-homedir: 1.0.2
@@ -3177,7 +3184,7 @@ snapshots:
     dependencies:
       env-paths: 2.2.1
       import-fresh: 3.3.1
-      js-yaml: 4.1.0
+      js-yaml: 4.1.1
       parse-json: 5.2.0
 
   cross-spawn@7.0.6:
@@ -3849,9 +3856,10 @@ snapshots:
 
   html-void-elements@3.0.0: {}
 
-  htmlnano@2.1.5(cssnano@7.1.2(postcss@8.5.6))(postcss@8.5.6)(purgecss@7.0.2)(relateurl@0.2.7)(uncss@0.17.3):
+  htmlnano@3.0.0(cssnano@7.1.2(postcss@8.5.6))(postcss@8.5.6)(purgecss@7.0.2)(relateurl@0.2.7)(uncss@0.17.3):
     dependencies:
       '@types/relateurl': 0.2.33
+      commander: 14.0.2
       cosmiconfig: 9.0.0
       posthtml: 0.16.7
     optionalDependencies:
@@ -4038,12 +4046,12 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@3.14.1:
+  js-yaml@3.14.2:
     dependencies:
       argparse: 1.0.10
       esprima: 4.0.1
 
-  js-yaml@4.1.0:
+  js-yaml@4.1.1:
     dependencies:
       argparse: 2.0.1
 
