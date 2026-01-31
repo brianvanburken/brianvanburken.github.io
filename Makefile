@@ -1,27 +1,12 @@
-.PHONY: default build serve clean drafts-link drafts-unlink
+.PHONY: default build serve clean
 
 default: serve
 
 serve: clean drafts-link
 	mise exec -- zola serve --drafts || true
-	$(MAKE) drafts-unlink
 
 build: clean
 	mise exec -- zola build && pnpm gulp
 
 clean:
 	rm -rf public
-
-drafts-link:
-	@if [ -d drafts ]; then \
-		for f in drafts/*.md; do \
-			[ -e "$$f" ] && ln -sf "../$$f" content/$$(basename "$$f"); \
-		done; \
-	fi
-
-drafts-unlink:
-	@if [ -d drafts ]; then \
-		for f in drafts/*.md; do \
-			[ -e "$$f" ] && rm -f content/$$(basename "$$f"); \
-		done; \
-	fi
