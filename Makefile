@@ -3,11 +3,11 @@
 default: serve
 
 serve: clean drafts-link
-	zola serve --drafts || true
+	mise exec -- zola serve --drafts || true
 	$(MAKE) drafts-unlink
 
 build: clean
-	zola build && pnpm gulp
+	mise exec -- zola build && find public/tags -mindepth 1 -type d -exec rm -rf {} + 2>/dev/null || true && pnpm gulp
 
 clean:
 	rm -rf public
