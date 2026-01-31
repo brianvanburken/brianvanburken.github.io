@@ -2,10 +2,9 @@
 title = "Home and End keys equivalent on MacBook keyboards"
 date = 2022-12-31
 
-[taxonomies]
-tags = ["macOS"]
 
 [extra]
+tags = ["macOS"]
 excerpt = "The MacBooks have a shortened keyboard where some keys are left out. Apple has cleverly hidden these keys behind shortcuts."
 +++
 

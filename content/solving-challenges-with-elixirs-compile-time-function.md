@@ -2,10 +2,9 @@
 title = "Solving Challenge with Elixir's Compile-Time Functions"
 date = 2019-05-01
 
-[taxonomies]
-tags = ["Elixir", "Macro", "AST", "Compile Time"]
 
 [extra]
+tags = ["Elixir", "Macro", "AST", "Compile Time"]
 excerpt = "I love solving small programming challenges. One of the many challenges on this website is about transcribing DNA nucleotides to RNA nucleotides. I was able to solve this by using Elixir."
 +++
 

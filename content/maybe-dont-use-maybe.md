@@ -2,10 +2,9 @@
 title = "Maybe Don't Use Maybe?"
 date = 2018-08-13
 
-[taxonomies]
-tags = ["Elm", "Custom Types", "Maybe", "Monads"]
 
 [extra]
+tags = ["Elm", "Custom Types", "Maybe", "Monads"]
 excerpt = "At my work I've come across a code that had more branches than were possible in the logic of the domain."
 +++
 

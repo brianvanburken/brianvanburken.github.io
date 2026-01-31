@@ -2,10 +2,9 @@
 title = "Manually editing chunks in git add --patch"
 date = 2023-01-04
 
-[taxonomies]
-tags = ["Git"]
 
 [extra]
+tags = ["Git"]
 excerpt = "Git allows to stage smaller chunks of code for creating more atomic commits."
 +++
 

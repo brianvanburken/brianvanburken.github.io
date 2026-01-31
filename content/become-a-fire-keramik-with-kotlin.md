@@ -2,10 +2,9 @@
 title = "Become a Fire Keramik with Kotlin"
 date = 2020-08-03
 
-[taxonomies]
-tags = ["Kotlin", "Functional Programming"]
 
 [extra]
+tags = ["Kotlin", "Functional Programming"]
 excerpt = "At my work we started using Kotlin more and more. I wondered how far you could go in writing fully Functional in the language."
 +++
 

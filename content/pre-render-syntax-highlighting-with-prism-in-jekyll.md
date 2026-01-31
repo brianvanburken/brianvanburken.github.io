@@ -2,10 +2,9 @@
 title = "Pre-render Syntax Highlighting with Prism in Jekyll"
 date = 2021-12-01
 
-[taxonomies]
-tags = ["Ruby", "Jekyll", "Prism", "Sustainablity"]
 
 [extra]
+tags = ["Ruby", "Jekyll", "Prism", "Sustainablity"]
 excerpt = "To get a considerable performance boost for this blog, I decided to pre-render all the code when building. So no need for a large JavaScript file."
 +++
 

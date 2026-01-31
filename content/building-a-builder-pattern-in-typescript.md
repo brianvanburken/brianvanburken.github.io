@@ -2,10 +2,9 @@
 title = "Building A Builder Pattern in TypeScript"
 date = 2021-12-12
 
-[taxonomies]
-tags = ["TypeScript", "Pattern", "Generics"]
 
 [extra]
+tags = ["TypeScript", "Pattern", "Generics"]
 excerpt = "Forcing types using type assertions leave your code open for wrong assumptions. I went looking for an alternative."
 +++
 

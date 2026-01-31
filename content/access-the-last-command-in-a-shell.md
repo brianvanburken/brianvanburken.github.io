@@ -2,10 +2,9 @@
 title = "Access the last argument of the last command in a shell"
 date = 2022-12-26
 
-[taxonomies]
-tags = ["Shell"]
 
 [extra]
+tags = ["Shell"]
 excerpt = "Using `$_`, you can access the last argument of the last command executed."
 +++
 

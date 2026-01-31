@@ -2,10 +2,9 @@
 title = "Flatten a directory on Unix systems"
 date = 2023-01-15
 
-[taxonomies]
-tags = ["Shell", "macOS"]
 
 [extra]
+tags = ["Shell", "macOS"]
 excerpt = "When cleaning up a bit on my computer, I wanted to flatten a directory structure. Not wanting to move everything by hand, I searched for a way to automate it."
 +++
 

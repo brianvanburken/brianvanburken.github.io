@@ -2,10 +2,9 @@
 title = "Changing Angular Components for Printing"
 date = 2021-10-24
 
-[taxonomies]
-tags = ["Angular", "EventListener", "TypeScript"]
 
 [extra]
+tags = ["Angular", "EventListener", "TypeScript"]
 excerpt = "When the user is printing a page, we wanted our components to behave differently without using CSS."
 +++
 

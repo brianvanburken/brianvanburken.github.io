@@ -2,10 +2,9 @@
 title = "Detecting Output Listeners in Angular"
 date = 2021-10-25
 
-[taxonomies]
-tags = ["Angular", "EventEmitter", "TypeScript"]
 
 [extra]
+tags = ["Angular", "EventEmitter", "TypeScript"]
 excerpt = "Detecting listeners on an EventEmitter in an Angular component."
 +++
 

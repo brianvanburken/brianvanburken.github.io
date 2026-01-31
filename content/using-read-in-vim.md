@@ -2,10 +2,9 @@
 title = "Using :read in Vim"
 date = 2022-12-27
 
-[taxonomies]
-tags = ["Vim"]
 
 [extra]
+tags = ["Vim"]
 excerpt = "The vim command :read allows you to input anything from a file into the current buffer. Useful if you want to copy things from another file."
 +++
 

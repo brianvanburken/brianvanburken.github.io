@@ -2,10 +2,9 @@
 title = "Disable NPM fund message"
 date = 2023-03-02
 
-[taxonomies]
-tags = ["Shell"]
 
 [extra]
+tags = ["Shell"]
 excerpt = "If you find NPM's funding messages distracting, you can disable them by setting a configuration in different ways."
 +++
 

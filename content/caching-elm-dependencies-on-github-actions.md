@@ -2,10 +2,9 @@
 title = "Caching Elm dependencies on Github Actions"
 date = 2025-02-07
 
-[taxonomies]
-tags = ["Github Actions", "Elm"]
 
 [extra]
+tags = ["Github Actions", "Elm"]
 excerpt = "Caching dependencies efficiently can significantly speed up CI runs and improve reliability, as it prevents downloading dependencies every time, reducing exposure to outages and network failures."
 +++
 

@@ -2,10 +2,9 @@
 title = "Wrap visual selection using the vim-surround plugin"
 date = 2022-12-30
 
-[taxonomies]
-tags = ["Vim"]
 
 [extra]
+tags = ["Vim"]
 excerpt = "One nice thing I've discovered using the vim-surround plugin for vim is that you can wrap a visual selection."
 +++
 

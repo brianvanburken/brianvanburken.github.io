@@ -2,10 +2,9 @@
 title = "Keep case when replacing text in Vim using vim-abolish"
 date = 2023-01-03
 
-[taxonomies]
-tags = ["Vim"]
 
 [extra]
+tags = ["Vim"]
 excerpt = "vim-abolish is a plugin that allows users to easily search for and replace text while also providing the option to keep the original case of the text."
 +++
 

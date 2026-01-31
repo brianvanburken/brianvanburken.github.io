@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Tags</h1>
+
+{# Get all pages from the root section #}
+{% set all_pages = get_section(path="_index.md") %}
+
+{# Collect all unique tag slugs #}
+{% set_global tag_slugs = [] %}
+{% set_global tag_names = [] %}
+{% for page in all_pages.pages %}
+  {% if page.extra.tags %}
+    {% for tag in page.extra.tags %}
+      {% set tag_slug = tag | slugify %}
+      {% if tag_slug not in tag_slugs %}
+        {% set_global tag_slugs = tag_slugs | concat(with=[tag_slug]) %}
+        {% set_global tag_names = tag_names | concat(with=[tag]) %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+
+{# Sort tag slugs #}
+{% set sorted_slugs = tag_slugs | sort %}
+
+{# Output each tag section #}
+{% for slug in sorted_slugs %}
+  {# Find the original tag name for this slug #}
+  {% set_global current_tag_name = "" %}
+  {% for i in range(end=tag_slugs | length) %}
+    {% if tag_slugs[i] == slug %}
+      {% set_global current_tag_name = tag_names[i] %}
+    {% endif %}
+  {% endfor %}
+
+<h2 id="{{ slug }}">{{ current_tag_name }}</h2>
+<p>
+  {# Collect and sort pages for this tag #}
+  {% set_global tag_pages = [] %}
+  {% for page in all_pages.pages %}
+    {% if page.extra.tags %}
+      {% for tag in page.extra.tags %}
+        {% if tag | slugify == slug %}
+          {% set_global tag_pages = tag_pages | concat(with=[page]) %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+  {% set sorted_pages = tag_pages | sort(attribute="date") %}
+  {% for page in sorted_pages %}
+  {{ page.date | date(format=config.extra.date_format) }} - <a href="{{ page.path }}">{{ page.title }}</a>
+  <br />
+  {% endfor %}
+</p>
+{% endfor %}
+{% endblock content %}

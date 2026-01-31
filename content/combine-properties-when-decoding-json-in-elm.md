@@ -2,10 +2,9 @@
 title = "Combine Properties when Decoding JSON in Elm"
 date = 2021-11-15
 
-[taxonomies]
-tags = ["Elm", "JSON", "Decoding"]
 
 [extra]
+tags = ["Elm", "JSON", "Decoding"]
 excerpt = "Combining two properties extracted from a JSON-object when decoding JSON in Elm."
 +++
 

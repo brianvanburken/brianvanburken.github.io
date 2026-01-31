@@ -2,10 +2,9 @@
 title = "Bulk Association Creation in Rails"
 date = 2015-08-22
 
-[taxonomies]
-tags = ["Rails", "Ruby", "ActiveRecord"]
 
 [extra]
+tags = ["Rails", "Ruby", "ActiveRecord"]
 excerpt = "During development of an application I stumbled across a situation where it produced N+1 queries and I set out on an adventure improve it."
 +++
 

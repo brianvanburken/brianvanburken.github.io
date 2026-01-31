@@ -1,5 +1,5 @@
-{%- if page.taxonomies.tags -%}
-  {%- set sorted_tags = page.taxonomies.tags | sort -%}
+{%- if page.extra.tags -%}
+  {%- set sorted_tags = page.extra.tags | sort -%}
   {%- for tag in sorted_tags -%}
 <a href="/tags/#{{ tag | slugify }}" title="See all posts for {{ tag }}">{{ tag }}</a>{% if not loop.last %}, {% endif %}
   {%- endfor -%}

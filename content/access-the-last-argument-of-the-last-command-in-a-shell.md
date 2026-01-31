@@ -2,10 +2,9 @@
 title = "Access the last command in a shell"
 date = 2022-12-26
 
-[taxonomies]
-tags = ["Shell"]
 
 [extra]
+tags = ["Shell"]
 excerpt = "Using !!, you can access the last command executed. Useful for rerunning a previous command."
 +++
 

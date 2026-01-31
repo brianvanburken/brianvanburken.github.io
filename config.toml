@@ -15,10 +15,8 @@ feed_filenames = ["feed.xml"]
 # Disable syntax highlighting - handled by Gulp/Shiki
 # Note: This is set in [markdown] section
 
-# Taxonomies
-taxonomies = [
-    { name = "tags", feed = true }
-]
+# Taxonomies disabled - tags page built manually
+taxonomies = []
 
 # Markdown settings
 [markdown]

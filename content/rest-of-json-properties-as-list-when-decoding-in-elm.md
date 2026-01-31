@@ -2,10 +2,9 @@
 title = "JSON Properties as a List when Decoding in Elm"
 date = 2021-11-20
 
-[taxonomies]
-tags = ["Elm", "JSON", "Decoding"]
 
 [extra]
+tags = ["Elm", "JSON", "Decoding"]
 excerpt = "Storing JSON properties as a List when decoding in Elm"
 +++
 

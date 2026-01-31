@@ -2,10 +2,9 @@
 title = "A More Sustainable Blog"
 date = 2021-12-06
 
-[taxonomies]
-tags = ["HTML", "Design", "Sustainablity"]
 
 [extra]
+tags = ["HTML", "Design", "Sustainablity"]
 excerpt = "After reading Sustainable Web Design, I started looking for ways to reduce the carbon footprint of this blog."
 +++
 
