@@ -7,7 +7,7 @@ serve: clean drafts-link
 	$(MAKE) drafts-unlink
 
 build: clean
-	mise exec -- zola build && find public/tags -mindepth 1 -type d -exec rm -rf {} + 2>/dev/null || true && pnpm gulp
+	mise exec -- zola build && pnpm gulp
 
 clean:
 	rm -rf public
