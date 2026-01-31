@@ -1,0 +1,114 @@
+$bg: #0b0e14;
+$fg: #fff;
+$baseline: 1.5rem;
+$link-color: #fa3;
+
+html.debug {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 0, 0, 0.2) 0,
+    rgba(255, 0, 0, 0.2) 1px,
+    transparent 1px,
+    transparent $baseline
+  );
+  background-size: 100% $baseline;
+}
+
+html {
+  color: $fg;
+  background: $bg;
+  @media (prefers-color-scheme: light) {
+    color: $bg;
+    background: $fg;
+  }
+}
+
+body {
+  font-family: "Avenir Next", "Open Sans", Helvetica, sans-serif;
+  font-size: 1.125rem;
+
+  max-width: 70ch;
+  margin: $baseline auto;
+  padding: 0 $baseline;
+}
+
+ul, ol, p, h1, h2, h3, pre, code, footer, article {
+  margin: $baseline 0;
+  line-height: $baseline;
+}
+
+sub, sup {
+  line-height: 1;
+  font-size: 0.75rem;
+}
+
+ul, ol {
+  padding-left: $baseline;
+}
+
+p {
+  text-align: justify;
+}
+
+img {
+  max-width: 100%;
+}
+
+h1 {
+  font-size: 2.5rem;
+  line-height: $baseline * 2;
+}
+
+h2 {
+  margin-top: $baseline * 2;
+}
+
+blockquote {
+  font-style: oblique;
+  margin: $baseline;
+}
+
+a, a code {
+  color: $link-color;
+}
+
+a {
+  &:visited {
+    color: darken($link-color, 10%);
+  }
+
+  &:hover,
+  &:focus {
+    color: lighten($link-color, 10%);
+  }
+}
+
+footer {
+  border-top: 1px solid #bfbdb6;
+  padding-top: $baseline
+}
+
+code,
+pre {
+  font-size: 0.875rem;
+  word-spacing: normal;
+  word-break: normal;
+  word-wrap: normal;
+  hyphens: none;
+
+  color: #bfbdb6;
+  background: $bg;
+  border-radius: 0.375rem;
+}
+
+pre {
+  overflow: auto;
+  padding: $baseline;
+}
+
+p code,
+li code {
+  line-height: 1;
+  outline: 3px solid $bg;
+  margin: 0 2px;
+}

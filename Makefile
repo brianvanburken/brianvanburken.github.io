@@ -1,15 +1,12 @@
-export EXECJS_RUNTIME=Node
+.PHONY: default build serve clean
 
-.PHONEY: default build
+default: serve
 
-default: clean
-	bundle exec jekyll serve --livereload --drafts --incremental --future
+serve: clean
+	zola serve --drafts
 
 build: clean
-	JEKYLL_ENV=production bundle exec jekyll build --verbose --profile --trace && pnpm gulp
+	zola build && pnpm gulp
 
-clean: clean_cache
-	bundle exec jekyll clean
-
-clean_cache:
-	rm -rf .jekyll-cache
+clean:
+	rm -rf public

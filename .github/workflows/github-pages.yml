@@ -1,5 +1,5 @@
-# https://jekyllrb.com/docs/continuous-integration/github-actions/
-name: Build and deploy Jekyll site to GitHub Pages
+# https://www.getzola.org/documentation/deployment/github-pages/
+name: Build and deploy Zola site to GitHub Pages
 on:
   push:
     branches:
@@ -19,19 +19,12 @@ jobs:
         with:
           node-version: '22.14.0'
           cache: 'pnpm'
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "2.7"
-          bundler-cache: true
+      - name: Setup Zola
+        uses: taiki-e/install-action@zola
       - run: pnpm install
       # Build
-      - run: bundle exec jekyll build -s "${GITHUB_WORKSPACE}/" -d build
-        env:
-          EXECJS_RUNTIME: node
-          JEKYLL_ENV: production
+      - run: zola build -o build
       - run: BUILD_DIR=build pnpm gulp
-      - run: cp CNAME ./build
-      - run: cp robots.txt ./build
       # Publish
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

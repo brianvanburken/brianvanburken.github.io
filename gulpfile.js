@@ -15,7 +15,7 @@ import { createHighlighter } from "shiki";
 import { transform } from "gulp-html-transform";
 import { deleteSync } from "del";
 
-const source = process.env.BUILD_DIR || "_site";
+const source = process.env.BUILD_DIR || "public";
 const dirname = new URL(".", import.meta.url).pathname;
 const theme = "ayu-dark";
 const highlighter = await createHighlighter({
@@ -68,13 +68,67 @@ function uncssStyles() {
   });
 }
 
+// Process markdown abbreviations (*[ABBR]: Definition)
+async function processAbbreviations($) {
+  const abbreviations = {};
+  const abbrRegex = /\*\[([^\]]+)\]:\s*(.+)/g;
+
+  // Find all abbreviation definitions (may be in a single <p> with newlines)
+  $("p").each(function () {
+    const text = $(this).text();
+    let match;
+    let hasAbbr = false;
+
+    while ((match = abbrRegex.exec(text)) !== null) {
+      abbreviations[match[1]] = match[2].trim();
+      hasAbbr = true;
+    }
+    abbrRegex.lastIndex = 0; // Reset regex state
+
+    // Remove paragraph if it only contains abbreviation definitions
+    if (hasAbbr) {
+      const cleanedText = text.replace(/\*\[[^\]]+\]:\s*.+/g, "").trim();
+      if (cleanedText === "") {
+        $(this).remove();
+      }
+    }
+  });
+
+  // Replace abbreviations in text nodes
+  if (Object.keys(abbreviations).length > 0) {
+    const replaceInText = (node) => {
+      if (node.type === "text" && node.data) {
+        let text = node.data;
+        for (const [abbr, title] of Object.entries(abbreviations)) {
+          // Use word boundary to avoid partial matches, escape special regex chars
+          const escapedAbbr = abbr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const regex = new RegExp(`\\b${escapedAbbr}\\b`, "g");
+          text = text.replace(regex, `<abbr title="${title}">${abbr}</abbr>`);
+        }
+        if (text !== node.data) {
+          $(node).replaceWith(text);
+        }
+      }
+    };
+
+    // Process text nodes in the body, but not in code/pre/script/style
+    $("body *")
+      .not("code, pre, script, style, abbr")
+      .contents()
+      .each(function () {
+        replaceInText(this);
+      });
+  }
+}
+
 async function convertCode($) {
   $("code").each(function () {
     const $code = $(this);
     const $parent = $code.parent();
     const isInlineCode = $parent[0].name !== "pre";
     const cls = $code.attr("class");
-    const lang = cls ? cls.toString().replace("language-", "").trim() : "text";
+    const dataLang = $code.attr("data-lang");
+    const lang = dataLang ? dataLang : (cls ? cls.toString().replace("language-", "").trim() : "text");
     const content = $code.text();
 
     const highlighted = highlighter.codeToHtml(content, {
@@ -196,6 +250,7 @@ gulp.task("html", function () {
   return (
     gulp
       .src(source + "/**/*.html")
+      .pipe(transform(processAbbreviations))
       .pipe(transform(convertCode))
 
       // Compress spans where next span has same class so lines with similair colors

@@ -1,0 +1,54 @@
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="{{ get_url(path="styles.css") }}" />
+  <link rel="alternate" type="application/atom+xml" title="RSS Feed" href="{{ get_url(path="feed.xml") }}" />
+
+  {# SEO Meta Tags #}
+  {% if page.title %}
+    <title>{{ page.title }} | {{ config.title }}</title>
+    <meta property="og:title" content="{{ page.title }}" />
+  {% elif section.title %}
+    <title>{{ section.title }} | {{ config.title }}</title>
+    <meta property="og:title" content="{{ section.title }}" />
+  {% else %}
+    <title>{{ config.title }}</title>
+    <meta property="og:title" content="{{ config.title }}" />
+  {% endif %}
+
+  {% if page.extra.excerpt %}
+    <meta name="description" content="{{ page.extra.excerpt }}" />
+    <meta property="og:description" content="{{ page.extra.excerpt }}" />
+  {% elif page.description %}
+    <meta name="description" content="{{ page.description }}" />
+    <meta property="og:description" content="{{ page.description }}" />
+  {% elif config.description %}
+    <meta name="description" content="{{ config.description }}" />
+    <meta property="og:description" content="{{ config.description }}" />
+  {% endif %}
+
+  <meta property="og:type" content="{% if page %}article{% else %}website{% endif %}" />
+  <meta property="og:url" content="{{ current_url | default(value=config.base_url) }}" />
+  <meta property="og:site_name" content="{{ config.title }}" />
+
+  {# Twitter Card #}
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{% if page.title %}{{ page.title }}{% elif section.title %}{{ section.title }}{% else %}{{ config.title }}{% endif %}" />
+  {% if page.extra.excerpt %}
+    <meta name="twitter:description" content="{{ page.extra.excerpt }}" />
+  {% elif page.description %}
+    <meta name="twitter:description" content="{{ page.description }}" />
+  {% endif %}
+
+  {# Canonical URL #}
+  <link rel="canonical" href="{{ current_url | default(value=config.base_url) }}" />
+
+  {# Article specific meta #}
+  {% if page.date %}
+    <meta property="article:published_time" content="{{ page.date | date(format="%Y-%m-%dT%H:%M:%S") }}+00:00" />
+  {% endif %}
+  {% if page.updated %}
+    <meta property="article:modified_time" content="{{ page.updated | date(format="%Y-%m-%dT%H:%M:%S") }}+00:00" />
+  {% endif %}
+</head>
