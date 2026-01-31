@@ -1,0 +1,14 @@
+<article>
+<a href="{{ page.path }}">{{ page.title }}</a>
+&mdash;
+{{ page.extra.excerpt | default(value="") }}
+<br/>
+&#128197; {{ page.date | date(format=config.extra.date_format) }}
+<br/>
+&#127991; {%- if page.extra.tags -%}
+  {%- set sorted_tags = page.extra.tags | sort -%}
+  {%- for tag in sorted_tags -%}
+<a href="/tags/#{{ tag | slugify }}" title="See all posts for {{ tag }}">{{ tag }}</a>{% if not loop.last %}, {% endif %}
+  {%- endfor -%}
+{%- endif -%}
+</article>

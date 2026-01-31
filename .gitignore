@@ -1,7 +1,3 @@
-_site
-.sass-cache
-.jekyll-cache
-.jekyll-metadata
-vendor
+public
 node_modules
-_drafts/*
+content/*.md

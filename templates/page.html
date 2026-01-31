@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<article itemscope itemtype="http://schema.org/BlogPosting">
+  <h1 itemprop="name headline">
+    {{ page.title }}
+  </h1>
+
+  <section itemprop="articleBody">
+    {{ page.content | safe }}
+  </section>
+
+  <footer>
+    {% include "partials/post-metadata.html" %}
+  </footer>
+</article>
+{% endblock content %}

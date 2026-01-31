@@ -15,7 +15,7 @@ import { createHighlighter } from "shiki";
 import { transform } from "gulp-html-transform";
 import { deleteSync } from "del";
 
-const source = process.env.BUILD_DIR || "_site";
+const source = process.env.BUILD_DIR || "public";
 const dirname = new URL(".", import.meta.url).pathname;
 const theme = "ayu-dark";
 const highlighter = await createHighlighter({
@@ -68,13 +68,131 @@ function uncssStyles() {
   });
 }
 
+// Process footnotes to match Jekyll's structure
+async function processFootnotes($) {
+  // Find all footnote references and update IDs/hrefs to Jekyll format
+  $("sup > a[href^='#']").each(function () {
+    const $link = $(this);
+    const href = $link.attr("href");
+    const match = href.match(/^#(\d+)$/);
+    if (match) {
+      const fnId = match[1];
+      const $sup = $link.parent();
+      $sup.attr("id", `fnref:${fnId}`);
+      $link.attr("href", `#fn:${fnId}`);
+    }
+  });
+
+  // Collect all footnote divs
+  const footnoteDivs = [];
+  $("div[id]").each(function () {
+    const $div = $(this);
+    const id = $div.attr("id");
+    if (/^\d+$/.test(id)) {
+      footnoteDivs.push({ id, $div });
+    }
+  });
+
+  if (footnoteDivs.length === 0) return;
+
+  // Create the Jekyll-style footnotes wrapper
+  const $wrapper = $('<div role="doc-endnotes"><ol></ol></div>');
+  const $ol = $wrapper.find("ol");
+
+  // Convert each footnote div to a list item
+  footnoteDivs.forEach(({ id, $div }) => {
+    // Remove the <sup>N</sup> at the start
+    $div.find("sup").first().remove();
+
+    // Get the content and find the last <p> to insert the back link
+    const $lastP = $div.find("p").last();
+    if ($lastP.length) {
+      $lastP.append(`&nbsp;<a href="#fnref:${id}" role="doc-backlink">↩</a>`);
+    } else {
+      // If no <p>, just append the back link
+      $div.append(`<a href="#fnref:${id}" role="doc-backlink">↩</a>`);
+    }
+
+    // Create list item with Jekyll-style ID
+    const $li = $(`<li id="fn:${id}"></li>`);
+    $li.append($div.contents());
+
+    $ol.append($li);
+
+    // Remove the original div
+    $div.remove();
+  });
+
+  // Insert the wrapper where the first footnote was (or at end of article/body)
+  const $article = $("article");
+  if ($article.length) {
+    $article.find("section").append($wrapper);
+  } else {
+    $("body").append($wrapper);
+  }
+}
+
+// Process markdown abbreviations (*[ABBR]: Definition)
+async function processAbbreviations($) {
+  const abbreviations = {};
+  const abbrRegex = /\*\[([^\]]+)\]:\s*(.+)/g;
+
+  // Find all abbreviation definitions (may be in a single <p> with newlines)
+  $("p").each(function () {
+    const text = $(this).text();
+    let match;
+    let hasAbbr = false;
+
+    while ((match = abbrRegex.exec(text)) !== null) {
+      abbreviations[match[1]] = match[2].trim();
+      hasAbbr = true;
+    }
+    abbrRegex.lastIndex = 0; // Reset regex state
+
+    // Remove paragraph if it only contains abbreviation definitions
+    if (hasAbbr) {
+      const cleanedText = text.replace(/\*\[[^\]]+\]:\s*.+/g, "").trim();
+      if (cleanedText === "") {
+        $(this).remove();
+      }
+    }
+  });
+
+  // Replace abbreviations in text nodes
+  if (Object.keys(abbreviations).length > 0) {
+    const replaceInText = (node) => {
+      if (node.type === "text" && node.data) {
+        let text = node.data;
+        for (const [abbr, title] of Object.entries(abbreviations)) {
+          // Use word boundary to avoid partial matches, escape special regex chars
+          const escapedAbbr = abbr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const regex = new RegExp(`\\b${escapedAbbr}\\b`, "g");
+          text = text.replace(regex, `<abbr title="${title}">${abbr}</abbr>`);
+        }
+        if (text !== node.data) {
+          $(node).replaceWith(text);
+        }
+      }
+    };
+
+    // Process text nodes in the body, but not in code/pre/script/style
+    $("body *")
+      .not("code, pre, script, style, abbr")
+      .contents()
+      .each(function () {
+        replaceInText(this);
+      });
+  }
+}
+
 async function convertCode($) {
   $("code").each(function () {
     const $code = $(this);
     const $parent = $code.parent();
     const isInlineCode = $parent[0].name !== "pre";
     const cls = $code.attr("class");
-    const lang = cls ? cls.toString().replace("language-", "").trim() : "text";
+    const dataLang = $code.attr("data-lang");
+    const lang = dataLang ? dataLang : (cls ? cls.toString().replace("language-", "").trim() : "text");
     const content = $code.text();
 
     const highlighted = highlighter.codeToHtml(content, {
@@ -196,6 +314,8 @@ gulp.task("html", function () {
   return (
     gulp
       .src(source + "/**/*.html")
+      .pipe(transform(processFootnotes))
+      .pipe(transform(processAbbreviations))
       .pipe(transform(convertCode))
 
       // Compress spans where next span has same class so lines with similair colors

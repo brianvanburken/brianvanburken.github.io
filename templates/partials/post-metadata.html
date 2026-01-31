@@ -1,0 +1,13 @@
+Published on
+<time
+  datetime="{{ page.date | date(format="%Y-%m-%dT%H:%M:%S") }}"
+  itemprop="datePublished"
+>
+  {{ page.date | date(format=config.extra.date_format) }}
+</time>
+
+<br />
+Tags: {% include "partials/tags-list.html" %}
+
+<br/>
+Source <a href="{{ config.extra.github_source }}content/{{ page.slug }}.md" title="View post source on Github">on Github</a>
