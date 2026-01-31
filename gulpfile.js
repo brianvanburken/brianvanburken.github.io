@@ -6,7 +6,7 @@ import postHtmlInlineAssets from "posthtml-inline-assets";
 import postHtmlMinifyClassnames from "posthtml-minify-classnames";
 import postcss from "gulp-postcss";
 import postcssCsso from "postcss-csso";
-import { purgeCSSPlugin } from '@fullhuman/postcss-purgecss';
+import purgeCSSPlugin from '@fullhuman/postcss-purgecss';
 import posthtml from "gulp-posthtml";
 import replace from "gulp-replace-string";
 import through from "through2";
