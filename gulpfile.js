@@ -68,6 +68,70 @@ function uncssStyles() {
   });
 }
 
+// Process footnotes to match Jekyll's structure
+async function processFootnotes($) {
+  // Find all footnote references and update IDs/hrefs to Jekyll format
+  $("sup > a[href^='#']").each(function () {
+    const $link = $(this);
+    const href = $link.attr("href");
+    const match = href.match(/^#(\d+)$/);
+    if (match) {
+      const fnId = match[1];
+      const $sup = $link.parent();
+      $sup.attr("id", `fnref:${fnId}`);
+      $link.attr("href", `#fn:${fnId}`);
+    }
+  });
+
+  // Collect all footnote divs
+  const footnoteDivs = [];
+  $("div[id]").each(function () {
+    const $div = $(this);
+    const id = $div.attr("id");
+    if (/^\d+$/.test(id)) {
+      footnoteDivs.push({ id, $div });
+    }
+  });
+
+  if (footnoteDivs.length === 0) return;
+
+  // Create the Jekyll-style footnotes wrapper
+  const $wrapper = $('<div role="doc-endnotes"><ol></ol></div>');
+  const $ol = $wrapper.find("ol");
+
+  // Convert each footnote div to a list item
+  footnoteDivs.forEach(({ id, $div }) => {
+    // Remove the <sup>N</sup> at the start
+    $div.find("sup").first().remove();
+
+    // Get the content and find the last <p> to insert the back link
+    const $lastP = $div.find("p").last();
+    if ($lastP.length) {
+      $lastP.append(`&nbsp;<a href="#fnref:${id}" role="doc-backlink">↩</a>`);
+    } else {
+      // If no <p>, just append the back link
+      $div.append(`<a href="#fnref:${id}" role="doc-backlink">↩</a>`);
+    }
+
+    // Create list item with Jekyll-style ID
+    const $li = $(`<li id="fn:${id}"></li>`);
+    $li.append($div.contents());
+
+    $ol.append($li);
+
+    // Remove the original div
+    $div.remove();
+  });
+
+  // Insert the wrapper where the first footnote was (or at end of article/body)
+  const $article = $("article");
+  if ($article.length) {
+    $article.find("section").append($wrapper);
+  } else {
+    $("body").append($wrapper);
+  }
+}
+
 // Process markdown abbreviations (*[ABBR]: Definition)
 async function processAbbreviations($) {
   const abbreviations = {};
@@ -250,6 +314,7 @@ gulp.task("html", function () {
   return (
     gulp
       .src(source + "/**/*.html")
+      .pipe(transform(processFootnotes))
       .pipe(transform(processAbbreviations))
       .pipe(transform(convertCode))
 
