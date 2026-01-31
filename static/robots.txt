@@ -1,2 +1,7 @@
-User-agent: YandexBot
-Disallow: *
+User-agent: Yandex
+Disallow: /
+
+User-agent: *
+Disallow:
+Allow: /
+Sitemap: {{ get_url(path="sitemap.xml") }}
