@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Tags</h1>
+
+{% for term in terms | sort(attribute="name") %}
+<h2 id="{{ term.name | slugify }}">{{ term.name }}</h2>
+<p>
+  {% for page in term.pages | sort(attribute="date") | reverse %}
+  {{ page.date | date(format=config.extra.date_format) }} - <a href="{{ page.permalink }}">{{ page.title }}</a>
+  <br />
+  {% endfor %}
+</p>
+{% endfor %}
+{% endblock content %}

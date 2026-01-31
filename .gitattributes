@@ -1,2 +1,1 @@
-_posts/*.md linguist-documentation=false
-_drafts/*.md linguist-documentation=false
+content/*.md linguist-documentation=false

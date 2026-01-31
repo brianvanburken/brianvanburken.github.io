@@ -1,6 +1,6 @@
 {%- if page.taxonomies.tags -%}
   {%- set sorted_tags = page.taxonomies.tags | sort -%}
   {%- for tag in sorted_tags -%}
-<a href="{{ get_taxonomy_url(kind="tags", name=tag) }}" title="See all posts for {{ tag }}">{{ tag }}</a>{% if not loop.last %}, {% endif %}
+<a href="/tags/#{{ tag | slugify }}" title="See all posts for {{ tag }}">{{ tag }}</a>{% if not loop.last %}, {% endif %}
   {%- endfor -%}
 {%- endif -%}
