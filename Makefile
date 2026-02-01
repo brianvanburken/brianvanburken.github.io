@@ -6,7 +6,7 @@ serve: clean drafts-link
 	mise exec -- zola serve --drafts || true
 
 build: clean
-	mise exec -- zola build && pnpm gulp
+	mise exec -- zola build && node build.js
 
 clean:
 	rm -rf public
