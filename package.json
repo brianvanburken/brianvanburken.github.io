@@ -1,27 +1,16 @@
 {
   "name": "brianvanburken.github.io",
   "type": "module",
-  "packageManager": "pnpm@10.18.0",
-  "dependencies": {
-    "@fullhuman/postcss-purgecss": "^8.0.0",
-    "cssnano": "^7.1.2",
-    "del": "^8.0.1",
-    "gulp": "^5.0.1",
-    "gulp-html-minimizer": "^2.0.1",
-    "gulp-html-transform": "^2.3.2",
-    "gulp-postcss": "^10.0.0",
-    "gulp-posthtml": "^3.0.5",
-    "gulp-replace-string": "^0.6.1",
-    "gulp-unescape-html": "^1.0.2",
-    "htmlnano": "^3.0.0",
-    "postcss-csso": "^6.0.1",
-    "posthtml": "^0.16.7",
-    "posthtml-external-link": "^0.1.2",
-    "posthtml-inline-assets": "^3.1.0",
-    "posthtml-minify-classnames": "^0.4.0",
-    "purgecss": "^7.0.2",
-    "shiki": "^3.21.0",
-    "through2": "^4.0.2",
-    "uncss": "^0.17.3"
+  "scripts": {
+    "format": "pnpm biome format --write",
+    "format:check": "pnpm biome format"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.13",
+    "cheerio": "^1.2.0",
+    "csso": "^5.0.5",
+    "html-minifier-terser": "^7.2.0",
+    "purgecss": "^8.0.0",
+    "shiki": "^3.22.0"
   }
 }
