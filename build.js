@@ -300,10 +300,10 @@ function convertCode($) {
 }
 
 /**
- * Cleans up span elements and merges adjacent spans with the same class.
+ * Cleans up empty and unnecessary span elements (Cheerio-based).
+ * Should be called while we still have the Cheerio instance.
  *
  * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
- * @returns {string} Cleaned HTML with merged spans
  */
 function cleanupSpans($) {
   // Remove empty spans
@@ -324,61 +324,69 @@ function cleanupSpans($) {
       $(this).replaceWith($(this).html());
     }
   });
+}
 
-  // Merge adjacent spans with same class (regex on HTML string)
+/**
+ * Merges adjacent spans with the same class (regex-based).
+ *
+ * @param {string} html - HTML string to process
+ * @returns {string} HTML with merged spans
+ */
+function mergeSpans(html) {
   const regex =
-    /<span class="([a-z0-9_]+)">([^<]*)<\/span>(\s*)<span class="\1">/gm;
-  return $.html()
+    /<span class="([a-z]+)">([^<]*)<\/span>(\s*)<span class="\1">/gm;
+  return html
     .replace(regex, '<span class="$1">$2$3')
     .replace(regex, '<span class="$1">$2$3');
 }
 
 /**
- * Minifies class names to single/double letters (a, b, ..., z, aa, ab, ...).
+ * Converts a number to a class name (0=a, 25=z, 26=aa, etc.)
+ * @param {number} n - Number to convert
+ * @returns {string} Class name
+ */
+function toClassName(n) {
+  let name = "";
+  do {
+    name = String.fromCharCode(97 + (n % 26)) + name;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return name;
+}
+
+/**
+ * Minifies class names to single/double letters using regex (no Cheerio).
  * Updates both element class attributes and CSS selectors.
  *
- * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
+ * @param {string} html - HTML string to process
+ * @returns {string} HTML with minified class names
  */
-function minifyClassNames($) {
+function minifyClassNames(html) {
   const classMap = {};
   let counter = 0;
 
-  /**
-   * Converts a number to a class name (0=a, 25=z, 26=aa, etc.)
-   * @param {number} n - Number to convert
-   * @returns {string} Class name
-   */
-  const toClassName = (n) => {
-    let name = "";
-    do {
-      name = String.fromCharCode(97 + (n % 26)) + name;
-      n = Math.floor(n / 26) - 1;
-    } while (n >= 0);
-    return name;
-  };
-
-  // Single pass: build map and update elements
-  $("[class]").each(function () {
-    const classes = $(this).attr("class").split(/\s+/);
+  // First pass: find all classes and build the map, while replacing
+  html = html.replace(/\bclass="([^"]+)"/g, (match, classes) => {
     const newClasses = classes
+      .split(/\s+/)
       .map((cls) => {
         if (!cls) return cls;
         if (!classMap[cls]) classMap[cls] = toClassName(counter++);
         return classMap[cls];
       })
       .join(" ");
-    $(this).attr("class", newClasses);
+    return `class="${newClasses}"`;
   });
 
-  // Single regex replacement for all classes in CSS
-  $("style").each(function () {
-    const css = $(this)
-      .html()
-      .replace(/\.([a-z0-9_]+)/g, (match, cls) =>
-        classMap[cls] ? `.${classMap[cls]}` : match,
-      );
-    $(this).html(css);
+  // Second pass: replace class names in CSS selectors
+  html = html.replace(/<style>([\s\S]*?)<\/style>/g, (match, css) => {
+    const newCss = css.replace(/\.([a-z0-9_-]+)/gi, (m, cls) =>
+      classMap[cls] ? `.${classMap[cls]}` : m,
+    );
+    return `<style>${newCss}</style>`;
   });
+
+  return html;
 }
 
 // Shared PurgeCSS instance
@@ -410,8 +418,9 @@ async function processHtml(filePath, baseCss) {
   convertCode($);
   stats.transforms += performance.now() - t;
 
-  // Step 2: Combine base CSS with generated styles
+  // Step 2: Clean up spans and combine CSS (while we still have Cheerio instance)
   t = performance.now();
+  cleanupSpans($);
   $('link[rel="stylesheet"]').remove();
   const generatedCss = $("style")
     .map(function () {
@@ -421,11 +430,11 @@ async function processHtml(filePath, baseCss) {
     .join("");
   $("style").remove();
   $("head").append(`<style>${baseCss}${shikiCss}${generatedCss}</style>`);
+  let html = $.html(); // Single serialization point
   stats.combineCss += performance.now() - t;
 
-  // Step 3: Per-page CSS purging (remove unused selectors)
+  // Step 4: Per-page CSS purging (remove unused selectors)
   t = performance.now();
-  let html = $.html();
   const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
   if (styleMatch) {
     const css = styleMatch[1];
@@ -443,11 +452,10 @@ async function processHtml(filePath, baseCss) {
   }
   stats.purgeCss += performance.now() - t;
 
-  // Step 4: Minify class names and clean up spans
+  // Step 5: Minify class names and merge spans (all regex, no Cheerio)
   t = performance.now();
-  $ = load(html);
-  minifyClassNames($);
-  html = cleanupSpans($);
+  html = minifyClassNames(html);
+  html = mergeSpans(html);
   stats.minifyClasses += performance.now() - t;
 
   // Step 5: Final HTML minification
