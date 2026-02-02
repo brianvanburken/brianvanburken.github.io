@@ -29,6 +29,52 @@ const SOURCE = process.env.BUILD_DIR || "public";
 const ROOT = dirname(fileURLToPath(import.meta.url));
 const THEME = "ayu-dark";
 
+// Default styles to skip (already in base CSS)
+const SKIP_STYLES = new Set([
+  "color:#BFBDB6",
+  "font-style:italic",
+  "background-color:#0B0E14",
+]);
+
+// Global style-to-class map and CSS (shared across all files)
+const styleToClass = {};
+let shikiCss = "";
+let classCounter = 0;
+
+/**
+ * Shiki transformer that converts inline styles to CSS classes.
+ * This runs during highlighting, avoiding a separate DOM traversal.
+ */
+const classTransformer = {
+  pre(node) {
+    // Remove Shiki's default classes and styles from pre
+    delete node.properties.class;
+    delete node.properties.style;
+    delete node.properties.tabindex;
+  },
+  span(node) {
+    const style = node.properties?.style;
+    if (!style) return;
+
+    const classes = [];
+    for (const part of style.split(";")) {
+      const normalized = part.replace(/\s/g, "").toLowerCase();
+      if (!normalized || SKIP_STYLES.has(normalized)) continue;
+
+      if (!styleToClass[normalized]) {
+        styleToClass[normalized] = `s${classCounter++}`;
+        shikiCss += `.${styleToClass[normalized]}{${part.trim()}}\n`;
+      }
+      classes.push(styleToClass[normalized]);
+    }
+
+    delete node.properties.style;
+    if (classes.length > 0) {
+      node.properties.class = classes.join(" ");
+    }
+  },
+};
+
 // Initialize Shiki highlighter with supported languages
 const highlighter = await createHighlighter({
   themes: [THEME],
@@ -202,11 +248,7 @@ function processAbbreviations($) {
 
 /**
  * Applies syntax highlighting to code blocks using Shiki.
- *
- * This function:
- * 1. Highlights code blocks with Shiki (generates inline styles)
- * 2. Converts inline styles to CSS classes (reduces HTML size)
- * 3. Removes default/unnecessary classes (theme defaults)
+ * Uses a transformer to output classes directly instead of inline styles.
  *
  * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
  */
@@ -214,19 +256,6 @@ function convertCode($) {
   const codeBlocks = $("code");
   if (codeBlocks.length === 0) return;
 
-  // Theme default styles to remove (already set in base CSS)
-  const DEFAULT_COLOR_KEY = "COLOR:#BFBDB6";
-  const ITALIC_KEY = "FONT-STYLE:ITALIC";
-  const BG_KEY = "BACKGROUND-COLOR:#0B0E14";
-
-  let css = "";
-  let classCounter = 0;
-  const cssMap = {}; // Maps style declarations to class names
-
-  // Regex to extract style attribute from Shiki output
-  const styleRegex = /style="([^"]+)"/;
-
-  // Highlight all code blocks
   codeBlocks.each(function () {
     const $code = $(this);
     const $parent = $code.parent();
@@ -251,51 +280,23 @@ function convertCode($) {
       return;
     }
 
-    const highlighted = highlighter.codeToHtml(content, { lang, theme: THEME });
+    // Highlight with class transformer (converts styles to classes inline)
+    const highlighted = highlighter.codeToHtml(content, {
+      lang,
+      theme: THEME,
+      transformers: [classTransformer],
+    });
 
     if (isInlineCode) {
-      // Extract style with regex instead of creating Cheerio instance
-      const match = highlighted.match(styleRegex);
-      if (match) $code.attr("style", match[1]);
+      // For inline code, extract just the code content
+      const match = highlighted.match(/<code[^>]*>([\s\S]*?)<\/code>/);
+      if (match) $code.html(match[1]);
     } else {
-      $parent.replaceWith(`<pre>${highlighted}</pre>`);
+      // Replace pre>code with highlighted output (unwrap nested pre)
+      const inner = highlighted.replace(/^<pre[^>]*>/, "").replace(/<\/pre>$/, "");
+      $parent.replaceWith(`<pre>${inner}</pre>`);
     }
   });
-
-  // Convert inline styles to CSS classes for smaller output
-  $("*[style]").each(function () {
-    const styleContent = $(this).attr("style").trim();
-    for (const style of styleContent.split(";")) {
-      const styleKey = style.replace(/[\s;]/g, "").toUpperCase();
-      if (!styleKey) continue;
-
-      if (!cssMap[styleKey]) {
-        const className = `s${classCounter++}`;
-        cssMap[styleKey] = className;
-        css += `.${className}{${style}}\n`;
-      }
-      $(this).addClass(cssMap[styleKey]);
-    }
-    $(this).removeAttr("style");
-  });
-
-  if (css) {
-    $("body").append(`<style>${css}</style>`);
-  }
-
-  // Remove classes for default theme styles (already in base CSS)
-  for (const key of [DEFAULT_COLOR_KEY, ITALIC_KEY, BG_KEY]) {
-    const cls = cssMap[key];
-    if (cls) $(`.${cls}`).removeClass(cls);
-  }
-
-  // Clean up nested pre tags (Shiki wraps output in pre)
-  $("pre > pre").each(function () {
-    $(this).parent().replaceWith($(this).parent().html());
-  });
-
-  // Remove Shiki's unused classes from pre elements
-  $("pre").removeClass(`shiki ${THEME}`);
 }
 
 /**
@@ -419,7 +420,7 @@ async function processHtml(filePath, baseCss) {
     .get()
     .join("");
   $("style").remove();
-  $("head").append(`<style>${baseCss}${generatedCss}</style>`);
+  $("head").append(`<style>${baseCss}${shikiCss}${generatedCss}</style>`);
   stats.combineCss += performance.now() - t;
 
   // Step 3: Per-page CSS purging (remove unused selectors)
