@@ -19,7 +19,6 @@
 import { readFile, writeFile, readdir, unlink } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { load } from "cheerio";
 import { minify as minifyCss } from "csso";
 import { minify as minifyHtml } from "html-minifier-terser";
 import { PurgeCSS } from "purgecss";
@@ -231,83 +230,75 @@ function processAbbreviations(html) {
 }
 
 /**
- * Applies syntax highlighting to code blocks using Shiki.
- * Uses a transformer to output classes directly instead of inline styles.
- *
- * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
+ * Decodes HTML entities in a string.
+ * @param {string} text - Text with HTML entities
+ * @returns {string} Decoded text
  */
-function convertCode($) {
-  const codeBlocks = $("code");
-  if (codeBlocks.length === 0) return;
-
-  codeBlocks.each(function () {
-    const $code = $(this);
-    const $parent = $code.parent();
-    const isInlineCode = $parent[0].name !== "pre";
-
-    // Determine language from class or data-lang attribute
-    const cls = $code.attr("class");
-    const dataLang = $code.attr("data-lang");
-    const lang = dataLang
-      ? dataLang
-      : cls
-        ? cls.toString().replace("language-", "").trim()
-        : "text";
-
-    const content = $code.text();
-
-    // Skip Shiki for plain text - no highlighting needed
-    if (lang === "text") {
-      if (!isInlineCode) {
-        $parent.replaceWith(`<pre><code>${content}</code></pre>`);
-      }
-      return;
-    }
-
-    // Highlight with class transformer (converts styles to classes inline)
-    const highlighted = highlighter.codeToHtml(content, {
-      lang,
-      theme: THEME,
-      transformers: [classTransformer],
-    });
-
-    if (isInlineCode) {
-      // For inline code, extract just the code content
-      const match = highlighted.match(/<code[^>]*>([\s\S]*?)<\/code>/);
-      if (match) $code.html(match[1]);
-    } else {
-      // Replace pre>code with highlighted output (unwrap nested pre)
-      const inner = highlighted.replace(/^<pre[^>]*>/, "").replace(/<\/pre>$/, "");
-      $parent.replaceWith(`<pre>${inner}</pre>`);
-    }
-  });
+function decodeHtmlEntities(text) {
+  return text
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
 }
 
 /**
- * Cleans up empty and unnecessary span elements (Cheerio-based).
- * Should be called while we still have the Cheerio instance.
+ * Applies syntax highlighting to code blocks using Shiki (regex-based).
  *
- * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
+ * @param {string} html - HTML string to process
+ * @returns {string} HTML with highlighted code blocks
  */
-function cleanupSpans($) {
+function convertCode(html) {
+  // Handle block code: <pre><code class="..." data-lang="...">content</code></pre>
+  html = html.replace(
+    /<pre><code(?:\s+class="([^"]*)")?(?:\s+data-lang="([^"]*)")?[^>]*>([\s\S]*?)<\/code><\/pre>/g,
+    (match, cls, dataLang, content) => {
+      const lang = dataLang
+        ? dataLang
+        : cls
+          ? cls.replace("language-", "").trim()
+          : "text";
+
+      const decoded = decodeHtmlEntities(content);
+
+      // Skip Shiki for plain text
+      if (lang === "text") {
+        return `<pre><code>${content}</code></pre>`;
+      }
+
+      const highlighted = highlighter.codeToHtml(decoded, {
+        lang,
+        theme: THEME,
+        transformers: [classTransformer],
+      });
+
+      // Unwrap Shiki's pre and return just the inner content in our pre
+      const inner = highlighted.replace(/^<pre[^>]*>/, "").replace(/<\/pre>$/, "");
+      return `<pre>${inner}</pre>`;
+    },
+  );
+
+  return html;
+}
+
+/**
+ * Cleans up empty and unnecessary span elements (regex-based).
+ *
+ * @param {string} html - HTML string to process
+ * @returns {string} Cleaned HTML
+ */
+function cleanupSpans(html) {
   // Remove empty spans
-  $("span:empty").remove();
+  html = html.replace(/<span[^>]*><\/span>/g, "");
 
-  // Unwrap nested spans
-  $("span > span:first-child").each(function () {
-    $(this).parent().replaceWith($(this).parent().html());
-  });
+  // Remove spans without class or style (keep content)
+  html = html.replace(/<span>([^<]*)<\/span>/g, "$1");
 
-  // Remove unnecessary spans
-  $("span").each(function () {
-    const content = $(this).text();
-    if (content.trim() === "") {
-      $(this).replaceWith(content);
-    }
-    if (!$(this).attr("class") && !$(this).attr("style")) {
-      $(this).replaceWith($(this).html());
-    }
-  });
+  // Remove whitespace-only spans (keep the whitespace)
+  html = html.replace(/<span[^>]*>(\s+)<\/span>/g, "$1");
+
+  return html;
 }
 
 /**
@@ -394,31 +385,31 @@ const stats = {
 async function processHtml(filePath, baseCss) {
   let html = await readFile(filePath, "utf-8");
 
-  // Step 1: Text transforms (regex-based, no Cheerio needed)
+  // Step 1: Text transforms (regex-based)
   let t = performance.now();
   html = processFootnotes(html);
   html = processAbbreviations(html);
   stats.transforms += performance.now() - t;
 
-  // Step 2: Syntax highlighting (needs Cheerio for DOM manipulation)
+  // Step 2: Syntax highlighting (regex-based)
   t = performance.now();
-  let $ = load(html);
-  convertCode($);
-  cleanupSpans($);
+  html = convertCode(html);
+  html = cleanupSpans(html);
   stats.combineCss += performance.now() - t;
 
-  // Step 3: Combine CSS and serialize
+  // Step 3: Combine CSS (regex-based)
   t = performance.now();
-  $('link[rel="stylesheet"]').remove();
-  const generatedCss = $("style")
-    .map(function () {
-      return $(this).html();
-    })
-    .get()
-    .join("");
-  $("style").remove();
-  $("head").append(`<style>${baseCss}${shikiCss}${generatedCss}</style>`);
-  html = $.html();
+  // Remove stylesheet links
+  html = html.replace(/<link[^>]*rel="stylesheet"[^>]*>/g, "");
+  // Collect and remove existing style tags
+  let generatedCss = "";
+  html = html.replace(/<style>([\s\S]*?)<\/style>/g, (match, css) => {
+    generatedCss += css;
+    return "";
+  });
+  // Insert combined CSS into head
+  const allCss = `<style>${baseCss}${shikiCss}${generatedCss}</style>`;
+  html = html.replace("</head>", `${allCss}</head>`);
   stats.combineCss += performance.now() - t;
 
   // Step 4: Per-page CSS purging (remove unused selectors)
