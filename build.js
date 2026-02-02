@@ -21,8 +21,8 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { load } from "cheerio";
 import { minify as minifyCss } from "csso";
-import { PurgeCSS } from "purgecss";
 import { minify as minifyHtml } from "html-minifier-terser";
+import { PurgeCSS } from "purgecss";
 import { createHighlighter } from "shiki";
 
 const SOURCE = process.env.BUILD_DIR || "public";
@@ -322,55 +322,16 @@ function mergeSpans(html) {
 }
 
 /**
- * Removes CSS rules for classes that are not used in the document.
- * Only processes class-based rules (e.g., .s0_1{...}).
+ * Inlines pre-loaded CSS by replacing <link> tags with <style> tags.
  *
  * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
+ * @param {string} css - Pre-loaded CSS content
  */
-function removeUnusedCss($) {
-  const usedClasses = new Set();
-
-  // Collect all classes used in the document
-  $("[class]").each(function () {
-    const classes = $(this).attr("class").split(/\s+/);
-    classes.forEach((c) => usedClasses.add(c));
-  });
-
-  // Filter style tag content
-  $("style").each(function () {
-    const css = $(this).html();
-    const filteredCss = css
-      .split("\n")
-      .filter((rule) => {
-        const classMatch = rule.match(/^\.([a-z0-9_]+)\{/);
-        return !classMatch || usedClasses.has(classMatch[1]);
-      })
-      .join("");
-    $(this).html(filteredCss);
-  });
-}
-
-/**
- * Inlines external CSS files referenced by <link> tags.
- * Replaces <link rel="stylesheet" href="..."> with <style>...</style>
- *
- * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
- * @param {string} baseDir - Base directory for resolving relative paths
- */
-async function inlineCss($, baseDir) {
-  const links = $('link[rel="stylesheet"]');
-  for (let i = 0; i < links.length; i++) {
-    const $link = $(links[i]);
-    const href = $link.attr("href");
-    if (href && !href.startsWith("http")) {
-      const cssPath = join(baseDir, href);
-      try {
-        const css = await readFile(cssPath, "utf-8");
-        $link.replaceWith(`<style>${css}</style>`);
-      } catch {
-        // File not found, leave link as-is
-      }
-    }
+function inlineCss($, css) {
+  const $link = $('link[rel="stylesheet"]').first();
+  if ($link.length) {
+    $link.replaceWith(`<style>${css}</style>`);
+    $('link[rel="stylesheet"]').remove();
   }
 }
 
@@ -429,8 +390,9 @@ function minifyClassNames($) {
  * Processes a single HTML file through all optimization steps.
  *
  * @param {string} filePath - Absolute path to the HTML file
+ * @param {string} baseCss - Pre-loaded CSS content to inline
  */
-async function processHtml(filePath) {
+async function processHtml(filePath, baseCss) {
   let content = await readFile(filePath, "utf-8");
   let $ = load(content);
 
@@ -442,10 +404,9 @@ async function processHtml(filePath) {
   // Step 2: Clean up Shiki output
   content = mergeSpans($.html());
   $ = load(content);
-  removeUnusedCss($);
 
-  // Step 3: Inline external CSS
-  await inlineCss($, join(ROOT, SOURCE));
+  // Step 3: Inline pre-loaded CSS
+  inlineCss($, baseCss);
 
   // Step 4: Merge all style tags into one in <head>
   const allCss = $("style")
@@ -471,7 +432,9 @@ async function processHtml(filePath) {
       css: [{ raw: css }],
     });
     if (purged[0]?.css) {
-      html = html.replace(styleMatch[0], `<style>${purged[0].css}</style>`);
+      // Minify CSS after purging
+      const minifiedCss = minifyCss(purged[0].css).css;
+      html = html.replace(styleMatch[0], `<style>${minifiedCss}</style>`);
     }
   }
 
@@ -492,51 +455,27 @@ async function processHtml(filePath) {
 }
 
 /**
- * Minifies all CSS files in the source directory.
- * This runs before HTML processing so inlined CSS is already minified.
- */
-async function processCss() {
-  const sourceDir = join(ROOT, SOURCE);
-  const cssFiles = await findFiles(sourceDir, ".css");
-
-  await Promise.all(
-    cssFiles.map(async (cssFile) => {
-      const css = await readFile(cssFile, "utf-8");
-      const minified = minifyCss(css).css;
-      await writeFile(cssFile, minified);
-    })
-  );
-}
-
-/**
- * Deletes all CSS files in the source directory.
- * Called after HTML processing since CSS is now inlined.
- */
-async function cleanCss() {
-  const sourceDir = join(ROOT, SOURCE);
-  const cssFiles = await findFiles(sourceDir, ".css");
-  await Promise.all(cssFiles.map(unlink));
-}
-
-/**
  * Main build function.
  * Processes all HTML and CSS files in the source directory.
  */
 async function build() {
   const start = performance.now();
   const sourceDir = join(ROOT, SOURCE);
-  const htmlFiles = await findFiles(sourceDir, ".html");
 
-  console.log(`Processing ${htmlFiles.length} HTML files...`);
-
-  // Minify CSS files first (before inlining)
-  await processCss();
+  // Load all CSS files into memory
+  const cssFiles = await findFiles(sourceDir, ".css");
+  const cssContents = await Promise.all(
+    cssFiles.map((file) => readFile(file, "utf-8")),
+  );
+  const baseCss = cssContents.join("");
 
   // Process each HTML file
-  await Promise.all(htmlFiles.map(processHtml));
+  const htmlFiles = await findFiles(sourceDir, ".html");
+  console.log(`Processing ${htmlFiles.length} HTML files...`);
+  await Promise.all(htmlFiles.map((file) => processHtml(file, baseCss)));
 
   // Clean up CSS files (now inlined)
-  await cleanCss();
+  await Promise.all(cssFiles.map(unlink));
 
   const elapsed = ((performance.now() - start) / 1000).toFixed(2);
   console.log(`Build complete in ${elapsed}s`);
