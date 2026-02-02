@@ -207,7 +207,6 @@ function processAbbreviations($) {
  * 1. Highlights code blocks with Shiki (generates inline styles)
  * 2. Converts inline styles to CSS classes (reduces HTML size)
  * 3. Removes default/unnecessary classes (theme defaults)
- * 4. Cleans up nested and empty span tags
  *
  * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
  */
@@ -282,41 +281,38 @@ function convertCode($) {
   $("pre > pre").each(function () {
     $(this).parent().replaceWith($(this).parent().html());
   });
+}
 
-  // Clean up empty and wrapper spans
+/**
+ * Cleans up span elements and merges adjacent spans with the same class.
+ *
+ * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
+ * @returns {string} Cleaned HTML with merged spans
+ */
+function cleanupSpans($) {
+  // Remove empty spans
   $("span:empty").remove();
+
+  // Unwrap nested spans
   $("span > span:first-child").each(function () {
     $(this).parent().replaceWith($(this).parent().html());
   });
+
+  // Remove unnecessary spans
   $("span").each(function () {
     const content = $(this).text();
-    // Remove spans that only contain whitespace
     if (content.trim() === "") {
       $(this).replaceWith(content);
     }
-    // Remove spans without class or style
     if (!$(this).attr("class") && !$(this).attr("style")) {
       $(this).replaceWith($(this).html());
     }
   });
-}
 
-/**
- * Merges adjacent span elements with the same class.
- *
- * Example:
- *   <span class="a">foo</span> <span class="a">bar</span>
- * Becomes:
- *   <span class="a">foo bar</span>
- *
- * @param {string} html - HTML string to process
- * @returns {string} HTML with merged spans
- */
-function mergeSpans(html) {
+  // Merge adjacent spans with same class (regex on HTML string)
   const regex =
     /<span class="([a-z0-9_]+)">([^<]*)<\/span>(\s*)<span class="\1">/gm;
-  // Run twice to catch consecutive matches
-  return html
+  return $.html()
     .replace(regex, '<span class="$1">$2$3')
     .replace(regex, '<span class="$1">$2$3');
 }
@@ -387,11 +383,7 @@ async function processHtml(filePath, baseCss) {
   processAbbreviations($);
   convertCode($);
 
-  // Step 2: Clean up Shiki output
-  content = mergeSpans($.html());
-  $ = load(content);
-
-  // Step 3: Combine base CSS with generated styles
+  // Step 2: Combine base CSS with generated styles
   $('link[rel="stylesheet"]').remove();
   const generatedCss = $("style")
     .map(function () {
@@ -402,7 +394,7 @@ async function processHtml(filePath, baseCss) {
   $("style").remove();
   $("head").append(`<style>${baseCss}${generatedCss}</style>`);
 
-  // Step 5: Per-page CSS purging (remove unused selectors)
+  // Step 3: Per-page CSS purging (remove unused selectors)
   let html = $.html();
   const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
   if (styleMatch) {
@@ -420,12 +412,13 @@ async function processHtml(filePath, baseCss) {
     }
   }
 
-  // Step 6: Minify class names
+  // Step 4: Minify class names and clean up spans
   $ = load(html);
   minifyClassNames($);
+  html = cleanupSpans($);
 
-  // Step 7: Final HTML minification
-  const minified = await minifyHtml($.html(), {
+  // Step 5: Final HTML minification
+  const minified = await minifyHtml(html, {
     collapseWhitespace: true,
     removeComments: true,
     removeEmptyAttributes: true,
