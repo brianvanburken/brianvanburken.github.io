@@ -370,6 +370,8 @@ const purgeCss = new PurgeCSS();
 // Timing stats for processHtml steps (cumulative across all files)
 const stats = {
   transforms: 0,
+  shiki: 0,
+  cleanupSpans: 0,
   combineCss: 0,
   purgeCss: 0,
   minifyClasses: 0,
@@ -391,13 +393,17 @@ async function processHtml(filePath, baseCss) {
   html = processAbbreviations(html);
   stats.transforms += performance.now() - t;
 
-  // Step 2: Syntax highlighting (regex-based)
+  // Step 2: Syntax highlighting (Shiki)
   t = performance.now();
   html = convertCode(html);
-  html = cleanupSpans(html);
-  stats.combineCss += performance.now() - t;
+  stats.shiki += performance.now() - t;
 
-  // Step 3: Combine CSS (regex-based)
+  // Step 3: Clean up spans
+  t = performance.now();
+  html = cleanupSpans(html);
+  stats.cleanupSpans += performance.now() - t;
+
+  // Step 4: Combine CSS (regex-based)
   t = performance.now();
   // Remove stylesheet links
   html = html.replace(/<link[^>]*rel="stylesheet"[^>]*>/g, "");
@@ -412,7 +418,7 @@ async function processHtml(filePath, baseCss) {
   html = html.replace("</head>", `${allCss}</head>`);
   stats.combineCss += performance.now() - t;
 
-  // Step 4: Per-page CSS purging (remove unused selectors)
+  // Step 5: Per-page CSS purging (remove unused selectors)
   t = performance.now();
   const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
   if (styleMatch) {
@@ -431,13 +437,13 @@ async function processHtml(filePath, baseCss) {
   }
   stats.purgeCss += performance.now() - t;
 
-  // Step 5: Minify class names and merge spans (all regex, no Cheerio)
+  // Step 6: Minify class names and merge spans
   t = performance.now();
   html = minifyClassNames(html);
   html = mergeSpans(html);
   stats.minifyClasses += performance.now() - t;
 
-  // Step 5: Final HTML minification
+  // Step 7: Final HTML minification
   t = performance.now();
   const minified = await minifyHtml(html, {
     collapseWhitespace: true,
