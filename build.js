@@ -368,6 +368,9 @@ function minifyClassNames($) {
   });
 }
 
+// Shared PurgeCSS instance
+const purgeCss = new PurgeCSS();
+
 /**
  * Processes a single HTML file through all optimization steps.
  *
@@ -401,7 +404,7 @@ async function processHtml(filePath, baseCss) {
     const css = styleMatch[1];
     // Exclude style content from analysis to avoid false positives
     const htmlWithoutStyle = html.replace(/<style>[\s\S]*?<\/style>/g, "");
-    const purged = await new PurgeCSS().purge({
+    const purged = await purgeCss.purge({
       content: [{ raw: htmlWithoutStyle, extension: "html" }],
       css: [{ raw: css }],
     });
