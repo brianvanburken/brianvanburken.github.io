@@ -365,6 +365,15 @@ function minifyClassNames($) {
 // Shared PurgeCSS instance
 const purgeCss = new PurgeCSS();
 
+// Timing stats for processHtml steps (cumulative across all files)
+const stats = {
+  transforms: 0,
+  combineCss: 0,
+  purgeCss: 0,
+  minifyClasses: 0,
+  minifyHtml: 0,
+};
+
 /**
  * Processes a single HTML file through all optimization steps.
  *
@@ -376,11 +385,14 @@ async function processHtml(filePath, baseCss) {
   let $ = load(content);
 
   // Step 1: Custom transforms (footnotes, abbreviations, syntax highlighting)
+  let t = performance.now();
   processFootnotes($);
   processAbbreviations($);
   convertCode($);
+  stats.transforms += performance.now() - t;
 
   // Step 2: Combine base CSS with generated styles
+  t = performance.now();
   $('link[rel="stylesheet"]').remove();
   const generatedCss = $("style")
     .map(function () {
@@ -390,8 +402,10 @@ async function processHtml(filePath, baseCss) {
     .join("");
   $("style").remove();
   $("head").append(`<style>${baseCss}${generatedCss}</style>`);
+  stats.combineCss += performance.now() - t;
 
   // Step 3: Per-page CSS purging (remove unused selectors)
+  t = performance.now();
   let html = $.html();
   const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
   if (styleMatch) {
@@ -408,13 +422,17 @@ async function processHtml(filePath, baseCss) {
       html = html.replace(styleMatch[0], `<style>${minifiedCss}</style>`);
     }
   }
+  stats.purgeCss += performance.now() - t;
 
   // Step 4: Minify class names and clean up spans
+  t = performance.now();
   $ = load(html);
   minifyClassNames($);
   html = cleanupSpans($);
+  stats.minifyClasses += performance.now() - t;
 
   // Step 5: Final HTML minification
+  t = performance.now();
   const minified = await minifyHtml(html, {
     collapseWhitespace: true,
     removeComments: true,
@@ -422,8 +440,19 @@ async function processHtml(filePath, baseCss) {
     removeAttributeQuotes: true,
     removeOptionalTags: true,
   });
+  stats.minifyHtml += performance.now() - t;
 
   await writeFile(filePath, minified);
+}
+
+/**
+ * Logs elapsed time since a start timestamp.
+ * @param {string} label - Description of the timed operation
+ * @param {number} start - Start timestamp from performance.now()
+ */
+function logTime(label, start) {
+  const elapsed = ((performance.now() - start) / 1000).toFixed(2);
+  console.log(`  ${label}: ${elapsed}s`);
 }
 
 /**
@@ -435,19 +464,31 @@ async function build() {
   const sourceDir = join(ROOT, SOURCE);
 
   // Load all CSS files into memory
+  let stepStart = performance.now();
   const cssFiles = await findFiles(sourceDir, ".css");
   const cssContents = await Promise.all(
     cssFiles.map((file) => readFile(file, "utf-8")),
   );
   const baseCss = cssContents.join("");
+  logTime("Load CSS", stepStart);
 
   // Process each HTML file
+  stepStart = performance.now();
   const htmlFiles = await findFiles(sourceDir, ".html");
   console.log(`Processing ${htmlFiles.length} HTML files...`);
   await Promise.all(htmlFiles.map((file) => processHtml(file, baseCss)));
+  logTime("Process HTML", stepStart);
 
   // Clean up CSS files (now inlined)
+  stepStart = performance.now();
   await Promise.all(cssFiles.map(unlink));
+  logTime("Clean up CSS", stepStart);
+
+  // Log per-step timing breakdown
+  console.log("Per-step breakdown (cumulative across all files):");
+  for (const [step, ms] of Object.entries(stats)) {
+    console.log(`  ${step}: ${(ms / 1000).toFixed(2)}s`);
+  }
 
   const elapsed = ((performance.now() - start) / 1000).toFixed(2);
   console.log(`Build complete in ${elapsed}s`);
