@@ -242,6 +242,15 @@ function convertCode($) {
         : "text";
 
     const content = $code.text();
+
+    // Skip Shiki for plain text - no highlighting needed
+    if (lang === "text") {
+      if (!isInlineCode) {
+        $parent.replaceWith(`<pre><code>${content}</code></pre>`);
+      }
+      return;
+    }
+
     const highlighted = highlighter.codeToHtml(content, { lang, theme: THEME });
 
     if (isInlineCode) {
