@@ -344,29 +344,26 @@ function minifyClassNames($) {
     return name;
   };
 
-  // Build mapping of original -> minified class names
+  // Single pass: build map and update elements
   $("[class]").each(function () {
     const classes = $(this).attr("class").split(/\s+/);
-    for (const cls of classes) {
-      if (cls && !classMap[cls]) {
-        classMap[cls] = toClassName(counter++);
-      }
-    }
-  });
-
-  // Update element class attributes
-  $("[class]").each(function () {
-    const classes = $(this).attr("class").split(/\s+/);
-    const newClasses = classes.map((c) => classMap[c] || c).join(" ");
+    const newClasses = classes
+      .map((cls) => {
+        if (!cls) return cls;
+        if (!classMap[cls]) classMap[cls] = toClassName(counter++);
+        return classMap[cls];
+      })
+      .join(" ");
     $(this).attr("class", newClasses);
   });
 
-  // Update CSS selectors in style tags
+  // Single regex replacement for all classes in CSS
   $("style").each(function () {
-    let css = $(this).html();
-    for (const [oldClass, newClass] of Object.entries(classMap)) {
-      css = css.replace(new RegExp(`\\.${oldClass}\\b`, "g"), `.${newClass}`);
-    }
+    const css = $(this)
+      .html()
+      .replace(/\.([a-z0-9_]+)/g, (match, cls) =>
+        classMap[cls] ? `.${classMap[cls]}` : match,
+      );
     $(this).html(css);
   });
 }
