@@ -59,7 +59,7 @@
       src="https://gc.zgo.at/count.js"
     ></script>
     <noscript>
-        <img src="https://brianvanburken.goatcounter.com/count?p={{ current_path | default(value="/") }}">
+        <img src="https://brianvanburken.goatcounter.com/count?p={{ current_path | default(value="/") | safe }}">
     </noscript>
   </body>
 </html>
