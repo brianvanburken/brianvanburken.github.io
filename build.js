@@ -281,6 +281,9 @@ function convertCode($) {
   $("pre > pre").each(function () {
     $(this).parent().replaceWith($(this).parent().html());
   });
+
+  // Remove Shiki's unused classes from pre elements
+  $("pre").removeClass(`shiki ${THEME}`);
 }
 
 /**
