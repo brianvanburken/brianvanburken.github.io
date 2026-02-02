@@ -16,8 +16,8 @@
  * Environment: BUILD_DIR can override the default "public" directory
  */
 
-import { readFile, writeFile, readdir, unlink } from "node:fs/promises";
-import { join, dirname } from "node:path";
+import { readdir, readFile, unlink, writeFile } from "node:fs/promises";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { minify as minifyCss } from "csso";
 import { minify as minifyHtml } from "html-minifier-terser";
@@ -183,10 +183,13 @@ function processAbbreviations(html) {
   const abbreviations = {};
 
   // Extract abbreviation definitions from paragraphs and remove them
-  html = html.replace(/<p>\s*\*\[([^\]]+)\]:\s*(.+?)\s*<\/p>/g, (match, abbr, title) => {
-    abbreviations[abbr] = title.trim();
-    return ""; // Remove the definition paragraph
-  });
+  html = html.replace(
+    /<p>\s*\*\[([^\]]+)\]:\s*(.+?)\s*<\/p>/g,
+    (_match, abbr, title) => {
+      abbreviations[abbr] = title.trim();
+      return ""; // Remove the definition paragraph
+    },
+  );
 
   if (Object.keys(abbreviations).length === 0) return html;
 
@@ -219,8 +222,12 @@ function processAbbreviations(html) {
         // Only replace in text content (not inside tags)
         part.text = part.text.replace(
           new RegExp(`(>|^)([^<]*?)\\b${escapedAbbr}\\b`, "g"),
-          (m, before, text) =>
-            before + text.replace(new RegExp(`\\b${escapedAbbr}\\b`, "g"), `<abbr title="${title}">${abbr}</abbr>`),
+          (_m, before, text) =>
+            before +
+            text.replace(
+              new RegExp(`\\b${escapedAbbr}\\b`, "g"),
+              `<abbr title="${title}">${abbr}</abbr>`,
+            ),
         );
       }
     }
@@ -253,7 +260,7 @@ function convertCode(html) {
   // Handle block code: <pre><code class="..." data-lang="...">content</code></pre>
   html = html.replace(
     /<pre><code(?:\s+class="([^"]*)")?(?:\s+data-lang="([^"]*)")?[^>]*>([\s\S]*?)<\/code><\/pre>/g,
-    (match, cls, dataLang, content) => {
+    (_match, cls, dataLang, content) => {
       const lang = dataLang
         ? dataLang
         : cls
@@ -274,7 +281,9 @@ function convertCode(html) {
       });
 
       // Unwrap Shiki's pre and return just the inner content in our pre
-      const inner = highlighted.replace(/^<pre[^>]*>/, "").replace(/<\/pre>$/, "");
+      const inner = highlighted
+        .replace(/^<pre[^>]*>/, "")
+        .replace(/<\/pre>$/, "");
       return `<pre>${inner}</pre>`;
     },
   );
@@ -341,7 +350,7 @@ function minifyClassNames(html) {
   let counter = 0;
 
   // First pass: find all classes and build the map, while replacing
-  html = html.replace(/\bclass="([^"]+)"/g, (match, classes) => {
+  html = html.replace(/\bclass="([^"]+)"/g, (_match, classes) => {
     const newClasses = classes
       .split(/\s+/)
       .map((cls) => {
@@ -354,7 +363,7 @@ function minifyClassNames(html) {
   });
 
   // Second pass: replace class names in CSS selectors
-  html = html.replace(/<style>([\s\S]*?)<\/style>/g, (match, css) => {
+  html = html.replace(/<style>([\s\S]*?)<\/style>/g, (_match, css) => {
     const newCss = css.replace(/\.([a-z0-9_-]+)/gi, (m, cls) =>
       classMap[cls] ? `.${classMap[cls]}` : m,
     );
@@ -409,7 +418,7 @@ async function processHtml(filePath, baseCss) {
   html = html.replace(/<link[^>]*rel="stylesheet"[^>]*>/g, "");
   // Collect and remove existing style tags
   let generatedCss = "";
-  html = html.replace(/<style>([\s\S]*?)<\/style>/g, (match, css) => {
+  html = html.replace(/<style>([\s\S]*?)<\/style>/g, (_match, css) => {
     generatedCss += css;
     return "";
   });
@@ -500,7 +509,8 @@ async function build() {
   // Log per-step timing breakdown
   console.log("Per-step breakdown (cumulative across all files):");
   for (const [step, ms] of Object.entries(stats)) {
-    const display = ms < 10 ? `${ms.toFixed(2)}ms` : `${(ms / 1000).toFixed(2)}s`;
+    const display =
+      ms < 10 ? `${ms.toFixed(2)}ms` : `${(ms / 1000).toFixed(2)}s`;
     console.log(`  ${step}: ${display}`);
   }
 

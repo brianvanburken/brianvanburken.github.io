@@ -2,12 +2,7 @@
   "name": "brianvanburken.github.io",
   "type": "module",
   "packageManager": "pnpm@10.28.2",
-  "scripts": {
-    "format": "pnpm biome format --write",
-    "format:check": "pnpm biome format"
-  },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.13",
     "csso": "^5.0.5",
     "html-minifier-terser": "^7.2.0",
     "purgecss": "^8.0.0",
