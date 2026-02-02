@@ -463,8 +463,9 @@ async function processHtml(filePath, baseCss) {
  * @param {number} start - Start timestamp from performance.now()
  */
 function logTime(label, start) {
-  const elapsed = ((performance.now() - start) / 1000).toFixed(2);
-  console.log(`  ${label}: ${elapsed}s`);
+  const ms = performance.now() - start;
+  const display = ms < 10 ? `${ms.toFixed(2)}ms` : `${(ms / 1000).toFixed(2)}s`;
+  console.log(`  ${label}: ${display}`);
 }
 
 /**
@@ -499,7 +500,8 @@ async function build() {
   // Log per-step timing breakdown
   console.log("Per-step breakdown (cumulative across all files):");
   for (const [step, ms] of Object.entries(stats)) {
-    console.log(`  ${step}: ${(ms / 1000).toFixed(2)}s`);
+    const display = ms < 10 ? `${ms.toFixed(2)}ms` : `${(ms / 1000).toFixed(2)}s`;
+    console.log(`  ${step}: ${display}`);
   }
 
   const elapsed = ((performance.now() - start) / 1000).toFixed(2);
