@@ -322,20 +322,6 @@ function mergeSpans(html) {
 }
 
 /**
- * Inlines pre-loaded CSS by replacing <link> tags with <style> tags.
- *
- * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
- * @param {string} css - Pre-loaded CSS content
- */
-function inlineCss($, css) {
-  const $link = $('link[rel="stylesheet"]').first();
-  if ($link.length) {
-    $link.replaceWith(`<style>${css}</style>`);
-    $('link[rel="stylesheet"]').remove();
-  }
-}
-
-/**
  * Minifies class names to single/double letters (a, b, ..., z, aa, ab, ...).
  * Updates both element class attributes and CSS selectors.
  *
@@ -405,20 +391,16 @@ async function processHtml(filePath, baseCss) {
   content = mergeSpans($.html());
   $ = load(content);
 
-  // Step 3: Inline pre-loaded CSS
-  inlineCss($, baseCss);
-
-  // Step 4: Merge all style tags into one in <head>
-  const allCss = $("style")
+  // Step 3: Combine base CSS with generated styles
+  $('link[rel="stylesheet"]').remove();
+  const generatedCss = $("style")
     .map(function () {
       return $(this).html();
     })
     .get()
     .join("");
   $("style").remove();
-  if (allCss) {
-    $("head").append(`<style>${allCss}</style>`);
-  }
+  $("head").append(`<style>${baseCss}${generatedCss}</style>`);
 
   // Step 5: Per-page CSS purging (remove unused selectors)
   let html = $.html();
