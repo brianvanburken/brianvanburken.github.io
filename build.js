@@ -245,26 +245,20 @@ function convertCode($) {
   });
 
   // Convert inline styles to CSS classes for smaller output
-  let index = 0;
   $("*[style]").each(function () {
     const styleContent = $(this).attr("style").trim();
-    const styles = styleContent.split(";");
-
-    for (let i = 0; i < styles.length; i++) {
-      const styleKey = styles[i].replace(/[\s;]/g, "").toUpperCase();
+    for (const style of styleContent.split(";")) {
+      const styleKey = style.replace(/[\s;]/g, "").toUpperCase();
       if (!styleKey) continue;
 
-      // Reuse existing class or create new one
-      const className = cssMap[styleKey] || `s${index}_${i}`;
       if (!cssMap[styleKey]) {
-        css += `.${className}{${styles[i]}}\n`;
+        const className = `s${Object.keys(cssMap).length}`;
         cssMap[styleKey] = className;
+        css += `.${className}{${style}}\n`;
       }
-
-      $(this).addClass(className);
+      $(this).addClass(cssMap[styleKey]);
     }
     $(this).removeAttr("style");
-    index++;
   });
 
   if (css) {
