@@ -115,135 +115,119 @@ async function findFiles(dir, ext) {
 }
 
 /**
- * Transforms Zola's footnote markup into accessible HTML structure.
+ * Transforms Zola's footnote markup into accessible HTML structure (regex-based).
  *
- * Zola outputs footnotes as:
- *   <sup><a href="#1">1</a></sup> ... <div id="1"><sup>1</sup><p>Text</p></div>
- *
- * This transforms them to:
- *   <sup id="fnref:1"><a href="#fn:1">1</a></sup> ... <ol role="doc-endnotes"><li id="fn:1"><p>Text <a href="#fnref:1">↩</a></p></li></ol>
- *
- * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
+ * @param {string} html - HTML string to process
+ * @returns {string} HTML with transformed footnotes
  */
-function processFootnotes($) {
-  // Update footnote references with proper IDs and hrefs
-  $("sup > a[href^='#']").each(function () {
-    const $link = $(this);
-    const href = $link.attr("href");
-    const match = href.match(/^#(\d+)$/);
-    if (match) {
-      const fnId = match[1];
-      const $sup = $link.parent();
-      $sup.attr("id", `fnref:${fnId}`);
-      $link.attr("href", `#fn:${fnId}`);
-    }
-  });
+function processFootnotes(html) {
+  // Update footnote references: <sup><a href="#1">1</a></sup> -> <sup id="fnref:1"><a href="#fn:1">1</a></sup>
+  html = html.replace(
+    /<sup><a href="#(\d+)">(\d+)<\/a><\/sup>/g,
+    '<sup id="fnref:$1"><a href="#fn:$1">$2</a></sup>',
+  );
 
-  // Collect footnote definition divs
-  const footnoteDivs = [];
-  $("div[id]").each(function () {
-    const $div = $(this);
-    const id = $div.attr("id");
-    if (/^\d+$/.test(id)) {
-      footnoteDivs.push({ id, $div });
-    }
-  });
+  // Collect and transform footnote definitions
+  const footnotes = [];
+  const fnRegex = /<div id="(\d+)"><sup>\d+<\/sup>([\s\S]*?)<\/div>/g;
+  let match;
 
-  if (footnoteDivs.length === 0) return;
+  while ((match = fnRegex.exec(html)) !== null) {
+    const id = match[1];
+    let content = match[2];
 
-  // Create accessible footnotes list
-  const $ol = $('<ol role="doc-endnotes"></ol>');
-
-  footnoteDivs.forEach(({ id, $div }) => {
-    // Remove the redundant <sup>N</sup> number
-    $div.find("sup").first().remove();
-
-    // Add back-link to the last paragraph
-    const $lastP = $div.find("p").last();
-    if ($lastP.length) {
-      $lastP.append(`&nbsp;<a href="#fnref:${id}" role="doc-backlink">↩</a>`);
+    // Add back-link to the last paragraph or at the end
+    if (content.includes("</p>")) {
+      content = content.replace(
+        /<\/p>(?![\s\S]*<\/p>)/,
+        `&nbsp;<a href="#fnref:${id}" role="doc-backlink">↩</a></p>`,
+      );
     } else {
-      $div.append(`<a href="#fnref:${id}" role="doc-backlink">↩</a>`);
+      content += `<a href="#fnref:${id}" role="doc-backlink">↩</a>`;
     }
 
-    // Move content to list item
-    const $li = $(`<li id="fn:${id}"></li>`);
-    $li.append($div.contents());
-    $ol.append($li);
-    $div.remove();
-  });
-
-  // Append footnotes to article or body
-  const $article = $("article");
-  if ($article.length) {
-    $article.find("section").append($ol);
-  } else {
-    $("body").append($ol);
+    footnotes.push({ id, content, original: match[0] });
   }
+
+  if (footnotes.length === 0) return html;
+
+  // Remove original footnote divs
+  for (const fn of footnotes) {
+    html = html.replace(fn.original, "");
+  }
+
+  // Build footnotes list
+  const listItems = footnotes
+    .map((fn) => `<li id="fn:${fn.id}">${fn.content}</li>`)
+    .join("");
+  const footnotesHtml = `<ol role="doc-endnotes">${listItems}</ol>`;
+
+  // Insert before </section> or </article> or </body>
+  if (html.includes("</section>")) {
+    html = html.replace("</section>", `${footnotesHtml}</section>`);
+  } else if (html.includes("</article>")) {
+    html = html.replace("</article>", `${footnotesHtml}</article>`);
+  } else {
+    html = html.replace("</body>", `${footnotesHtml}</body>`);
+  }
+
+  return html;
 }
 
 /**
- * Processes markdown abbreviation definitions and wraps matching text in <abbr> tags.
+ * Processes markdown abbreviation definitions and wraps matching text in <abbr> tags (regex-based).
  *
- * Abbreviation syntax: *[ABBR]: Full expansion text
- *
- * Example:
- *   *[HTML]: HyperText Markup Language
- *   The HTML specification...
- *
- * Becomes:
- *   The <abbr title="HyperText Markup Language">HTML</abbr> specification...
- *
- * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
+ * @param {string} html - HTML string to process
+ * @returns {string} HTML with abbreviations wrapped in <abbr> tags
  */
-function processAbbreviations($) {
+function processAbbreviations(html) {
   const abbreviations = {};
-  const abbrRegex = /\*\[([^\]]+)\]:\s*(.+)/g;
 
-  // Extract abbreviation definitions from paragraphs
-  $("p").each(function () {
-    const text = $(this).text();
-    let match;
-    let hasAbbr = false;
-
-    while ((match = abbrRegex.exec(text)) !== null) {
-      abbreviations[match[1]] = match[2].trim();
-      hasAbbr = true;
-    }
-    abbrRegex.lastIndex = 0;
-
-    // Remove paragraph if it only contained abbreviation definitions
-    if (hasAbbr) {
-      const cleanedText = text.replace(/\*\[[^\]]+\]:\s*.+/g, "").trim();
-      if (cleanedText === "") {
-        $(this).remove();
-      }
-    }
+  // Extract abbreviation definitions from paragraphs and remove them
+  html = html.replace(/<p>\s*\*\[([^\]]+)\]:\s*(.+?)\s*<\/p>/g, (match, abbr, title) => {
+    abbreviations[abbr] = title.trim();
+    return ""; // Remove the definition paragraph
   });
 
-  if (Object.keys(abbreviations).length === 0) return;
+  if (Object.keys(abbreviations).length === 0) return html;
 
-  // Replace abbreviations in text nodes (excluding code, pre, script, style, abbr)
-  const replaceInText = (node) => {
-    if (node.type === "text" && node.data) {
-      let text = node.data;
+  // Replace abbreviations in text, but not inside code, pre, script, style, or abbr tags
+  // Split HTML into parts: tags we skip, and everything else
+  const skipTags = /<(code|pre|script|style|abbr)[^>]*>[\s\S]*?<\/\1>/gi;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = skipTags.exec(html)) !== null) {
+    // Text before this tag (process it)
+    if (match.index > lastIndex) {
+      parts.push({ text: html.slice(lastIndex, match.index), process: true });
+    }
+    // The tag itself (don't process)
+    parts.push({ text: match[0], process: false });
+    lastIndex = skipTags.lastIndex;
+  }
+  // Remaining text after last tag
+  if (lastIndex < html.length) {
+    parts.push({ text: html.slice(lastIndex), process: true });
+  }
+
+  // Process parts and replace abbreviations
+  for (const part of parts) {
+    if (part.process) {
       for (const [abbr, title] of Object.entries(abbreviations)) {
         const escapedAbbr = abbr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const regex = new RegExp(`\\b${escapedAbbr}\\b`, "g");
-        text = text.replace(regex, `<abbr title="${title}">${abbr}</abbr>`);
-      }
-      if (text !== node.data) {
-        $(node).replaceWith(text);
+        // Only replace in text content (not inside tags)
+        part.text = part.text.replace(
+          new RegExp(`(>|^)([^<]*?)\\b${escapedAbbr}\\b`, "g"),
+          (m, before, text) =>
+            before + text.replace(new RegExp(`\\b${escapedAbbr}\\b`, "g"), `<abbr title="${title}">${abbr}</abbr>`),
+        );
       }
     }
-  };
+  }
 
-  $("body *")
-    .not("code, pre, script, style, abbr")
-    .contents()
-    .each(function () {
-      replaceInText(this);
-    });
+  return parts.map((p) => p.text).join("");
 }
 
 /**
@@ -408,19 +392,23 @@ const stats = {
  * @param {string} baseCss - Pre-loaded CSS content to inline
  */
 async function processHtml(filePath, baseCss) {
-  let content = await readFile(filePath, "utf-8");
-  let $ = load(content);
+  let html = await readFile(filePath, "utf-8");
 
-  // Step 1: Custom transforms (footnotes, abbreviations, syntax highlighting)
+  // Step 1: Text transforms (regex-based, no Cheerio needed)
   let t = performance.now();
-  processFootnotes($);
-  processAbbreviations($);
-  convertCode($);
+  html = processFootnotes(html);
+  html = processAbbreviations(html);
   stats.transforms += performance.now() - t;
 
-  // Step 2: Clean up spans and combine CSS (while we still have Cheerio instance)
+  // Step 2: Syntax highlighting (needs Cheerio for DOM manipulation)
   t = performance.now();
+  let $ = load(html);
+  convertCode($);
   cleanupSpans($);
+  stats.combineCss += performance.now() - t;
+
+  // Step 3: Combine CSS and serialize
+  t = performance.now();
   $('link[rel="stylesheet"]').remove();
   const generatedCss = $("style")
     .map(function () {
@@ -430,7 +418,7 @@ async function processHtml(filePath, baseCss) {
     .join("");
   $("style").remove();
   $("head").append(`<style>${baseCss}${shikiCss}${generatedCss}</style>`);
-  let html = $.html(); // Single serialization point
+  html = $.html();
   stats.combineCss += performance.now() - t;
 
   // Step 4: Per-page CSS purging (remove unused selectors)
