@@ -499,11 +499,13 @@ async function processCss() {
   const sourceDir = join(ROOT, SOURCE);
   const cssFiles = await findFiles(sourceDir, ".css");
 
-  for (const cssFile of cssFiles) {
-    const css = await readFile(cssFile, "utf-8");
-    const minified = minifyCss(css).css;
-    await writeFile(cssFile, minified);
-  }
+  await Promise.all(
+    cssFiles.map(async (cssFile) => {
+      const css = await readFile(cssFile, "utf-8");
+      const minified = minifyCss(css).css;
+      await writeFile(cssFile, minified);
+    })
+  );
 }
 
 /**
@@ -513,9 +515,7 @@ async function processCss() {
 async function cleanCss() {
   const sourceDir = join(ROOT, SOURCE);
   const cssFiles = await findFiles(sourceDir, ".css");
-  for (const file of cssFiles) {
-    await unlink(file);
-  }
+  await Promise.all(cssFiles.map(unlink));
 }
 
 /**
@@ -533,9 +533,7 @@ async function build() {
   await processCss();
 
   // Process each HTML file
-  for (const file of htmlFiles) {
-    await processHtml(file);
-  }
+  await Promise.all(htmlFiles.map(processHtml));
 
   // Clean up CSS files (now inlined)
   await cleanCss();
