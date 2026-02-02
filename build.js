@@ -211,16 +211,23 @@ function processAbbreviations($) {
  * @param {import('cheerio').CheerioAPI} $ - Cheerio instance
  */
 function convertCode($) {
+  const codeBlocks = $("code");
+  if (codeBlocks.length === 0) return;
+
   // Theme default styles to remove (already set in base CSS)
   const DEFAULT_COLOR_KEY = "COLOR:#BFBDB6";
   const ITALIC_KEY = "FONT-STYLE:ITALIC";
   const BG_KEY = "BACKGROUND-COLOR:#0B0E14";
 
   let css = "";
+  let classCounter = 0;
   const cssMap = {}; // Maps style declarations to class names
 
+  // Regex to extract style attribute from Shiki output
+  const styleRegex = /style="([^"]+)"/;
+
   // Highlight all code blocks
-  $("code").each(function () {
+  codeBlocks.each(function () {
     const $code = $(this);
     const $parent = $code.parent();
     const isInlineCode = $parent[0].name !== "pre";
@@ -238,7 +245,9 @@ function convertCode($) {
     const highlighted = highlighter.codeToHtml(content, { lang, theme: THEME });
 
     if (isInlineCode) {
-      $code.attr("style", $(highlighted).attr("style"));
+      // Extract style with regex instead of creating Cheerio instance
+      const match = highlighted.match(styleRegex);
+      if (match) $code.attr("style", match[1]);
     } else {
       $parent.replaceWith(`<pre>${highlighted}</pre>`);
     }
@@ -252,7 +261,7 @@ function convertCode($) {
       if (!styleKey) continue;
 
       if (!cssMap[styleKey]) {
-        const className = `s${Object.keys(cssMap).length}`;
+        const className = `s${classCounter++}`;
         cssMap[styleKey] = className;
         css += `.${className}{${style}}\n`;
       }
