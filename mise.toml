@@ -2,3 +2,20 @@
 node = "24.13.0"
 pnpm = "10.28.2"
 zola = "0.22.1"
+
+[tasks.clean]
+description = "Remove build output directory"
+run = "rm -rf public"
+
+[tasks.serve]
+description = "Start development server with drafts"
+depends = ["clean"]
+run = "zola serve --drafts || true"
+
+[tasks.build]
+description = "Build site for production"
+depends = ["clean"]
+run = [
+  "zola build",
+  "node build.js"
+]
