@@ -1,0 +1,91 @@
+<!DOCTYPE html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><link rel=alternate type=application/atom+xml title="RSS Feed" href=https://brianvanburken.nl/feed.xml><title>Changing Angular Components for Printing | Brian van Burken</title><meta property=og:title content="Changing Angular Components for Printing"><meta name=description content="When the user is printing a page, we wanted our components to behave differently without using CSS."><meta property=og:description content="When the user is printing a page, we wanted our components to behave differently without using CSS."><meta property=og:type content=article><meta property=og:url content=https:&#x2F;&#x2F;brianvanburken.nl&#x2F;changing-angular-components-for-printing&#x2F;><meta property=og:site_name content="Brian van Burken"><link rel=canonical href=https:&#x2F;&#x2F;brianvanburken.nl&#x2F;changing-angular-components-for-printing&#x2F;><meta property=article:published_time content=2021-10-24T00:00:00+00:00><style>html{color:#fff;background:#0b0e14}@media (prefers-color-scheme:light){html{color:#0b0e14;background:#fff}}body{font-family:"Avenir Next","Open Sans",Helvetica,sans-serif;font-size:1.125rem;max-width:70ch;margin:1.5rem auto;padding:0 1.5rem}article,code,footer,h1,p,pre{margin:1.5rem 0;line-height:1.5rem}h1{font-size:2.5rem;line-height:3rem}p{text-align:justify}img{max-width:100%}a,a code{color:#fa3}a:visited{color:#ff9500}a:focus,a:hover{color:#ffbf66}footer{border-top:1px solid #bfbdb6;padding-top:1.5rem}code,pre{font-size:.875rem;word-spacing:normal;word-break:normal;word-wrap:normal;hyphens:none;color:#bfbdb6;background:#0b0e14;border-radius:.375rem}pre{overflow:auto;padding:1.5rem}p code{line-height:1;outline:3px solid #0b0e14;margin:0 2px}.b{color:#ff8f40}.h{color:#59c2ff}.c{color:#bfbdb6}.j{color:#f29668}.k{color:#39bae6}.e{color:#bfbdb6b3}.d{color:#aad94c}.g{color:#ffb454}.i{color:#d2a6ff}.f{color:#e6c08a}</style><p><a href=/ title="Overview of all my writings">Writings</a> | <a href=https://github.com/brianvanburken title="Visit my GitHub profile" target=_blank rel="noopener noreferrer">GitHub</a> | <a href=https://linkedin.com/in/brianvanburken title="Visit my LinkedIn profile" target=_blank rel="noopener noreferrer">LinkedIn</a><article itemscope itemtype=http://schema.org/BlogPosting><h1 itemprop="name headline">Changing Angular Components for Printing</h1><section itemprop=articleBody><p>To save the user, the environment, ink when printing, we can use the handy <code>@media print</code> in CSS to hide/show elements and change the styling of the page. But, sometimes, we want our components to behave differently, not just the styling. An example of this is client-side pagination. Say we have a paginated table, and the user wants to print the page. In this case, we want to show all the results, not just those on the current page. Pre-rendering the entire table and hiding it with CSS is an option. It would work but decreases the performance of our web application.<p>In this case, we want to keep track of the user triggering printing and show all the results. So how would we achieve this?<p>We can use a global event listener to check if printing is triggered. We'll start with a new Angular application and use the main <code>AppComponent</code>. This component will have a button. When the user clicks on that button, we trigger the browser's native print dialog using <a rel="noopener nofollow noreferrer external" target=_blank href=https://developer.mozilla.org/en-US/docs/Web/API/Window/print><code>window.print</code></a>.<pre><code><span class=a><span class=b>import</span><span class=c> { Component } </span><span class=b>from</span><span class=d> "@angular/core"</span><span class=e>;</span></span>
+
+<span class=a><span class=f>@</span><span class=g>Component</span><span class=c>({</span></span>
+<span class=a><span class=c>  selector</span><span class=e>:</span><span class=d> "app-root"</span><span class=e>,</span></span>
+<span class=a><span class=c>  template</span><span class=e>:</span><span class=d> `&#x3C;button (click)="print($event)">Print&#x3C;/button>`</span><span class=e>,</span></span>
+<span class=a><span class=c>})</span></span>
+<span class=a><span class=b>export class</span><span class=h> AppComponent</span><span class=c> {</span></span>
+<span class=a><span class=b>  public</span><span class=g> print</span><span class=c>(</span><span class=i>event</span><span class=j>:</span><span class=h> MouseEvent</span><span class=c>)</span><span class=j>:</span><span class=k> void</span><span class=c> {</span></span>
+<span class=a><span class=c>    event</span><span class=j>.</span><span class=g>preventDefault</span><span class=c>()</span><span class=e>;</span></span>
+<span class=a><span class=c>    window</span><span class=j>.</span><span class=g>print</span><span class=c>()</span><span class=e>;</span></span>
+<span class=a><span class=c>  }</span></span>
+<span class=a><span class=c>}</span></span>
+</code></pre><p>Next, we will add a boolean flag with which we keep track of our printing state. We also add the message we want to display for printing. We set the flag to <code>true</code> when the user clicks the button and <code>false</code> after the printing.<pre><code><span class=a><span class=b>import</span><span class=c> { Component } </span><span class=b>from</span><span class=d> "@angular/core"</span><span class=e>;</span></span>
+
+<span class=a><span class=f>@</span><span class=g>Component</span><span class=c>({</span></span>
+<span class=a><span class=c>  selector</span><span class=e>:</span><span class=d> "app-root"</span><span class=e>,</span></span>
+<span class=a><span class=c>  template</span><span class=e>:</span><span class=d> `</span></span>
+<span class=a><span class=d>    &#x3C;button (click)="print($event)">Print&#x3C;/button></span></span>
+<span class=a><span class=d>    &#x3C;span *ngIf="isPrinting">I'm only visible when printing.&#x3C;/span></span></span>
+<span class=a><span class=d>  `</span><span class=e>,</span></span>
+<span class=a><span class=c>})</span></span>
+<span class=a><span class=b>export class</span><span class=h> AppComponent</span><span class=c> {</span></span>
+<span class=a><span class=b>  public</span><span class=c> isPrinting </span><span class=j>=</span><span class=i> false</span><span class=e>;</span></span>
+
+<span class=a><span class=b>  public</span><span class=g> print</span><span class=c>(</span><span class=i>event</span><span class=j>:</span><span class=h> MouseEvent</span><span class=c>)</span><span class=j>:</span><span class=k> void</span><span class=c> {</span></span>
+<span class=a><span class=c>    event</span><span class=j>.</span><span class=g>preventDefault</span><span class=c>()</span><span class=e>;</span></span>
+<span class=a><span class=k>    this</span><span class=j>.</span><span class=c>isPrinting </span><span class=j>=</span><span class=i> true</span><span class=e>;</span></span>
+<span class=a><span class=c>    window</span><span class=j>.</span><span class=g>print</span><span class=c>()</span><span class=e>;</span></span>
+<span class=a><span class=k>    this</span><span class=j>.</span><span class=c>isPrinting </span><span class=j>=</span><span class=i> false</span><span class=e>;</span></span>
+<span class=a><span class=c>  }</span></span>
+<span class=a><span class=c>}</span></span>
+</code></pre><p>If we start the application and click the button, you will see the message flash for a few milliseconds and then disappears (for some browsers, this is so fast you won't even notice). JavaScript calls <code>window.print();</code> but does not wait to finish (finishing means closing the dialog). Instead, it continues and sets our flag back to <code>false</code>.<p>JavaScript does allow us to track printing events using <a rel="noopener nofollow noreferrer external" target=_blank href=https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeprint><code>window.onbeforeprint</code></a> and <a rel="noopener nofollow noreferrer external" target=_blank href=https://developer.mozilla.org/en-US/docs/Web/API/Window/afterprint_event><code>window.onafterprint</code></a>. These events occur before and after the print dialog. Let's change our component to add these global event listeners using <a rel="noopener nofollow noreferrer external" target=_blank href=https://angular.io/api/core/HostListener><code>HostListener</code></a>.<pre><code><span class=a><span class=b>import</span><span class=c> { Component</span><span class=e>,</span><span class=c> HostListener } </span><span class=b>from</span><span class=d> "@angular/core"</span><span class=e>;</span></span>
+
+<span class=a><span class=f>@</span><span class=g>Component</span><span class=c>({</span></span>
+<span class=a><span class=c>  selector</span><span class=e>:</span><span class=d> "app-root"</span><span class=e>,</span></span>
+<span class=a><span class=c>  template</span><span class=e>:</span><span class=d> `</span></span>
+<span class=a><span class=d>    &#x3C;button (click)="print($event)">Print&#x3C;/button></span></span>
+<span class=a><span class=d>    &#x3C;span *ngIf="isPrinting">I'm only visible when printing&#x3C;/span></span></span>
+<span class=a><span class=d>  `</span><span class=e>,</span></span>
+<span class=a><span class=c>})</span></span>
+<span class=a><span class=b>export class</span><span class=h> AppComponent</span><span class=c> {</span></span>
+<span class=a><span class=b>  public</span><span class=c> isPrinting </span><span class=j>=</span><span class=i> false</span><span class=e>;</span></span>
+
+<span class=a><span class=f>  @</span><span class=g>HostListener</span><span class=c>(</span><span class=d>"window:beforeprint"</span><span class=c>)</span></span>
+<span class=a><span class=b>  public</span><span class=g> onBeforePrint</span><span class=c>()</span><span class=j>:</span><span class=k> void</span><span class=c> {</span></span>
+<span class=a><span class=k>    this</span><span class=j>.</span><span class=c>isPrinting </span><span class=j>=</span><span class=i> true</span><span class=e>;</span></span>
+<span class=a><span class=c>  }</span></span>
+
+<span class=a><span class=f>  @</span><span class=g>HostListener</span><span class=c>(</span><span class=d>"window:afterprint"</span><span class=c>)</span></span>
+<span class=a><span class=b>  public</span><span class=g> onAfterPrint</span><span class=c>()</span><span class=j>:</span><span class=k> void</span><span class=c> {</span></span>
+<span class=a><span class=k>    this</span><span class=j>.</span><span class=c>isPrinting </span><span class=j>=</span><span class=i> false</span><span class=e>;</span></span>
+<span class=a><span class=c>  }</span></span>
+
+<span class=a><span class=b>  public</span><span class=g> print</span><span class=c>(</span><span class=i>event</span><span class=j>:</span><span class=h> MouseEvent</span><span class=c>)</span><span class=j>:</span><span class=k> void</span><span class=c> {</span></span>
+<span class=a><span class=c>    event</span><span class=j>.</span><span class=g>preventDefault</span><span class=c>()</span><span class=e>;</span></span>
+<span class=a><span class=c>    window</span><span class=j>.</span><span class=g>print</span><span class=c>()</span><span class=e>;</span></span>
+<span class=a><span class=c>  }</span></span>
+<span class=a><span class=c>}</span></span>
+</code></pre><p>When we click the button, we still see it flash before our eyes. But, why is this? It is the same issue we experienced with the first example! When we add <code>console.log</code> to both functions for debugging, you will notice that both get triggered simultaneously! Most browsers call the listeners for the preview window. That means that when the dialog with printing preview shows, it calls both events. You would think that this means that it works. But, the preview in the dialog and the actual printed page are still different. We should keep the <code>isPrinting</code> state as long the dialog isn't closed.<p>Somehow we need to tell the JavaScript runtime to execute the listeners in our desired order. After some research, I found out that using <a rel="noopener nofollow noreferrer external" target=_blank href=https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/setTimeout><code>setTimeout</code></a> we can change the executing order in our call stack. So by if we wrap the <code>window.print();</code> in a timeout and set our flag back to <code>false</code>, we defer the execution of these functions. We set the printing dialog trigger to <code>0</code> and reset the flag to <code>1</code>; these numbers are the milliseconds we delay the calls.<pre><code><span class=a><span class=b>import</span><span class=c> { Component</span><span class=e>,</span><span class=c> HostListener } </span><span class=b>from</span><span class=d> "@angular/core"</span><span class=e>;</span></span>
+
+<span class=a><span class=f>@</span><span class=g>Component</span><span class=c>({</span></span>
+<span class=a><span class=c>  selector</span><span class=e>:</span><span class=d> "app-root"</span><span class=e>,</span></span>
+<span class=a><span class=c>  template</span><span class=e>:</span><span class=d> `</span></span>
+<span class=a><span class=d>    &#x3C;button (click)="print($event)">Print&#x3C;/button></span></span>
+<span class=a><span class=d>    &#x3C;span *ngIf="isPrinting">I'm only visible when printing&#x3C;/span></span></span>
+<span class=a><span class=d>  `</span><span class=e>,</span></span>
+<span class=a><span class=c>})</span></span>
+<span class=a><span class=b>export class</span><span class=h> AppComponent</span><span class=c> {</span></span>
+<span class=a><span class=b>  public</span><span class=c> isPrinting </span><span class=j>=</span><span class=i> false</span><span class=e>;</span></span>
+
+<span class=a><span class=f>  @</span><span class=g>HostListener</span><span class=c>(</span><span class=d>"window:beforeprint"</span><span class=c>)</span></span>
+<span class=a><span class=b>  public</span><span class=g> onBeforePrint</span><span class=c>()</span><span class=j>:</span><span class=k> void</span><span class=c> {</span></span>
+<span class=a><span class=k>    this</span><span class=j>.</span><span class=c>isPrinting </span><span class=j>=</span><span class=i> true</span><span class=e>;</span></span>
+<span class=a><span class=c>  }</span></span>
+
+<span class=a><span class=f>  @</span><span class=g>HostListener</span><span class=c>(</span><span class=d>"window:afterprint"</span><span class=c>)</span></span>
+<span class=a><span class=b>  public</span><span class=g> onAfterPrint</span><span class=c>()</span><span class=j>:</span><span class=k> void</span><span class=c> {</span></span>
+<span class=a><span class=g>    setTimeout</span><span class=c>(() </span><span class=b>=></span><span class=c> {</span></span>
+<span class=a><span class=k>      this</span><span class=j>.</span><span class=c>isPrinting </span><span class=j>=</span><span class=i> false</span><span class=e>;</span></span>
+<span class=a><span class=c>    }</span><span class=e>,</span><span class=i> 1</span><span class=c>)</span><span class=e>;</span></span>
+<span class=a><span class=c>  }</span></span>
+
+<span class=a><span class=b>  public</span><span class=g> print</span><span class=c>(</span><span class=i>event</span><span class=j>:</span><span class=h> MouseEvent</span><span class=c>)</span><span class=j>:</span><span class=k> void</span><span class=c> {</span></span>
+<span class=a><span class=c>    event</span><span class=j>.</span><span class=g>preventDefault</span><span class=c>()</span><span class=e>;</span></span>
+<span class=a><span class=k>    this</span><span class=j>.</span><span class=c>isPrinting </span><span class=j>=</span><span class=i> true</span><span class=e>;</span></span>
+<span class=a><span class=g>    setTimeout</span><span class=c>(() </span><span class=b>=></span><span class=c> {</span></span>
+<span class=a><span class=c>      window</span><span class=j>.</span><span class=g>print</span><span class=c>()</span><span class=e>;</span></span>
+<span class=a><span class=c>    }</span><span class=e>,</span><span class=i> 0</span><span class=c>)</span><span class=e>;</span></span>
+<span class=a><span class=c>  }</span></span>
+<span class=a><span class=c>}</span></span>
+</code></pre><p>JavaScript calls <code>print</code> and sets a timeout that waits for the callback to finish; by closing the dialog. In the background, it calls <code>onBeforePrint</code> function, and adds <code>onAfterPrint</code> to our call stack. Since our call stack is still waiting for <code>print</code> to finish, <code>onAfterPrint</code> timeout callback isn't called only after the callback for <code>window.print();</code> finishes. After the dialog closes, it continues in the call stack queue and sets our flag to <code>false</code>.<p>Now that the JavaScript runtime waits for the print dialog to close, we can see what changes. Below is the final result when a user triggers the "print" button. You'll get to see the message.<p><img src=/assets/changing-angular-components-for-printing/screenshot.jpg alt="Screenshot of a printing dialog showing text only visible when printing"></section><footer>Published on <time datetime=2021-10-24T00:00:00 itemprop=datePublished>2021-10-24</time><br>Tags: <a href=/tags/#angular title="See all posts for Angular">Angular</a>, <a href=/tags/#eventlistener title="See all posts for EventListener">EventListener</a>, <a href=/tags/#typescript title="See all posts for TypeScript">TypeScript</a><br>Source <a href=https:&#x2F;&#x2F;github.com&#x2F;brianvanburken&#x2F;brianvanburken.github.io&#x2F;tree&#x2F;master&#x2F;content/changing-angular-components-for-printing.md target=_blank rel="noopener noreferrer" title="View post source on Github">on Github</a></footer></article><script data-goatcounter=https://brianvanburken.goatcounter.com/count async src=https://gc.zgo.at/count.js></script><noscript><img src="https://brianvanburken.goatcounter.com/count?p=/changing-angular-components-for-printing/"></noscript>

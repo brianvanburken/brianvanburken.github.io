@@ -1,0 +1,1721 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+  <title>Brian van Burken</title>
+  <subtitle>Personal blog of Brian van Burken</subtitle>
+  <link href="https://brianvanburken.nl/feed.xml" rel="self" type="application/atom+xml"/>
+  <link href="https://brianvanburken.nl"/>
+  <generator uri="https://www.getzola.org/">Zola</generator>
+  <updated>2025-02-07T00:00:00+00:00</updated>
+  <id>https://brianvanburken.nl/feed.xml</id>
+  <entry xml:lang="en">
+    <title>Caching Elm dependencies on Github Actions</title>
+    <published>2025-02-07T00:00:00+00:00</published>
+    <updated>2025-02-07T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/caching-elm-dependencies-on-github-actions/" rel="alternate" type="text/html" title="Caching Elm dependencies on Github Actions"/>
+    <id>https://brianvanburken.nl/caching-elm-dependencies-on-github-actions/</id>
+    <summary>Caching dependencies efficiently can significantly speed up CI runs and improve reliability, as it prevents downloading dependencies every time, reducing exposure to outages and network failures.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/caching-elm-dependencies-on-github-actions/">&lt;p&gt;When working with Elm in GitHub Actions, caching dependencies efficiently can significantly speed up CI runs and improve reliability, as it prevents downloading dependencies every time, reducing exposure to outages and network failures.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;where-does-elm-store-its-dependencies&quot;&gt;Where does Elm store its dependencies?&lt;&#x2F;h2&gt;
+&lt;p&gt;Elm stores downloaded dependencies inside a hidden &lt;code&gt;.elm&lt;&#x2F;code&gt; directory in the user’s home folder by default. On most systems, this directory is located at:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;sh&quot;&gt;~&#x2F;.elm
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We can change the location where dependencies are stored by setting the &lt;code&gt;ELM_HOME&lt;&#x2F;code&gt; environment variable in your shell. This allows us to relocate the &lt;code&gt;.elm&lt;&#x2F;code&gt; directory to a location we control.&lt;&#x2F;p&gt;
+&lt;p&gt;For example, we can move it to follow the &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;specifications.freedesktop.org&#x2F;basedir-spec&#x2F;latest&#x2F;&quot;&gt;XDG Base Directory Specification&lt;&#x2F;a&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;sh&quot;&gt;export ELM_HOME=&amp;quot;$HOME&#x2F;.cache&#x2F;elm&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;how-can-we-only-install-elm-dependencies&quot;&gt;How can we only install Elm dependencies?&lt;&#x2F;h2&gt;
+&lt;p&gt;Unlike other package managers, Elm does not have a separate install command to fetch dependencies without compiling a project. Dependencies are only downloaded when Elm compiles a file in the project. Compiling the entire project could work, but it may be slow. However, there is a trick to circumvent this.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;using-a-temporary-file&quot;&gt;Using a temporary file&lt;&#x2F;h3&gt;
+&lt;p&gt;A workaround is to create a minimal valid Elm file that triggers dependency installation without requiring the compilation of the entire project. Below is an example:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;module A exposing (a)
+a = 0
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then, we create this file and compile it to download dependencies without affecting the main project. The compilation result is directed to &lt;code&gt;&#x2F;dev&#x2F;null&lt;&#x2F;code&gt;, so it is discarded automatically without leaving any artifacts:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;sh&quot;&gt;elm make Temp.elm --output=&#x2F;dev&#x2F;null
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;no-lockfile&quot;&gt;No Lockfile?&lt;&#x2F;h3&gt;
+&lt;p&gt;Elm does not have the concept of a “lockfile.” Instead, the &lt;code&gt;elm.json&lt;&#x2F;code&gt; file stores exact package versions. This means we can base the cache on the &lt;code&gt;elm.json&lt;&#x2F;code&gt; file. However, one downside is that any modification to elm.json—such as changing the Elm package version—will trigger a cache invalidation, even if dependencies remain unchanged.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;adding-caching-to-github-actions&quot;&gt;Adding caching to GitHub Actions&lt;&#x2F;h2&gt;
+&lt;p&gt;Now, let’s put everything together in a GitHub Actions pipeline.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;1-set-the-elm-home-environment-variable&quot;&gt;1. Set the ELM_HOME Environment Variable&lt;&#x2F;h3&gt;
+&lt;p&gt;Modify your GitHub Actions workflow to define the &lt;code&gt;ELM_HOME&lt;&#x2F;code&gt; path at the root level for consistency across runs. Here, we set it to the project’s root:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;yaml&quot;&gt;env:
+  ELM_HOME: &amp;quot;.elm&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h3 id=&quot;2-add-a-cache-rule-for-the-elm-directory&quot;&gt;2. Add a cache rule for the .elm directory&lt;&#x2F;h3&gt;
+&lt;p&gt;Use the &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;docs.github.com&#x2F;en&#x2F;actions&#x2F;writing-workflows&#x2F;choosing-what-your-workflow-does&#x2F;caching-dependencies-to-speed-up-workflows&quot;&gt;GitHub cache action&lt;&#x2F;a&gt; to persist dependencies between workflow runs.
+This should go in the &lt;code&gt;steps:&lt;&#x2F;code&gt; section of the workflow file.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;yaml&quot;&gt;- name: Cache Elm dependencies
+  id: elm_cache
+  uses: actions&#x2F;cache@v3
+  with:
+    path: .elm
+    key: elm-${{ runner.os }}-${{ hashFiles(&amp;#39;elm.json&amp;#39;) }}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This ensures that dependencies are only redownloaded when &lt;code&gt;elm.json&lt;&#x2F;code&gt; changes, as its content is used as the cache key. We set an &lt;code&gt;id&lt;&#x2F;code&gt; so that we can reference it to check for cache hits.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;3-install-dependencies-using-the-temporary-file-trick&quot;&gt;3. Install dependencies using the temporary file trick&lt;&#x2F;h3&gt;
+&lt;p&gt;To ensure all dependencies are installed before the main build step, use the following command to create a temporary file and compile it, forcing dependency installation.
+This should also be included in the &lt;code&gt;steps:&lt;&#x2F;code&gt; section of the workflow file.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;yaml&quot;&gt;- name: Install Elm dependencies
+  if: steps.elm_cache.outputs.cache-hit != &amp;#39;true&amp;#39;
+  run: |
+    echo &amp;quot;module A exposing (a)\na=0&amp;quot; &amp;gt; Temp.elm
+    elm make Temp.elm --output=&#x2F;dev&#x2F;null
+    rm Temp.elm
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This step will be skipped if the cache is hit, meaning &lt;code&gt;elm.json&lt;&#x2F;code&gt; has not changed.&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Disable NPM fund message</title>
+    <published>2023-03-02T00:00:00+00:00</published>
+    <updated>2023-03-02T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/disable-npm-funding-message/" rel="alternate" type="text/html" title="Disable NPM fund message"/>
+    <id>https://brianvanburken.nl/disable-npm-funding-message/</id>
+    <summary>If you find NPM&#x27;s funding messages distracting, you can disable them by setting a configuration in different ways.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/disable-npm-funding-message/">&lt;p&gt;Whenever you install packages using NPM, you get a message that the packages seek funding.
+This functionality was introduced back in NPM version &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;blog.npmjs.org&#x2F;post&#x2F;188841555980&#x2F;updates-to-community-docs-more&quot;&gt;6.13&lt;&#x2F;a&gt;.
+It looks like this:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;$ npm install
+3 packages are looking for funding.
+Run &amp;quot;npm fund&amp;quot; to find out more.
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Running &lt;code&gt;npm fund&lt;&#x2F;code&gt; shows which packages are looking for funding.
+Here is a quick preview of what the output looks like:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;$ npm fund
+tmp@1.0.0
+├─┬ fund-dev-dep@1.0.0
+│ ├── type: dev dep
+│ └── url: http:&#x2F;&#x2F;example.com&#x2F;fund
+├─┬ fund-project@1.0.0
+│ ├── type: individual
+│ └── url: https:&#x2F;&#x2F;example.com&#x2F;project&#x2F;support
+└─┬ sub-fund-foo@1.0.0
+  ├── type: corporate
+  └── url: https:&#x2F;&#x2F;corp.example.com&#x2F;sponsor
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;While the idea is excellent, you should always &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;opensource.guide&quot;&gt;support open-source projects&lt;&#x2F;a&gt; in any way possible!
+It can generate unwanted noise, especially in CI environments.
+If you want, you can disable it by running the following command:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;bash&quot;&gt;npm config set fund false
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Or add the following line manually to your &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;docs.npmjs.com&#x2F;cli&#x2F;v9&#x2F;configuring-npm&#x2F;npmrc&quot;&gt;&lt;code&gt;.npmrc&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ini&quot;&gt;fund=false
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Or expose it as a shell environment variable:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;bash&quot;&gt;export NPM_CONFIG_FUND=false
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Or, if you want to run it once, disable it for installation using the flag &lt;code&gt;--no-fund&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;bash&quot;&gt;npm install --no-fund
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;bonus-tip&quot;&gt;Bonus tip:&lt;&#x2F;h2&gt;
+&lt;p&gt;While these fund messages are one of the many ways these messages get displayed in the terminal, you can &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=20791266&quot;&gt;add the following&lt;&#x2F;a&gt; to your shell to disable those as well.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;bash&quot;&gt;export ADBLOCK=true
+export DISABLE_OPENCOLLECTIVE=true
+export OPEN_SOURCE_CONTRIBUTOR=true
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;*[CI]: Continuous Integration&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Flatten a directory on Unix systems</title>
+    <published>2023-01-15T00:00:00+00:00</published>
+    <updated>2023-01-15T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/flatten-directory-on-unix/" rel="alternate" type="text/html" title="Flatten a directory on Unix systems"/>
+    <id>https://brianvanburken.nl/flatten-directory-on-unix/</id>
+    <summary>When cleaning up a bit on my computer, I wanted to flatten a directory structure. Not wanting to move everything by hand, I searched for a way to automate it.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/flatten-directory-on-unix/">&lt;p&gt;When cleaning up a bit on my computer, I wanted to flatten a directory structure.
+Not wanting to move everything by hand, I searched for a way to automate it.
+On macOS and Linux, there is a command &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;man7.org&#x2F;linux&#x2F;man-pages&#x2F;man1&#x2F;find.1.html&quot;&gt;&lt;code&gt;find&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; that lets you find files deeply nested.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;moving-files&quot;&gt;Moving files&lt;&#x2F;h2&gt;
+&lt;p&gt;The command above finds all nested files with at least one directory down and then passes the arguments to the move &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;man7.org&#x2F;linux&#x2F;man-pages&#x2F;man1&#x2F;mv.1.html&quot;&gt;&lt;code&gt;mv&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; command.
+Here the &lt;code&gt;&#x2F;path&#x2F;to&#x2F;directory&lt;&#x2F;code&gt; directory is the directory we want to flatten.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;shell&quot;&gt;find &#x2F;path&#x2F;to&#x2F;directory -mindepth 2 -type f -exec mv &amp;#39;{}&amp;#39; &#x2F;path&#x2F;to&#x2F;directory \;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;With &lt;code&gt;-type f&lt;&#x2F;code&gt;, we only find files in the given directory where we want it to look at least from a depth of two.
+The move will overwrite files with the same name.
+To control which one to overwrite or not, add &lt;code&gt;-i&lt;&#x2F;code&gt; to the &lt;code&gt;mv&lt;&#x2F;code&gt; command to interactively approve overwrites or &lt;code&gt;-f&lt;&#x2F;code&gt; to force overwrites.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;example&quot;&gt;Example&lt;&#x2F;h3&gt;
+&lt;pre&gt;&lt;code&gt;&#x2F;path&#x2F;to&#x2F;directory
+|-- subdir1&#x2F;
+|   |-- subsubdir1&#x2F;
+|   |   |-- file1.txt
+|   |   |-- file2.txt
+|   |-- subsubdir2&#x2F;
+|       |-- file3.txt
+|-- subdir2&#x2F;
+    |-- file4.txt
+    |-- subsubdir3&#x2F;
+        |-- file5.txt
+        |-- file6.txt
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;After running the command, the directory will look like this:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;&#x2F;path&#x2F;to&#x2F;directory
+|-- subdir1&#x2F;
+|   |-- subsubdir1&#x2F;
+|   |-- subsubdir2&#x2F;
+|-- subdir2&#x2F;
+|   |-- subsubdir3&#x2F;
+|-- file1.txt
+|-- file2.txt
+|-- file3.txt
+|-- file4.txt
+|-- file5.txt
+|-- file6.txt
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;cleaning-up&quot;&gt;Cleaning up&lt;&#x2F;h2&gt;
+&lt;p&gt;After moving, I still had a lot of empty directories.
+Deleting them by hand would be little work, but what if I could also automate it?
+We can use the &lt;code&gt;find&lt;&#x2F;code&gt; command again to remove all directories using &lt;code&gt;-delete&lt;&#x2F;code&gt;.
+With &lt;code&gt;-empty&lt;&#x2F;code&gt;, we ensure that we do not delete non-empty directories when something goes wrong.
+The command also needs the &lt;code&gt;-depth&lt;&#x2F;code&gt; and &lt;code&gt;-mindepth 1&lt;&#x2F;code&gt; flags to recursively find the deepest directories first, as there are possible subdirectories in it and thus not empty.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;shell&quot;&gt;find &#x2F;path&#x2F;to&#x2F;directory -type d -depth -mindepth 1 -empty -delete
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;It will give us a directory with all files in the root and no subdirectories.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;&#x2F;path&#x2F;to&#x2F;directory
+|-- file1.txt
+|-- file2.txt
+|-- file3.txt
+|-- file4.txt
+|-- file5.txt
+|-- file6.txt
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;combining-both&quot;&gt;Combining both&lt;&#x2F;h2&gt;
+&lt;p&gt;We can combine both commands to flatten a directory and clean it up in succession.
+The following command is a combination of both steps at once.
+Using &lt;code&gt;-o&lt;&#x2F;code&gt; means that &lt;code&gt;find&lt;&#x2F;code&gt; will only execute the second command if the first fails.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;shell&quot;&gt;find &#x2F;path&#x2F;to&#x2F;directory -mindepth 2 -type f -exec mv &amp;#39;{}&amp;#39; &#x2F;path&#x2F;to&#x2F;directory \; \
+  -o -type d -depth -mindepth 1 -empty -delete
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Manually editing chunks in git add --patch</title>
+    <published>2023-01-04T00:00:00+00:00</published>
+    <updated>2023-01-04T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/git-add-patch-split-chunks/" rel="alternate" type="text/html" title="Manually editing chunks in git add --patch"/>
+    <id>https://brianvanburken.nl/git-add-patch-split-chunks/</id>
+    <summary>Git allows to stage smaller chunks of code for creating more atomic commits.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/git-add-patch-split-chunks/">&lt;p&gt;Using &lt;code&gt;git add --patch&lt;&#x2F;code&gt;, git can stage smaller chunks of code for creating more atomic commits.
+The interactive mode provides chunks, and each can be staged using &lt;code&gt;y&lt;&#x2F;code&gt; or rejected using &lt;code&gt;n&lt;&#x2F;code&gt;.
+But sometimes, a more granular chunk is needed, and that is where &lt;code&gt;s&lt;&#x2F;code&gt; and &lt;code&gt;e&lt;&#x2F;code&gt; come into play.
+Where &lt;code&gt;s&lt;&#x2F;code&gt; tries to split it into smaller chunks, it might not always work wanted.
+You can then use &lt;code&gt;e&lt;&#x2F;code&gt; to &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;git-scm.com&#x2F;docs&#x2F;git-add#_editing_patches&quot;&gt;manually edit a patch&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;The desired change in the following example would be only to commit changes around variable &lt;code&gt;z&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;diff&quot;&gt;--- a&#x2F;main.rs
++++ b&#x2F;main.rs
+@@ -1,5 +1,5 @@
+ fn main() {
+     let x = 5;
+-    let y = 6;
+-    let z = 7;
++    let y = 7;
++    let z = 8;
+     println!(&amp;quot;{} {} {}&amp;quot;, x, y, z);
+ }
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We can use the &lt;code&gt;e&lt;&#x2F;code&gt; command to edit the chunk in a text editor manually.
+To only commit the changes for variable &lt;code&gt;z&lt;&#x2F;code&gt;, we need to remove the line &lt;code&gt;+ let y = 7;&lt;&#x2F;code&gt; and change the &lt;code&gt;-&lt;&#x2F;code&gt; before &lt;code&gt;let y = 6&lt;&#x2F;code&gt; into a space &lt;code&gt; &lt;&#x2F;code&gt;.
+The patch should then look like this:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;diff&quot;&gt; fn main() {
+     let x = 5;
+     let y = 6;
+-    let z = 7;
++    let z = 8;
+     println!(&amp;quot;{} {} {}&amp;quot;, x, y, z);
+ }
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;After saving and closing the editor, git will stage the modified patch, allowing you to create a commit with only the changes to variable &lt;code&gt;z&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Keep case when replacing text in Vim using vim-abolish</title>
+    <published>2023-01-03T00:00:00+00:00</published>
+    <updated>2023-01-03T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/keep-case-when-replacing-text-in-vim/" rel="alternate" type="text/html" title="Keep case when replacing text in Vim using vim-abolish"/>
+    <id>https://brianvanburken.nl/keep-case-when-replacing-text-in-vim/</id>
+    <summary>vim-abolish is a plugin that allows users to easily search for and replace text while also providing the option to keep the original case of the text.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/keep-case-when-replacing-text-in-vim/">&lt;p&gt;&lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;tpope&#x2F;vim-abolish&quot;&gt;vim-abolish&lt;&#x2F;a&gt; is a plugin that allows users to easily search for and replace text while also providing the option to keep the original case of the text.
+You can use the &lt;code&gt;:Subvert&lt;&#x2F;code&gt; or shortened &lt;code&gt;:S&lt;&#x2F;code&gt; command. It acts as a replacement for the default search command.&lt;&#x2F;p&gt;
+&lt;p&gt;For example, to replace all occurrences of the word &quot;cat&quot; with the word &quot;dog&quot;, regardless of the case of the text, you would enter the following command:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;:%S&#x2F;cat&#x2F;dog&#x2F;gi&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;All occurrences of &quot;cat&quot; or &quot;Cat&quot; or &quot;CAT&quot; will be replaced with &quot;dog&quot; while keeping the case intact, so &quot;Cat&quot; becomes &quot;Dog&quot; and &quot;CAT&quot; becomes &quot;DOG&quot;.&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Home and End keys equivalent on MacBook keyboards</title>
+    <published>2022-12-31T00:00:00+00:00</published>
+    <updated>2022-12-31T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/home-and-end-keys-equivalent-on-macbook-keyboards/" rel="alternate" type="text/html" title="Home and End keys equivalent on MacBook keyboards"/>
+    <id>https://brianvanburken.nl/home-and-end-keys-equivalent-on-macbook-keyboards/</id>
+    <summary>The MacBooks have a shortened keyboard where some keys are left out. Apple has cleverly hidden these keys behind shortcuts.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/home-and-end-keys-equivalent-on-macbook-keyboards/">&lt;p&gt;The MacBooks have a shortened keyboard where some keys are left out.
+A few of these keys are &quot;Home&quot; and &quot;End&quot;, which I needed to test some functionality.&lt;&#x2F;p&gt;
+&lt;p&gt;Apple has cleverly hidden these keys behind shortcuts. Using the &lt;code&gt;Fn&lt;&#x2F;code&gt; key, we can access those.&lt;&#x2F;p&gt;
+&lt;p&gt;For &quot;Home&quot;, we need to press &lt;code&gt;Fn&lt;&#x2F;code&gt; and arrow left key. And for &quot;End&quot;, &lt;code&gt;Fn&lt;&#x2F;code&gt; with the right arrow key.&lt;&#x2F;p&gt;
+&lt;p&gt;As for a bonus, the &lt;code&gt;Fn&lt;&#x2F;code&gt; with arrow up and down keys map to &quot;Page Up&quot; and &quot;Page Down&quot;.&lt;&#x2F;p&gt;
+&lt;p&gt;You can read more about the shortcuts &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;support.apple.com&#x2F;guide&#x2F;mac-help&#x2F;windows-keys-on-a-mac-keyboard-cpmh0152&#x2F;mac&quot;&gt;here&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Wrap visual selection using the vim-surround plugin</title>
+    <published>2022-12-30T00:00:00+00:00</published>
+    <updated>2022-12-30T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/wrap-visual-selection-using-vim-surround-plugin/" rel="alternate" type="text/html" title="Wrap visual selection using the vim-surround plugin"/>
+    <id>https://brianvanburken.nl/wrap-visual-selection-using-vim-surround-plugin/</id>
+    <summary>One nice thing I&#x27;ve discovered using the vim-surround plugin for vim is that you can wrap a visual selection.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/wrap-visual-selection-using-vim-surround-plugin/">&lt;p&gt;One nice thing I&#x27;ve discovered using the &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;tpope&#x2F;vim-surround&quot;&gt;vim-surround&lt;&#x2F;a&gt; plugin for vim is that you can wrap a visual selection.&lt;&#x2F;p&gt;
+&lt;p&gt;The &lt;code&gt;S&lt;&#x2F;code&gt; key lets you wrap the visual selection with the input afterwards.&lt;&#x2F;p&gt;
+&lt;p&gt;For example, the following text when visually selected in vim:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;Hello world
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;After pressing &lt;code&gt;S&lt;&#x2F;code&gt; followed up by &lt;code&gt;&quot;&lt;&#x2F;code&gt; will result in the following:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;&amp;quot;Hello world&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;It works as well with &lt;code&gt;(&lt;&#x2F;code&gt; and &lt;code&gt;[&lt;&#x2F;code&gt;. And one more great thing is that it also works with HTML tags!
+Given the same text as before, pressing &lt;code&gt;S&lt;&#x2F;code&gt; and then typing &lt;code&gt;&amp;lt;b&amp;gt;&lt;&#x2F;code&gt; will create:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;&amp;lt;b&amp;gt;Hello world&amp;lt;b&amp;gt;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;It pays to sometimes dive into the documentation by typing &lt;code&gt;:help surround&lt;&#x2F;code&gt; or in the &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;tpope&#x2F;vim-surround&#x2F;blob&#x2F;master&#x2F;doc&#x2F;surround.txt&quot;&gt;source code&lt;&#x2F;a&gt; to find better ways.&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Using :read in Vim</title>
+    <published>2022-12-27T00:00:00+00:00</published>
+    <updated>2022-12-27T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/using-read-in-vim/" rel="alternate" type="text/html" title="Using :read in Vim"/>
+    <id>https://brianvanburken.nl/using-read-in-vim/</id>
+    <summary>The vim command :read allows you to input anything from a file into the current buffer. Useful if you want to copy things from another file.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/using-read-in-vim/">&lt;p&gt;The vim command &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;vimdoc.sourceforge.net&#x2F;htmldoc&#x2F;insert.html#:read&quot;&gt;&lt;code&gt;:read&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; (or shorter &lt;code&gt;:r&lt;&#x2F;code&gt;) allows you to input anything from a file into the current buffer.
+Useful if you want to copy things from another file.
+For example, the following command &lt;code&gt;:read template.md&lt;&#x2F;code&gt; will load the entire content of the file &lt;code&gt;template.md&lt;&#x2F;code&gt; into the buffer.&lt;&#x2F;p&gt;
+&lt;p&gt;You can even combine it with the &lt;code&gt;!&lt;&#x2F;code&gt; command to instead output the result of the shell command.
+E.g. &lt;code&gt;:r ! ls&lt;&#x2F;code&gt;, will put the output of &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;man7.org&#x2F;linux&#x2F;man-pages&#x2F;man1&#x2F;ls.1.html&quot;&gt;&lt;code&gt;ls&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;, the list of all files and directories in the current folder, into the buffer.&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Access the last command in a shell</title>
+    <published>2022-12-26T00:00:00+00:00</published>
+    <updated>2022-12-26T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/access-the-last-argument-of-the-last-command-in-a-shell/" rel="alternate" type="text/html" title="Access the last command in a shell"/>
+    <id>https://brianvanburken.nl/access-the-last-argument-of-the-last-command-in-a-shell/</id>
+    <summary>Using !!, you can access the last command executed. Useful for rerunning a previous command.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/access-the-last-argument-of-the-last-command-in-a-shell/">&lt;p&gt;Using &lt;code&gt;!!&lt;&#x2F;code&gt;, you can access the last command executed.
+Useful for rerunning a command with &lt;code&gt;sudo&lt;&#x2F;code&gt;-privilege.&lt;&#x2F;p&gt;
+&lt;p&gt;Example:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;$ make_me_a_sandwich
+What? Make it yourself
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Rerun it using &lt;code&gt;!!&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;$ sudo !!
+$ sudo make_me_a_sandwich
+Okay.
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Access the last argument of the last command in a shell</title>
+    <published>2022-12-26T00:00:00+00:00</published>
+    <updated>2022-12-26T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/access-the-last-command-in-a-shell/" rel="alternate" type="text/html" title="Access the last argument of the last command in a shell"/>
+    <id>https://brianvanburken.nl/access-the-last-command-in-a-shell/</id>
+    <summary>Using `$_`, you can access the last argument of the last command executed.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/access-the-last-command-in-a-shell/">&lt;p&gt;Using &lt;code&gt;$_&lt;&#x2F;code&gt;, you can access the last argument of the last command executed.&lt;&#x2F;p&gt;
+&lt;p&gt;Example:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code&gt;$ echo &amp;quot;Have a nice day!&amp;quot;
+Have a nice day!
+
+$ echo $_
+Have a nice day!
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Building A Builder Pattern in TypeScript</title>
+    <published>2021-12-12T00:00:00+00:00</published>
+    <updated>2021-12-12T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/building-a-builder-pattern-in-typescript/" rel="alternate" type="text/html" title="Building A Builder Pattern in TypeScript"/>
+    <id>https://brianvanburken.nl/building-a-builder-pattern-in-typescript/</id>
+    <summary>Forcing types using type assertions leave your code open for wrong assumptions. I went looking for an alternative.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/building-a-builder-pattern-in-typescript/">&lt;p&gt;I&#x27;ve come across a few snippets of TypeScript where the type was forced on an object using &lt;code&gt;as&lt;&#x2F;code&gt;.
+Maybe you&#x27;ve seen those before too.
+I think using &lt;code&gt;as&lt;&#x2F;code&gt; is a bad thing and should be used as a last resort as you will lose type-safety, thus no help when the interface changes.
+I had doubts about its usage when the code needed a partial object before completion. So I went to search for other solutions and opinions.&lt;&#x2F;p&gt;
+&lt;p&gt;Before discussing this further, let&#x27;s create a scenario to be on the same page.
+Say we have the following interface:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;interface Foo {
+  bar: string;
+  baz: string;
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Here both &lt;code&gt;bar&lt;&#x2F;code&gt; and &lt;code&gt;baz&lt;&#x2F;code&gt; are required properties of &lt;code&gt;Foo&lt;&#x2F;code&gt;.
+Both must be present for the object to be complete.
+What if we wanted to first input &lt;code&gt;bar&lt;&#x2F;code&gt; and later input &lt;code&gt;baz&lt;&#x2F;code&gt;?
+There are few options to achieve this.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;type-assertions&quot;&gt;Type assertions&lt;&#x2F;h2&gt;
+&lt;p&gt;The first one is to enforce an object using &lt;code&gt;as&lt;&#x2F;code&gt;; this is called a &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;www.typescriptlang.org&#x2F;docs&#x2F;handbook&#x2F;2&#x2F;everyday-types.html#type-assertions&quot;&gt;&quot;Type assertion&quot;&lt;&#x2F;a&gt;.
+Below is an example of this.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;const foo = {
+  bar: &amp;#39;bar&amp;#39;
+} as Foo; &#x2F;&#x2F; Here we enforce the type
+
+console.log(foo.baz); &#x2F;&#x2F; undefined
+
+&#x2F;&#x2F; Since `baz` isn&amp;#39;t set, the following line could potentially crash if it does
+&#x2F;&#x2F; something with property `baz`
+doSomethingWithFoo(foo);
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The problem is the loss of type-safety.
+If you enforce a type, the compiler will think it&#x27;s a complete object, and this will cause bugs later in your program.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;partial-utility-type&quot;&gt;Partial Utility Type&lt;&#x2F;h2&gt;
+&lt;p&gt;The other is to use &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;www.typescriptlang.org&#x2F;docs&#x2F;handbook&#x2F;utility-types.html#partialtype&quot;&gt;&lt;code&gt;Partial&amp;lt;Type&amp;gt;&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;; this is a Utility Type provided by TypeScript.
+Using the partial type, we can create a partial object to fill in the rest later.
+Usage would look as follows.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;const foo: Partial&amp;lt;Foo&amp;gt; = {
+  bar: &amp;#39;bar&amp;#39;;
+};
+
+console.log(foo.baz); &#x2F;&#x2F; undefined
+
+&#x2F;&#x2F; If our object is not complete and `doSomethingWithFoo` accepts only complete
+&#x2F;&#x2F; objects of `Foo` the compiler will throw an error
+doSomethingWithFoo(foo);
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;It is the best of both approaches.
+The compiler guarantees safety and throws the error below if we pass the partial object along where the code expected a complete object.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;text&quot;&gt;Argument of type &amp;#39;Partial&amp;lt;Foo&amp;gt;&amp;#39; is not assignable to parameter of type &amp;#39;Foo&amp;#39;.
+  Types of property &amp;#39;bar&amp;#39; are incompatible.
+    Type &amp;#39;string | undefined&amp;#39; is not assignable to type &amp;#39;string&amp;#39;.
+      Type &amp;#39;undefined&amp;#39; is not assignable to type &amp;#39;string&amp;#39;.(2345)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The only problem with &lt;code&gt;Partial&lt;&#x2F;code&gt; is that it still allows us to work with properties of &lt;code&gt;Foo&lt;&#x2F;code&gt; even if they aren&#x27;t set.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;builder-pattern&quot;&gt;Builder Pattern&lt;&#x2F;h2&gt;
+&lt;p&gt;What if we only want to work with a complete object and only access its properties?
+We needed some way to encapsulate the object until completed.
+There is a known design pattern that solves this.
+It is called the &quot;Builder Pattern&quot;.&lt;&#x2F;p&gt;
+&lt;p&gt;I&#x27;ve used this pattern in Java, and there I needed to write boilerplate such as setters for each property.
+Since JavaScript, and thus TypeScript, is dynamic, I went to look for a solution that also takes away this boilerplate code.&lt;&#x2F;p&gt;
+&lt;p&gt;First, a quick recap of what a builder is and its usage.
+A builder is an encapsulation of a class or an interface.
+You can add a property with setters that start with &lt;code&gt;with&lt;&#x2F;code&gt;.
+In the case of Java, properties still can be optional; properties are by default &lt;code&gt;null&lt;&#x2F;code&gt;.
+Below is an example usage as you would use it in Java:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;java&quot;&gt;new FooBuilder()
+  .withBar(&amp;quot;bar&amp;quot;)
+  .withBaz(&amp;quot;baz&amp;quot;)
+  .build();
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I wanted to achieve something similar with less boilerplate and more type inference.
+Also, I want to be as close to the conventions of Java.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;defining-the-type&quot;&gt;Defining the type&lt;&#x2F;h3&gt;
+&lt;p&gt;First off, I thought of the type of the pattern.
+Using &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;www.typescriptlang.org&#x2F;docs&#x2F;handbook&#x2F;2&#x2F;keyof-types.html&quot;&gt;&lt;code&gt;keyof&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;, I could infer all the properties and types of an interface.
+With this, I could create a type that has all the properties.
+After some searching on the web, I also found the feature of TypeScript called &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;www.typescriptlang.org&#x2F;docs&#x2F;handbook&#x2F;2&#x2F;template-literal-types.html&quot;&gt;&quot;Template Literal Types&quot;&lt;&#x2F;a&gt; that would help me create methods that start with &lt;code&gt;with&lt;&#x2F;code&gt;.
+Combining everything, I got the following type.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;type AbstractBuilder&amp;lt;T, B = Record&amp;lt;string, unknown&amp;gt;&amp;gt; = {
+  [K in keyof T &amp;amp; string as `with${Capitalize&amp;lt;K&amp;gt;}`]: (arg: T[K]) =&amp;gt; AbstractBuilder&amp;lt;T, B &amp;amp; Record&amp;lt;K, T[K]&amp;gt;&amp;gt;;
+};
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;A lot happens in a few lines.
+I&#x27;ll explain each line in more detail.&lt;&#x2F;p&gt;
+&lt;p&gt;Starting with our type &lt;code&gt;AbstractBuilder&amp;lt;T, B = Record&amp;lt;string, unknown&amp;gt;&amp;gt;&lt;&#x2F;code&gt;.
+Here we define &lt;code&gt;AbstractBuilder&lt;&#x2F;code&gt; that consists of two objects.
+First is the generic &lt;code&gt;T&lt;&#x2F;code&gt; that refers to the interface we want the builder to manage.
+The second, &lt;code&gt;B&lt;&#x2F;code&gt;, is the internal state of the builder.
+In my prototype, this was the &lt;code&gt;Partial&lt;&#x2F;code&gt; of &lt;code&gt;T&lt;&#x2F;code&gt;.
+But, changed it to a &lt;code&gt;Record&lt;&#x2F;code&gt; to solve a check I wanted to implement (more on that later).&lt;&#x2F;p&gt;
+&lt;p&gt;The following line has the bulk of the type inference.
+It can be broken down into two parts, definition and assignment.&lt;&#x2F;p&gt;
+&lt;p&gt;In the definition part, before the semicolon, we take each property from our generic &lt;code&gt;T&lt;&#x2F;code&gt; (the interface).
+Using &lt;code&gt;keyof&lt;&#x2F;code&gt;, we assign each property to type variable &lt;code&gt;K&lt;&#x2F;code&gt; and define it as a &lt;code&gt;string&lt;&#x2F;code&gt;.
+Then using &lt;code&gt;as&lt;&#x2F;code&gt;, here we only rename so we are save to use it, we redefine its to the template literal starting with &lt;code&gt;with&lt;&#x2F;code&gt; and follow by the property name capitalized.
+Our example with &lt;code&gt;Foo&lt;&#x2F;code&gt; gives us a property name &lt;code&gt;withBar&lt;&#x2F;code&gt; and &lt;code&gt;withBaz&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;In the assignment part, we assign a function to the property.
+The function takes one argument that must be of the same type as the property of the interface defined in &lt;code&gt;K&lt;&#x2F;code&gt;.
+This function then returns our &lt;code&gt;AbstractBuilder&lt;&#x2F;code&gt;, where our property and value type expand the state of &lt;code&gt;B&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;That last part will look as follows after you complete building &lt;code&gt;Foo&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;AbstractBuilder&amp;lt;
+  Foo,
+  Record&amp;lt;string, unknown&amp;gt; &amp;amp; Record&amp;lt;&amp;#39;bar&amp;#39;, string&amp;gt; &amp;amp; Record&amp;lt;&amp;#39;baz&amp;#39;, string&amp;gt;
+&amp;gt;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now that we have a type that expands a state until completed, we still need a way to get it.
+We extend our type with a new type that defines the final &lt;code&gt;build&lt;&#x2F;code&gt; method.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;type AbstractBuilder&amp;lt;T, B = Record&amp;lt;string, unknown&amp;gt;&amp;gt; =
+  {...} 
+  &amp;amp;
+  { build: B extends T ? () =&amp;gt; T : never; }
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Here &lt;code&gt;build&lt;&#x2F;code&gt; returns our completed object of generic &lt;code&gt;T&lt;&#x2F;code&gt; if our internal state &lt;code&gt;B&lt;&#x2F;code&gt; is the same as &lt;code&gt;T&lt;&#x2F;code&gt;.
+If it is not the case, we return &lt;code&gt;never&lt;&#x2F;code&gt;.
+This trick enforces that we can only build a complete object and allows the compiler to tell us which properties are missing!
+Optional fields marked with &lt;code&gt;?&lt;&#x2F;code&gt; do not count towards a complete object.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;the-implementation&quot;&gt;The implementation&lt;&#x2F;h3&gt;
+&lt;p&gt;Now that we have a straightforward type, we can implement our Builder.
+One of my requirements was to prevent boilerplate code, writing our getters.
+So one of the things I started looking for was a &quot;method missing&quot; implementation like those in &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;ruby-doc.org&#x2F;core-2.7.3&#x2F;BasicObject.html#method-i-method_missing&quot;&gt;Ruby&lt;&#x2F;a&gt; and &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;python-reference.readthedocs.io&#x2F;en&#x2F;latest&#x2F;docs&#x2F;dunderattr&#x2F;getattr.html&quot;&gt;Python&lt;&#x2F;a&gt;.
+After some searching, I came across ES6 &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;developer.mozilla.org&#x2F;en-US&#x2F;docs&#x2F;Web&#x2F;JavaScript&#x2F;Reference&#x2F;Global_Objects&#x2F;Proxy&quot;&gt;Proxy&lt;&#x2F;a&gt; object.&lt;&#x2F;p&gt;
+&lt;p&gt;A &lt;code&gt;Proxy&lt;&#x2F;code&gt; is, as &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;developer.mozilla.org&#x2F;en-US&#x2F;docs&#x2F;Web&#x2F;JavaScript&#x2F;Reference&#x2F;Global_Objects&#x2F;Proxy&quot;&gt;MDN&lt;&#x2F;a&gt; describes it:&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The Proxy object enables you to create a proxy for another object, which can intercept and redefine fundamental operations for that object.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;The part &quot;intercept and redefine fundamental operations&quot; is what we are interested in.
+After working with Proxy objects, I came up with the following implementation.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;function Builder&amp;lt;T&amp;gt;() {
+  const Builder = new Proxy(
+    {},
+    {
+      get(state: Record&amp;lt;string, unknown&amp;gt;, property: string) {
+        if (property === &amp;quot;build&amp;quot;) {
+          return () =&amp;gt; state;
+        }
+
+        const prop = property.charAt(4).toLowerCase() + property.slice(5);
+        return (x: unknown) =&amp;gt; {
+          state[prop] = x;
+          return Builder;
+        };
+      },
+    }
+  ) as AbstractBuilder&amp;lt;T&amp;gt;;
+
+  return Builder;
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Let me walk you through the code.
+First, we define the function &lt;code&gt;Builder&lt;&#x2F;code&gt;, which takes a generic &lt;code&gt;T&lt;&#x2F;code&gt; that is passed along to the &lt;code&gt;AbstractBuilder&lt;&#x2F;code&gt; type.
+The &lt;code&gt;T&lt;&#x2F;code&gt; references the interface we want the &lt;code&gt;Builder&lt;&#x2F;code&gt; to implement.
+The usage is then &lt;code&gt;Builder&amp;lt;Foo&amp;gt;()&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;We then define the Proxy and pass in our empty state and define the &lt;code&gt;get&lt;&#x2F;code&gt; method on the &lt;code&gt;Proxy&lt;&#x2F;code&gt;.
+This method receives our state and the property name we want to access, e.g. &lt;code&gt;&quot;withBar&quot;&lt;&#x2F;code&gt; or &lt;code&gt;&quot;build&quot;&lt;&#x2F;code&gt;.
+If we have &lt;code&gt;&quot;build&quot;&lt;&#x2F;code&gt;, we return our inner state and &quot;finish&quot; the Builder.
+Otherwise, take the property string, remove the with-prefix, and make the first character lowercase.
+This Builder assumes that you use property names that start with a lowercase character; if you diverge from this convention, you can change the code here to fit yours.
+We return a function that takes an argument of any type, updates the state with the property name, and returns the builder to continue chaining.&lt;&#x2F;p&gt;
+&lt;p&gt;We still have to force the Proxy to follow our &lt;code&gt;AbstractBuilder&lt;&#x2F;code&gt; type.
+This is needed because the Proxy object is generic in itself.
+We can guarantee full type-safety in a complete object and set the right type for the right property using our type.&lt;&#x2F;p&gt;
+&lt;p&gt;Here is an example showing the pattern in action using the &lt;code&gt;Foo&lt;&#x2F;code&gt; interface.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;Builder&amp;lt;Foo&amp;gt;()
+  .withBar(&amp;quot;bar&amp;quot;)
+  .withBaz(&amp;quot;baz&amp;quot;)
+  .build();
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;should-you-use-it&quot;&gt;Should you use it?&lt;&#x2F;h2&gt;
+&lt;p&gt;Good question.
+It was an experiment to see what I wanted to implement was possible.
+I&#x27;ve successfully used this in a large application and without problems.
+Some colleagues were very enthusiastic about it, and others disliked it.
+I liked this pattern to build &quot;Test Builders&quot;, where we would create a fully complete builder with test data and easily use it in our unit tests.
+So, it is up to you if you want to use it, easy to say, isn&#x27;t it, and I recommend trying it yourself.&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>A More Sustainable Blog</title>
+    <published>2021-12-06T00:00:00+00:00</published>
+    <updated>2021-12-06T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/a-more-sustainable-blog/" rel="alternate" type="text/html" title="A More Sustainable Blog"/>
+    <id>https://brianvanburken.nl/a-more-sustainable-blog/</id>
+    <summary>After reading Sustainable Web Design, I started looking for ways to reduce the carbon footprint of this blog.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/a-more-sustainable-blog/">&lt;p&gt;After reading the book &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;abookapart.com&#x2F;products&#x2F;sustainable-web-design&quot;&gt;Sustainable Web Design&lt;&#x2F;a&gt; by Tom Greenwood, I started questioning the impact of this blog on the environment.
+While this blog is already efficient by being only static files, it could be improved further.
+I added extra build steps using &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;gulpjs.com&quot;&gt;Gulp&lt;&#x2F;a&gt; that inlines the CSS used on the page, minifies CSS, and shortens classes.
+Next, I started pre-compiling the syntax highlighting done by Prism&lt;sup class=&quot;footnote-reference&quot;&gt;&lt;a href=&quot;#1&quot;&gt;1&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;After being inspired by the blog post &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;tdarb.org&#x2F;css-js-mistake&quot;&gt;&quot;A Reality Where CSS and JavaScript Don&#x27;t Exist&quot;&lt;&#x2F;a&gt; written by Brad Taunt, I started asking myself what part of the CSS of this blog is valuable.
+I started from scratch by removing all the CSS.
+The primary purpose of this blog is, you guessed it, allowing users to read my blog posts.
+So I started adding style around improving the readability of the blog posts.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;typography&quot;&gt;Typography&lt;&#x2F;h2&gt;
+&lt;p&gt;There are many debates on the internet on Serif vs Sans-serif fonts.
+Until recently, the consensus was to stick with Sans-serif for screens.
+The argument here seems to be that serif fonts were rendered blurry due to the resolutions of screens.
+While that was the case years back, nowadays, we have high DPI screens with even thrice the density of pixels compared to back then.
+So we can keep the default font family of browsers; serif fonts.&lt;&#x2F;p&gt;
+&lt;p&gt;The default font size has always been 16 pixels if the user didn&#x27;t change it.
+While this is legible, I found that the readability improves by tweaking the size to 18 pixels.
+Having the content take up the entire width of the browser works if you have a small monitor with a resolution of up to 1024x768.
+Nowadays, people have wide and large monitors, yours truly included, and having text spread across the whole screen is painful to read.
+We can improve this by limiting the content&#x27;s width and displaying it like a column, just as text in a book doesn&#x27;t cross pages.
+While we are at it, we can also improve the position of the column by centring it to the middle of the screen.&lt;&#x2F;p&gt;
+&lt;p&gt;The last improvement for this section is the default padding the browser applies to the content.
+If we don&#x27;t apply padding to the content, it will touch the viewport border.
+It can be better.
+Adding small padding to the content fixes this.&lt;&#x2F;p&gt;
+&lt;p&gt;The final typography styling:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;css&quot;&gt;body {
+  font-size: 18px;
+  max-width: 80ch;
+  margin: 0 auto;
+  padding: 1em;
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;code-blocks&quot;&gt;Code blocks&lt;&#x2F;h2&gt;
+&lt;p&gt;This is a tough one.
+I feel, personally, that the addition of syntax highlighting improves the readability of code blocks.
+It does, however, add significantly more CSS and HTML to a blog post.
+I&#x27;m still debating the balance of readability and sustainability on this one.
+For now, I&#x27;ve decided to keep syntax highlighting.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;responsive&quot;&gt;Responsive&lt;&#x2F;h2&gt;
+&lt;p&gt;HTML is already responsive by default but could be improved further.
+One point of improvement is scaling images based on the viewport.
+A wide image could force mobile users to scroll horizontally.
+So adding the following CSS snippet improved that.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;css&quot;&gt;img {
+  max-width: 100%;
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Another improvement for responsive web design is to make &lt;code&gt;pre&lt;&#x2F;code&gt; tags with long lines force a horizontal scroll within its block.
+This blog has a few posts that contain code with long lines.
+The code would &quot;leak&quot; out of its block without enforcing an overflow and give mobile users a horizontal scrollbar.
+With the following CSS, we can fix that:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;css&quot;&gt;pre {
+  overflow: auto;
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;dark-mode&quot;&gt;Dark mode&lt;&#x2F;h2&gt;
+&lt;p&gt;Sadly, there isn&#x27;t a default styling in browsers for dark mode.
+So, if we want to support dark mode, we need to create our own.
+We can detect if the user has dark mode enabled using a media query.
+Within the media query, we invert the text and background colours.
+The default link colours become unreadable on a dark background, so we must fix those.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;css&quot;&gt;@media (prefers-color-scheme: dark) {
+  html {
+    background: #000;
+    color: #fff;
+  }
+
+  a {
+    color: gold;
+  }
+
+  a:visited {
+    color: orange;
+  }
+
+  a:hover,
+  a:focus {
+    color: orangered;
+  }
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We add dark mode because a dark background saves batterylife which in turn saves the environment a little (every little bit helps!)&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;impact&quot;&gt;Impact&lt;&#x2F;h2&gt;
+&lt;p&gt;This blog now is still functional and doesn&#x27;t overuse CSS and JavaScript.
+Nowadays, I see people overusing CSS, JavaScript and even images.
+Most blog posts I come across have a large image hero image to portray the blogpost&#x27;s topic.
+But, in many cases, it doesn&#x27;t have much value, in my opinion.
+Instead, it wastes the users&#x27; mobile data and electricity in those cases.&lt;&#x2F;p&gt;
+&lt;p&gt;Hopefully, I have inspired you to think a bit more about a website&#x27;s carbon footprint and start making small improvements.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Update(2022-06-05):&lt;&#x2F;strong&gt; after a discussion with a UX-designer, I&#x27;ve tweaked the design to make it more readable and attractive. I still keep the lessons learned from the book in mind with the update.&lt;&#x2F;p&gt;
+&lt;div class=&quot;footnote-definition&quot; id=&quot;1&quot;&gt;&lt;sup class=&quot;footnote-definition-label&quot;&gt;1&lt;&#x2F;sup&gt;
+&lt;p&gt;I even wrote a blogpost about this: &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;brianvanburken.nl&#x2F;pre-render-syntax-highlighting-with-prism-in-jekyll&quot;&gt;Pre-render Syntax Highlighting with Prism in Jekyll&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;div&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Pre-render Syntax Highlighting with Prism in Jekyll</title>
+    <published>2021-12-01T00:00:00+00:00</published>
+    <updated>2021-12-01T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/pre-render-syntax-highlighting-with-prism-in-jekyll/" rel="alternate" type="text/html" title="Pre-render Syntax Highlighting with Prism in Jekyll"/>
+    <id>https://brianvanburken.nl/pre-render-syntax-highlighting-with-prism-in-jekyll/</id>
+    <summary>To get a considerable performance boost for this blog, I decided to pre-render all the code when building. So no need for a large JavaScript file.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/pre-render-syntax-highlighting-with-prism-in-jekyll/">&lt;p&gt;One of the most significant slowdowns of this blog was using &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;prismjs.com&#x2F;&quot;&gt;Prism&lt;&#x2F;a&gt; for syntax highlighting of code blocks.
+While Prism isn&#x27;t that big, adding more and more languages can make it grow large.
+If you wanted to write blog posts about all languages that Prism could support, you would end up with a 400kb+ monstrosity.
+I already have various blogposts for different languages, and I want to write about any language I like.
+So I wondered how to achieve this without slowing down my blog for my visitors.&lt;&#x2F;p&gt;
+&lt;p&gt;Since the output of Prism is HTML, I started looking into capturing this.
+My first attempt was to build a crawler that would go to each blogpost, execute JavaScript, and take the final rendered version to deploy.
+While this initially worked, it had a few challenges.
+One is the slowness of having to startup and render each page using a headless browser.
+Also, each rendered page still included the unwanted &lt;code&gt;script&lt;&#x2F;code&gt; tag to Prism.&lt;&#x2F;p&gt;
+&lt;p&gt;After doing some more research, I decided to take a whole different approach.
+This time I would write my own Jekyll plugin.
+It extracts code blocks, passes them to the Prism highlight function, and returns the HTML output.
+The Prism highlight function takes three parameters: code, Prism language, code language.
+Executing the function would look like this.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;javascript&quot;&gt;Prism.highlight(
+  &amp;#39;var a = &amp;quot;Hello world!&amp;quot;;&amp;#39;,
+  Prism.languages.javascript,
+  &amp;quot;javascript&amp;quot;
+);
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And this would give us HTML with the syntax highlight tags added.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;html&quot;&gt;&amp;lt;span class=&amp;quot;token keyword&amp;quot;&amp;gt;var&amp;lt;&#x2F;span&amp;gt; a &amp;lt;span class=&amp;quot;token operator&amp;quot;&amp;gt;=&amp;lt;&#x2F;span&amp;gt;
+&amp;lt;span class=&amp;quot;token string&amp;quot;&amp;gt;&amp;quot;Hello world!&amp;quot;&amp;lt;&#x2F;span
+&amp;gt;&amp;lt;span class=&amp;quot;token punctuation&amp;quot;&amp;gt;;&amp;lt;&#x2F;span&amp;gt;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;There are a few ways to achieve this.
+One would be to write a custom liquid-tag&lt;sup class=&quot;footnote-reference&quot;&gt;&lt;a href=&quot;#1&quot;&gt;1&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt; which would replace the code block in markdown.
+Another would be to listen for the pre-render event using Jekyll &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;jekyllrb.com&#x2F;docs&#x2F;plugins&#x2F;hooks&#x2F;&quot;&gt;Hooks&lt;&#x2F;a&gt; and then extract the code.
+I first went with the Liquid tag option and was successful.
+While it worked, all the markdown editors could not understand the custom tags and render a preview.
+So I finally decided to go with the hook option.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;pages.github.com&#x2F;&quot;&gt;Github Pages&lt;&#x2F;a&gt;, where I host my blog, doesn&#x27;t support custom plugins.
+So I switched from the &lt;code&gt;github-pages&lt;&#x2F;code&gt; gem to the &lt;code&gt;jekyll&lt;&#x2F;code&gt; gem and created my build process.&lt;&#x2F;p&gt;
+&lt;p&gt;To create a custom plugin, I needed to create a directory in the project root called &lt;code&gt;_plugins&lt;&#x2F;code&gt; and place a Ruby file in it.
+Jekyll would then load this directory and its contents.
+I created a new file called &lt;code&gt;prism.rb&lt;&#x2F;code&gt; and placed it in &lt;code&gt;_plugins&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Next, I added the &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;rails&#x2F;execjs&quot;&gt;ExecJS&lt;&#x2F;a&gt; gem to the &lt;code&gt;Gemfile&lt;&#x2F;code&gt; and ran &lt;code&gt;bundle install&lt;&#x2F;code&gt;.
+ExecJS lets you run JavaScript code from Ruby. I use this to execute the Prism highlight function and capture its output.&lt;&#x2F;p&gt;
+&lt;p&gt;In the &lt;code&gt;prism.rb&lt;&#x2F;code&gt; file, we can start adding hooks for events.
+The first hook would be to listen to the &lt;code&gt;pre_render&lt;&#x2F;code&gt; event on &lt;code&gt;posts&lt;&#x2F;code&gt;.
+The hook then gives us a &lt;code&gt;Jekyll::Document&lt;&#x2F;code&gt; from which we can ask the content of the blog post.
+It would look like this.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ruby&quot;&gt;Jekyll::Hooks.register(:posts, :pre_render) do |document|
+    content = document.content
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now that we have the blogpost content, we need to find all the code blocks present in the code.
+A code block starts with three backticks, followed by the language, on the following line the code, and ends with three backticks.
+I used Regex to get the whole code block, language, and only the code.
+Using &lt;code&gt;String.scan&lt;&#x2F;code&gt;, we can get all the matches.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ruby&quot;&gt;Jekyll::Hooks.register(:posts, :pre_render) do |document|
+    content = document.content
+    content.scan &#x2F;((`{3})(?:\s*)(\w+)((?:.|\n)*?)\2)&#x2F; do |match|
+        code_block = match[0]
+        language = match[2]
+        code = match[3]
+    end
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we have everything to call the highlight function.
+To call the function, we need to start the JavaScript runtime and load Prism.
+First, we need to download Prism JavaScript code.
+You can do that &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;prismjs.com&#x2F;download.html&quot;&gt;here&lt;&#x2F;a&gt;; while you&#x27;re at it, download the CSS file you&#x27;ll need later.
+I checked all the languages which you don&#x27;t have to.
+Note that checking all languages makes the file larger, thus making it longer to load and slowing down your build.
+My final &lt;code&gt;prism.min.js&lt;&#x2F;code&gt; file is a hefty 463kb on the disk; luckily, we don&#x27;t need to include this on the website!
+We can place the file in the &lt;code&gt;_plugins&lt;&#x2F;code&gt; directory next to our plugin &lt;code&gt;prism.rb&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;We then load the contents of our &lt;code&gt;prism.min.js&lt;&#x2F;code&gt; and pass it to &lt;code&gt;ExecJS.compile&lt;&#x2F;code&gt;.
+To do this, you add &lt;code&gt;require &quot;execjs&quot;&lt;&#x2F;code&gt; to the top of &lt;code&gt;prism.rb&lt;&#x2F;code&gt; and use &lt;code&gt;File.read&lt;&#x2F;code&gt; to load the JavaScript file.
+We place the loading and compiling of the JavaScript before the code block matching, so we don&#x27;t have to load it each time we come across a code block.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ruby&quot;&gt;...
+file = __dir__ + &amp;quot;&#x2F;prism.min.js&amp;quot;
+source = File.read(file)
+js = ExecJS.compile(source)
+content.scan &#x2F;((`{3})(?:\s*)(\w+)((?:.|\n)*?)\2)&#x2F; do |match|
+...
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Next, we call the highlight function, using the compiled JavaScript for each of the code blocks.
+We then wrap the output with &lt;code&gt;pre&lt;&#x2F;code&gt; and &lt;code&gt;code&lt;&#x2F;code&gt; HTML tags and replace the code block in the blogpost with our pre-rendered HTML.
+Calling the function looks like this.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ruby&quot;&gt;js_code = %Q[Prism.highlight(`#{code}`, Prism.languages.#{language}, &amp;#39;#{language}&amp;#39;)]
+output = js.eval(js_code)
+output = &amp;lt;&amp;lt;~EOS
+&amp;lt;pre class=&amp;quot;language-#{language}&amp;quot;&amp;gt;&amp;lt;code class=&amp;#39;language-#{language}&amp;#39;&amp;gt;#{output}&amp;lt;&#x2F;code&amp;gt;&amp;lt;&#x2F;pre&amp;gt;
+EOS
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Putting it all together, we get a working version.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ruby&quot;&gt;require &amp;quot;execjs&amp;quot;
+
+Jekyll::Hooks.register(:posts, :pre_render) do |document|
+    content = document.content
+    file = __dir__ + &amp;quot;&#x2F;prism.min.js&amp;quot;
+    source = File.read(file)
+    js = ExecJS.compile(source)
+    content.scan &#x2F;((`{3})(?:\s*)(\w+)((?:.|\n)*?)\2)&#x2F; do |match|
+        code_block = match[0]
+        language = match[2]
+        code = match[3]
+        js_code = %Q[Prism.highlight(`#{code}`, Prism.languages.#{language}, &amp;#39;#{language}&amp;#39;)]
+        output = js.eval(js_code)
+        output = &amp;lt;&amp;lt;~EOS
+        &amp;lt;pre class=&amp;quot;language-#{language}&amp;quot;&amp;gt;&amp;lt;code class=&amp;#39;language-#{language}&amp;#39;&amp;gt;#{output}&amp;lt;&#x2F;code&amp;gt;&amp;lt;&#x2F;pre&amp;gt;
+        EOS
+        content = content.gsub code_block, output
+    end
+    document.content = content
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;It works, but it has some bugs.
+If a code block contains a backtick, it breaks the call to the highlight function.
+So we need to escape special characters before we pass the code along.
+We can use the &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;ruby-doc.org&#x2F;stdlib-2.7.1&#x2F;libdoc&#x2F;json&#x2F;rdoc&#x2F;JSON.html&quot;&gt;JSON&lt;&#x2F;a&gt; module for this, and we don&#x27;t need to wrap it backticks.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ruby&quot;&gt;code = JSON.generate(match[3])
+js_code = %Q[Prism.highlight(#{code}, Prism.languages.#{language}, &amp;#39;#{language}&amp;#39;)]
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Finally, we have blogposts with pre-rendered syntax highlighting; without the need for JavaScript.
+All that&#x27;s left is to include the CSS file to get the correct styling.&lt;&#x2F;p&gt;
+&lt;p&gt;Future improvements would be to cache each block, so we don&#x27;t need to render it each time if the code hasn&#x27;t changed.
+Loading and compiling the JavaScript file also adds up to the build, and we could improve this by loading it once for the whole website.
+I left these improvements out; else, this blog post would get too long.
+Take a look at my current implementation to see the working version behind this blog.
+And if you see an improvement feel free to submit an MR!&lt;&#x2F;p&gt;
+&lt;p&gt;*[Regex]: Regular Expressions
+*[MR]: Merge Request&lt;&#x2F;p&gt;
+&lt;div class=&quot;footnote-definition&quot; id=&quot;1&quot;&gt;&lt;sup class=&quot;footnote-definition-label&quot;&gt;1&lt;&#x2F;sup&gt;
+&lt;p&gt;Liquid is the template rendering within Jekyll&lt;&#x2F;p&gt;
+&lt;&#x2F;div&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>JSON Properties as a List when Decoding in Elm</title>
+    <published>2021-11-20T00:00:00+00:00</published>
+    <updated>2021-11-20T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/rest-of-json-properties-as-list-when-decoding-in-elm/" rel="alternate" type="text/html" title="JSON Properties as a List when Decoding in Elm"/>
+    <id>https://brianvanburken.nl/rest-of-json-properties-as-list-when-decoding-in-elm/</id>
+    <summary>Storing JSON properties as a List when decoding in Elm</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/rest-of-json-properties-as-list-when-decoding-in-elm/">&lt;p&gt;While working on an Elm application, I stumbled across a situation where I needed to decode a result from an API and store the rest of the properties that aren&#x27;t part of the model as a list.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;setting-the-domain&quot;&gt;Setting the domain&lt;&#x2F;h2&gt;
+&lt;p&gt;The API returns a list of videos, and each video has an &lt;code&gt;id&lt;&#x2F;code&gt; and &lt;code&gt;title&lt;&#x2F;code&gt;.
+Each video also has any number of properties that are &quot;metadata.&quot;
+These properties are what we want to store in a list of key-value pairs.
+An example video would look like this in JSON.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;json&quot;&gt;{
+  &amp;quot;id&amp;quot;: &amp;quot;1&amp;quot;,
+  &amp;quot;duration&amp;quot;: 126,
+  &amp;quot;language&amp;quot;: &amp;quot;EN&amp;quot;,
+  &amp;quot;title&amp;quot;: &amp;quot;Example title&amp;quot;
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We then define the model where we store the metadata in a list of tuples.
+Each tuple contains the key and the value.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;type alias Video =
+    { id : String
+    , title : String
+    , metadata : List ( String, String )
+    }
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Using standard decoding in Elm, we first pass the JSON fields &lt;code&gt;id&lt;&#x2F;code&gt; and &lt;code&gt;title&lt;&#x2F;code&gt; to the model.
+And as of last, we pass a custom decoder.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;import Json.Decode as JD
+
+decoder : JD.Decoder Video
+decoder =
+    JD.map3 Video
+        (JD.field &amp;quot;id&amp;quot; JD.string)
+        (JD.field &amp;quot;title&amp;quot; JD.string)
+        metadataDecoder
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;extracting-the-rest-of-json-properties&quot;&gt;Extracting the rest of JSON properties&lt;&#x2F;h2&gt;
+&lt;p&gt;Our custom decoder gets the whole JSON object and decodes it as a list of key-value pairs.
+We convert all the values to a &lt;code&gt;String&lt;&#x2F;code&gt; with the &lt;code&gt;valueToString&lt;&#x2F;code&gt; function, so all are the same type.
+However, this does mean that we lose the information.
+You could fix this by writing a &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;guide.elm-lang.org&#x2F;types&#x2F;custom_types.html&quot;&gt;Custom Type&lt;&#x2F;a&gt; for each value type; not needed for this case.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;metadataDecoder : JD.Decoder (List ( String, String ))
+metadataDecoder =
+    JD.keyValuePairs valueToString
+
+valueToString : JD.Decoder String
+valueToString =
+    JD.oneOf
+        [ JD.string
+        , JD.float |&amp;gt; JD.map String.fromFloat
+        , JD.bool
+            |&amp;gt; JD.map
+                (\boolean -&amp;gt;
+                    case boolean of
+                        True -&amp;gt;
+                            &amp;quot;true&amp;quot;
+
+                        False -&amp;gt;
+                            &amp;quot;false&amp;quot;
+                )
+        , JD.null &amp;quot;&amp;quot;
+        ]
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;So where done right?
+Well, we have everything as key-value pair.
+And I mean everything.
+We also added our &lt;code&gt;id&lt;&#x2F;code&gt; and &lt;code&gt;title&lt;&#x2F;code&gt; to &lt;code&gt;metadata&lt;&#x2F;code&gt;.
+Not ideal.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;block-unwanted-properties&quot;&gt;Block unwanted properties&lt;&#x2F;h2&gt;
+&lt;p&gt;To fix this, we need to filter out properties using a blocklist.
+We map our key-value pairs to a &lt;code&gt;filterMetadata&lt;&#x2F;code&gt; method.
+This method checks for each key against the blocklist.
+Instead of a blocklist, we could also use an allowlist to only add specific keys to the metadata.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;metadataDecoder : JD.Decoder (List ( String, String ))
+metadataDecoder =
+    JD.keyValuePairs valueToString
+        |&amp;gt; JD.map filterMetadata
+
+filterMetadata : List ( String, String ) -&amp;gt; List ( String, String )
+filterMetadata =
+    let
+        blocklist =
+            [ &amp;quot;id&amp;quot;, &amp;quot;title&amp;quot; ]
+
+        isBlocked =
+            Tuple.first
+                &amp;gt;&amp;gt; (\k -&amp;gt; List.member k blocklist)
+                &amp;gt;&amp;gt; not
+    in
+    List.filter isBlocked
+
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In the end, we have a correct model with all the rest of the properties from the JSON object.&lt;&#x2F;p&gt;
+&lt;p&gt;You can check out the final SSCCE here: &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;ellie-app.com&#x2F;9Qxk3RDydTka1&quot;&gt;https:&#x2F;&#x2F;ellie-app.com&#x2F;9Qxk3RDydTka1&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;*[SSCCE]: Short, Self Contained, Correct (Compilable), Example&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Combine Properties when Decoding JSON in Elm</title>
+    <published>2021-11-15T00:00:00+00:00</published>
+    <updated>2021-11-15T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/combine-properties-when-decoding-json-in-elm/" rel="alternate" type="text/html" title="Combine Properties when Decoding JSON in Elm"/>
+    <id>https://brianvanburken.nl/combine-properties-when-decoding-json-in-elm/</id>
+    <summary>Combining two properties extracted from a JSON-object when decoding JSON in Elm.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/combine-properties-when-decoding-json-in-elm/">&lt;p&gt;Sometimes an API returns a JSON object that contains properties you want to combine, for example, pieces of information belonging together.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;the-domain&quot;&gt;The domain&lt;&#x2F;h2&gt;
+&lt;p&gt;Before we look at how to solve this, let&#x27;s establish a shared domain.
+So let&#x27;s say we have an API that returns a list of videos when called.
+Each video coming from that API has the following structure:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;json&quot;&gt;{
+  &amp;quot;id&amp;quot;: &amp;quot;1&amp;quot;,
+  &amp;quot;extension&amp;quot;: &amp;quot;mp4&amp;quot;,
+  &amp;quot;name&amp;quot;: &amp;quot;example&amp;quot;
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Here we see that the &lt;code&gt;extension&lt;&#x2F;code&gt; and the &lt;code&gt;name&lt;&#x2F;code&gt; are separate properties of the video object.
+It would be nice to combine them to get the full filename and download the video.
+Based on the JSON object and our wish to combine properties, we can create our model in Elm.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;type alias Video =
+    { id: String
+    , filename: String
+    }
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;decoding&quot;&gt;Decoding&lt;&#x2F;h2&gt;
+&lt;p&gt;Now that we know our goal, we can create the decoder for our model.
+In this first attempt, we decode all the properties and pass them to a function.
+In the function, we combine the name and extension and pass it to our model.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;import Json.Decode as JD exposing (Decoder)
+
+decode : Decoder Video
+decode =
+    let
+        toVideo : String -&amp;gt; String -&amp;gt; String -&amp;gt; Decoder Video
+        toVideo id extension name =
+            JD.succeed (Video id (name ++ &amp;quot;.&amp;quot; ++ extension))
+    in
+    JD.map3 toVideo
+        (JD.field &amp;quot;id&amp;quot; JD.string)
+        (JD.field &amp;quot;extension&amp;quot; JD.string)
+        (JD.field &amp;quot;name&amp;quot; JD.string)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This code works and does what we want.
+But, the code isn&#x27;t straightforward and less extensible.
+What if the API returns more properties that we want to use?
+The &lt;code&gt;toVideo&lt;&#x2F;code&gt; function becomes longer and less readable.
+It is also more error-prone, e.g., accidentally swapping arguments.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;improving-the-decoder&quot;&gt;Improving the decoder&lt;&#x2F;h2&gt;
+&lt;p&gt;We can improve this by extracting the logic of combining the name and extension into a separate custom decoder.
+In the decoder, we get the whole JSON object, extract only the name, and combine those.
+The result is passed back into our decoder for &lt;code&gt;Video&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;decode : Decoder Video
+decode =
+    JD.map2 Video
+        (JD.field &amp;quot;id&amp;quot; JD.string)
+        decodeFilename
+
+
+decodeFilename : Decoder String
+decodeFilename =
+    JD.map2 (\extension name -&amp;gt; name ++ &amp;quot;.&amp;quot; ++ extension)
+        (JD.field &amp;quot;extension&amp;quot; JD.string)
+        (JD.field &amp;quot;name&amp;quot; JD.string)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The code, in the end, is more readable and easier to extend.
+The decoder is also reusable for other JSON objects that have the same properties.
+If we want to add a new property to &lt;code&gt;Video&lt;&#x2F;code&gt;, we need to change &lt;code&gt;JD.map2&lt;&#x2F;code&gt; to &lt;code&gt;JD.map3&lt;&#x2F;code&gt; and add our new field.&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Detecting Output Listeners in Angular</title>
+    <published>2021-10-25T00:00:00+00:00</published>
+    <updated>2021-10-25T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/detecting-output-listeners-in-angular/" rel="alternate" type="text/html" title="Detecting Output Listeners in Angular"/>
+    <id>https://brianvanburken.nl/detecting-output-listeners-in-angular/</id>
+    <summary>Detecting listeners on an EventEmitter in an Angular component.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/detecting-output-listeners-in-angular/">&lt;p&gt;Sometimes you want to check if you have listeners attached to your &lt;code&gt;@Output&lt;&#x2F;code&gt; for your component to behave differently.
+It is possible to take the current &lt;code&gt;EventEmitter&lt;&#x2F;code&gt; and get the number of listeners back.
+In this blog post, I will exploit that to change the behavior of a component.&lt;&#x2F;p&gt;
+&lt;p&gt;Well, let&#x27;s start with a new Angular project and generate a new component called &lt;code&gt;ExampleComponent&lt;&#x2F;code&gt;.
+We will add a simple message that shows that we are static, which means no listeners are attached or interactive.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;import { Component } from &amp;quot;@angular&#x2F;core&amp;quot;;
+
+@Component({
+  selector: &amp;quot;app-example&amp;quot;,
+  template: `&amp;lt;span&amp;gt;I&amp;#39;m a static message&amp;lt;&#x2F;span&amp;gt;`,
+})
+export class ExampleComponent {}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Next, we will add an EventEmitter with the name &lt;code&gt;myEvent&lt;&#x2F;code&gt; to the component to which other components can attach themselves.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;import { Component, EventEmitter, Output } from &amp;quot;@angular&#x2F;core&amp;quot;;
+
+@Component({
+  selector: &amp;quot;app-example&amp;quot;,
+  template: `&amp;lt;span&amp;gt;I&amp;#39;m a static message&amp;lt;&#x2F;span&amp;gt;`,
+})
+export class ExampleComponent {
+  @Output() public myEvent = new EventEmitter&amp;lt;void&amp;gt;();
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we can use this to check if we have attached listeners to let our component react to it.
+We will add &lt;code&gt;ngOnInit&lt;&#x2F;code&gt; to our component in which we check for listeners and set a flag on our component indicating that we have listeners.
+When another component listens to our event like so &lt;code&gt;&amp;lt;app-example (myEvent)=&quot;handle($event)&quot;&amp;gt;&amp;lt;&#x2F;app-example&amp;gt;&lt;&#x2F;code&gt;, we check if an observer is attached and set our flag if we have any listeners.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;import { Component, EventEmitter, OnInit, Output } from &amp;quot;@angular&#x2F;core&amp;quot;;
+
+@Component({
+  selector: &amp;quot;app-example&amp;quot;,
+  template: `&amp;lt;span&amp;gt;I&amp;#39;m a static message&amp;lt;&#x2F;span&amp;gt;`,
+})
+export class ExampleComponent implements OnInit {
+  @Output() public myEvent = new EventEmitter&amp;lt;void&amp;gt;();
+
+  public isInteractive = false;
+
+  public ngOnInit() {
+    this.isInteractive = this.myEvent.observers.length &amp;gt; 0;
+  }
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now that we have our flag, we can finish up our component and swap our static message with the interactive one.
+Below we have a fully functional component that changes text based on listeners.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;import { Component, EventEmitter, OnInit, Output } from &amp;quot;@angular&#x2F;core&amp;quot;;
+
+@Component({
+  selector: &amp;quot;app-example&amp;quot;,
+  template: `
+    &amp;lt;span *ngIf=&amp;quot;!isInteractive&amp;quot;&amp;gt;I&amp;#39;m a static message.&amp;lt;&#x2F;span&amp;gt;
+    &amp;lt;span *ngIf=&amp;quot;isInteractive&amp;quot;&amp;gt;I&amp;#39;m an interactive message.&amp;lt;&#x2F;span&amp;gt;
+  `,
+})
+export class ExampleComponent implements OnInit {
+  @Output() public myEvent = new EventEmitter&amp;lt;void&amp;gt;();
+
+  public isInteractive = false;
+
+  public ngOnInit(): void {
+    this.isInteractive = this.myEvent.observers.length &amp;gt; 0;
+  }
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Changing Angular Components for Printing</title>
+    <published>2021-10-24T00:00:00+00:00</published>
+    <updated>2021-10-24T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/changing-angular-components-for-printing/" rel="alternate" type="text/html" title="Changing Angular Components for Printing"/>
+    <id>https://brianvanburken.nl/changing-angular-components-for-printing/</id>
+    <summary>When the user is printing a page, we wanted our components to behave differently without using CSS.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/changing-angular-components-for-printing/">&lt;p&gt;To save the user, the environment, ink when printing, we can use the handy &lt;code&gt;@media print&lt;&#x2F;code&gt; in CSS to hide&#x2F;show elements and change the styling of the page.
+But, sometimes, we want our components to behave differently, not just the styling.
+An example of this is client-side pagination.
+Say we have a paginated table, and the user wants to print the page.
+In this case, we want to show all the results, not just those on the current page.
+Pre-rendering the entire table and hiding it with CSS is an option.
+It would work but decreases the performance of our web application.&lt;&#x2F;p&gt;
+&lt;p&gt;In this case, we want to keep track of the user triggering printing and show all the results.
+So how would we achieve this?&lt;&#x2F;p&gt;
+&lt;p&gt;We can use a global event listener to check if printing is triggered.
+We&#x27;ll start with a new Angular application and use the main &lt;code&gt;AppComponent&lt;&#x2F;code&gt;.
+This component will have a button.
+When the user clicks on that button, we trigger the browser&#x27;s native print dialog using &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;developer.mozilla.org&#x2F;en-US&#x2F;docs&#x2F;Web&#x2F;API&#x2F;Window&#x2F;print&quot;&gt;&lt;code&gt;window.print&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;import { Component } from &amp;quot;@angular&#x2F;core&amp;quot;;
+
+@Component({
+  selector: &amp;quot;app-root&amp;quot;,
+  template: `&amp;lt;button (click)=&amp;quot;print($event)&amp;quot;&amp;gt;Print&amp;lt;&#x2F;button&amp;gt;`,
+})
+export class AppComponent {
+  public print(event: MouseEvent): void {
+    event.preventDefault();
+    window.print();
+  }
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Next, we will add a boolean flag with which we keep track of our printing state.
+We also add the message we want to display for printing. We set the flag to &lt;code&gt;true&lt;&#x2F;code&gt; when the user clicks the button and &lt;code&gt;false&lt;&#x2F;code&gt; after the printing.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;import { Component } from &amp;quot;@angular&#x2F;core&amp;quot;;
+
+@Component({
+  selector: &amp;quot;app-root&amp;quot;,
+  template: `
+    &amp;lt;button (click)=&amp;quot;print($event)&amp;quot;&amp;gt;Print&amp;lt;&#x2F;button&amp;gt;
+    &amp;lt;span *ngIf=&amp;quot;isPrinting&amp;quot;&amp;gt;I&amp;#39;m only visible when printing.&amp;lt;&#x2F;span&amp;gt;
+  `,
+})
+export class AppComponent {
+  public isPrinting = false;
+
+  public print(event: MouseEvent): void {
+    event.preventDefault();
+    this.isPrinting = true;
+    window.print();
+    this.isPrinting = false;
+  }
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If we start the application and click the button, you will see the message flash for a few milliseconds and then disappears (for some browsers, this is so fast you won&#x27;t even notice).
+JavaScript calls &lt;code&gt;window.print();&lt;&#x2F;code&gt; but does not wait to finish (finishing means closing the dialog). Instead, it continues and sets our flag back to &lt;code&gt;false&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;JavaScript does allow us to track printing events using &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;developer.mozilla.org&#x2F;en-US&#x2F;docs&#x2F;Web&#x2F;API&#x2F;WindowEventHandlers&#x2F;onbeforeprint&quot;&gt;&lt;code&gt;window.onbeforeprint&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; and &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;developer.mozilla.org&#x2F;en-US&#x2F;docs&#x2F;Web&#x2F;API&#x2F;Window&#x2F;afterprint_event&quot;&gt;&lt;code&gt;window.onafterprint&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;.
+These events occur before and after the print dialog.
+Let&#x27;s change our component to add these global event listeners using &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;angular.io&#x2F;api&#x2F;core&#x2F;HostListener&quot;&gt;&lt;code&gt;HostListener&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;import { Component, HostListener } from &amp;quot;@angular&#x2F;core&amp;quot;;
+
+@Component({
+  selector: &amp;quot;app-root&amp;quot;,
+  template: `
+    &amp;lt;button (click)=&amp;quot;print($event)&amp;quot;&amp;gt;Print&amp;lt;&#x2F;button&amp;gt;
+    &amp;lt;span *ngIf=&amp;quot;isPrinting&amp;quot;&amp;gt;I&amp;#39;m only visible when printing&amp;lt;&#x2F;span&amp;gt;
+  `,
+})
+export class AppComponent {
+  public isPrinting = false;
+
+  @HostListener(&amp;quot;window:beforeprint&amp;quot;)
+  public onBeforePrint(): void {
+    this.isPrinting = true;
+  }
+
+  @HostListener(&amp;quot;window:afterprint&amp;quot;)
+  public onAfterPrint(): void {
+    this.isPrinting = false;
+  }
+
+  public print(event: MouseEvent): void {
+    event.preventDefault();
+    window.print();
+  }
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;When we click the button, we still see it flash before our eyes.
+But, why is this?
+It is the same issue we experienced with the first example!
+When we add &lt;code&gt;console.log&lt;&#x2F;code&gt; to both functions for debugging, you will notice that both get triggered simultaneously!
+Most browsers call the listeners for the preview window.
+That means that when the dialog with printing preview shows, it calls both events.
+You would think that this means that it works.
+But, the preview in the dialog and the actual printed page are still different.
+We should keep the &lt;code&gt;isPrinting&lt;&#x2F;code&gt; state as long the dialog isn&#x27;t closed.&lt;&#x2F;p&gt;
+&lt;p&gt;Somehow we need to tell the JavaScript runtime to execute the listeners in our desired order.
+After some research, I found out that using &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;developer.mozilla.org&#x2F;en-US&#x2F;docs&#x2F;Web&#x2F;API&#x2F;WindowOrWorkerGlobalScope&#x2F;setTimeout&quot;&gt;&lt;code&gt;setTimeout&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; we can change the executing order in our call stack.
+So by if we wrap the &lt;code&gt;window.print();&lt;&#x2F;code&gt; in a timeout and set our flag back to &lt;code&gt;false&lt;&#x2F;code&gt;, we defer the execution of these functions.
+We set the printing dialog trigger to &lt;code&gt;0&lt;&#x2F;code&gt; and reset the flag to &lt;code&gt;1&lt;&#x2F;code&gt;; these numbers are the milliseconds we delay the calls.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;typescript&quot;&gt;import { Component, HostListener } from &amp;quot;@angular&#x2F;core&amp;quot;;
+
+@Component({
+  selector: &amp;quot;app-root&amp;quot;,
+  template: `
+    &amp;lt;button (click)=&amp;quot;print($event)&amp;quot;&amp;gt;Print&amp;lt;&#x2F;button&amp;gt;
+    &amp;lt;span *ngIf=&amp;quot;isPrinting&amp;quot;&amp;gt;I&amp;#39;m only visible when printing&amp;lt;&#x2F;span&amp;gt;
+  `,
+})
+export class AppComponent {
+  public isPrinting = false;
+
+  @HostListener(&amp;quot;window:beforeprint&amp;quot;)
+  public onBeforePrint(): void {
+    this.isPrinting = true;
+  }
+
+  @HostListener(&amp;quot;window:afterprint&amp;quot;)
+  public onAfterPrint(): void {
+    setTimeout(() =&amp;gt; {
+      this.isPrinting = false;
+    }, 1);
+  }
+
+  public print(event: MouseEvent): void {
+    event.preventDefault();
+    this.isPrinting = true;
+    setTimeout(() =&amp;gt; {
+      window.print();
+    }, 0);
+  }
+}
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;JavaScript calls &lt;code&gt;print&lt;&#x2F;code&gt; and sets a timeout that waits for the callback to finish; by closing the dialog. In the background, it calls &lt;code&gt;onBeforePrint&lt;&#x2F;code&gt; function, and adds &lt;code&gt;onAfterPrint&lt;&#x2F;code&gt; to our call stack.
+Since our call stack is still waiting for &lt;code&gt;print&lt;&#x2F;code&gt; to finish, &lt;code&gt;onAfterPrint&lt;&#x2F;code&gt; timeout callback isn&#x27;t called only after the callback for &lt;code&gt;window.print();&lt;&#x2F;code&gt; finishes.
+After the dialog closes, it continues in the call stack queue and sets our flag to &lt;code&gt;false&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Now that the JavaScript runtime waits for the print dialog to close, we can see what changes.
+Below is the final result when a user triggers the &quot;print&quot; button.
+You&#x27;ll get to see the message.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;assets&#x2F;changing-angular-components-for-printing&#x2F;screenshot.jpg&quot; alt=&quot;Screenshot of a printing dialog showing text only visible when printing&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Become a Fire Keramik with Kotlin</title>
+    <published>2020-08-03T00:00:00+00:00</published>
+    <updated>2020-08-03T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/become-a-fire-keramik-with-kotlin/" rel="alternate" type="text/html" title="Become a Fire Keramik with Kotlin"/>
+    <id>https://brianvanburken.nl/become-a-fire-keramik-with-kotlin/</id>
+    <summary>At my work we started using Kotlin more and more. I wondered how far you could go in writing fully Functional in the language.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/become-a-fire-keramik-with-kotlin/">&lt;p&gt;I have noticed an interesting trend here at my work Avisi: an increasing number
+of teams are choosing Kotlin for their projects! Kotlin allows programmers to
+utilize more aspects of functional programming. This made me wonder, how far can
+you go with functional programming in Kotlin?&lt;&#x2F;p&gt;
+&lt;p&gt;While searching for a definition of the basics of functional programming, I
+found an interesting PDF-file that was created by smart people from the
+functional programming community. The document is called &quot;LambdaConf
+Standardised Ladder of Functional Programming&quot; and you can &lt;a href=&quot;&#x2F;assets&#x2F;become-a-fire-keramik-with-kotlin&#x2F;lambdaconf_slfp.pdf&quot;&gt;download it here&lt;&#x2F;a&gt;
+(sadly the original host of the file has disappeared). It breaks down various
+concepts and skills into levels. The first level is called &quot;Fire Keramik&quot;, which
+inspired the title of this blog. There has been some &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;news.ycombinator.com&#x2F;item?id=13067741&quot;&gt;criticism&lt;&#x2F;a&gt; about this
+list, but in my opinion, it&#x27;s a good starting point and uses some of the fun of
+&quot;skill trees&quot; found in games. To become a &quot;Fire Keramik&quot;, you need to learn the
+following concepts and skills:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;strong&gt;Concepts&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Immutable data&lt;&#x2F;li&gt;
+&lt;li&gt;Second-Order Functions&lt;&#x2F;li&gt;
+&lt;li&gt;Constructing &amp;amp; Destructuring&lt;&#x2F;li&gt;
+&lt;li&gt;Function Composition&lt;&#x2F;li&gt;
+&lt;li&gt;Higher-Order Functions &amp;amp; Lambdas&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;&lt;strong&gt;Skills&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Use second-order functions&lt;&#x2F;li&gt;
+&lt;li&gt;Destructuring values to access their components&lt;&#x2F;li&gt;
+&lt;li&gt;Use data-types to represent optionality&lt;&#x2F;li&gt;
+&lt;li&gt;Read basic type signatures&lt;&#x2F;li&gt;
+&lt;li&gt;Pass lambdas to second-order functions&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;In this blog post, I will explore the possibilities of using all these concepts
+and skills in Kotlin. For the sake of brevity, I won&#x27;t go into the details as to
+why you should apply it. Without further ado, let&#x27;s get into the first concept!&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;immutable-data&quot;&gt;Immutable data&lt;&#x2F;h2&gt;
+&lt;p&gt;Immutable data is data that cannot be changed after it has been initialized. To
+&quot;change&quot; immutable data, you have to create a copy of the data and apply your
+change in the process. Kotlin has a similar concept using &lt;code&gt;val&lt;&#x2F;code&gt; and &lt;code&gt;var&lt;&#x2F;code&gt;. &lt;code&gt;val&lt;&#x2F;code&gt;
+allows the programmer to mark a value as &lt;code&gt;read-only&lt;&#x2F;code&gt; after its initialization.
+You won&#x27;t be able to override this in the code later and if you try to change
+its value, the compiler will throw an error at you. Kotlin won&#x27;t enforce
+immutability, so the choice between &lt;code&gt;val&lt;&#x2F;code&gt; and &lt;code&gt;var&lt;&#x2F;code&gt; is up to the programmer.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;kotlin&quot;&gt;class Birthday(val day: Int, val month: Int, val year: Int)
+
+class Person(val name: String, val age: Birthday)
+
+
+val age = Birthday(1, 1, 1970)
+val person = Person(&amp;quot;Nick&amp;quot;, age)
+age.year = 2020 &#x2F;&#x2F; Throws an compiler error
+person.age.year = 2020 &#x2F;&#x2F; Throws an compiler error
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;use-data-types-to-represent-optionality&quot;&gt;Use data types to represent optionality&lt;&#x2F;h2&gt;
+&lt;p&gt;In Java, optionality is represented by using &lt;code&gt;Optional&lt;&#x2F;code&gt;. This is similar to
+Haskell&#x27;s &lt;code&gt;Maybe&lt;&#x2F;code&gt; type. You won&#x27;t find these representations in Kotlin. Kotlin
+tries to solve the [&quot;The Billion Dollar Mistake&quot;] in another way by setting all
+values as non-nullable by default! You can explicitly mark values as optional by
+using the &lt;code&gt;?&lt;&#x2F;code&gt; operator which makes it &lt;code&gt;nullable&lt;&#x2F;code&gt;. The example code below shows
+that the value &#x27;email&#x27; is optional.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;kotlin&quot;&gt;class User(val username: String, val password: String, val email: String?)
+
+&#x2F;&#x2F; Returns the user if found, else null
+val user: User? = getUserByUsername(username)
+val email: String? = user?.email
+
+&#x2F;&#x2F; Here we can create a new user and use the email from the previous user.
+&#x2F;&#x2F; If there isn&amp;#39;t an user, we set a default email
+val newUser = User(username, password, email ?: &amp;quot;default@email.xyz&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;read-basic-type-signatures&quot;&gt;Read basic type signatures&lt;&#x2F;h2&gt;
+&lt;p&gt;This is probably the easiest achievable skill to attain in Kotlin. Everything in
+Kotlin is strongly typed, which forces you to define the types. Below is an
+example containing a simple data-class in which the &lt;code&gt;Person&lt;&#x2F;code&gt; class has typed
+parameters. You can see that &lt;code&gt;name&lt;&#x2F;code&gt; is of type &lt;code&gt;String&lt;&#x2F;code&gt; and &lt;code&gt;age&lt;&#x2F;code&gt; is of type
+&lt;code&gt;Int&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;kotlin&quot;&gt;class Person(val name: String, val age: Int)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;constructing-destructuring&quot;&gt;Constructing &amp;amp; Destructuring&lt;&#x2F;h2&gt;
+&lt;p&gt;Constructing is the process of putting values together and destructuring is a
+way to get the values back. A simple example is the &lt;code&gt;Pair&lt;&#x2F;code&gt; class in Kotlin.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;kotlin&quot;&gt;val name = &amp;quot;Kotlin&amp;quot;
+val age = 9
+val person = Pair(name, age)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If you want to extract the values from the pair, you can destructure it on the
+left-hand side of the equation. The destructuring is done in the same order as
+the structuring. To make sure you only get certain specific values, you can use
+an underscore as a placeholder indicating that the value should be ignored.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;kotlin&quot;&gt;val (_, age) = Pair(&amp;quot;Kotlin&amp;quot;, 9)
+println(age)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This also works for data classes in Kotlin.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;higher-order-functions-lambdas&quot;&gt;Higher-Order Functions &amp;amp; Lambdas&lt;&#x2F;h2&gt;
+&lt;p&gt;This is nothing more than a fancy name for a function that either takes a
+function as an argument, or has a function as its return value, or both! Still
+confused? The most used and well-known example of a higher-order function is
+&lt;code&gt;map&lt;&#x2F;code&gt;. A &lt;code&gt;map&lt;&#x2F;code&gt; function is a function that takes a lambda (a function), calls
+it, and returns a list with the results of the map function, applied to each
+element of the original list. Here is an example of the usage of &lt;code&gt;map&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;kotlin&quot;&gt;val squaredValues = listOf(1, 2, 3, 4).map { it * it }
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;second-order-functions&quot;&gt;Second-Order Functions&lt;&#x2F;h2&gt;
+&lt;p&gt;These functions come right after the &quot;Higher-Order Functions&quot; and it takes a
+function that takes a function. Pretty abstract, right? You can find examples of
+this in mathematics where you create the formula for a parabola in code. A more
+widely used example is the concept of currying. Currying (sadly, it has nothing
+to do with the delicious dish) is the concept of breaking a function, which
+takes multiple arguments, into smaller functions which each take a single
+argument and return a new function. Currying is not supported out of the box,
+but it can be achieved by using helper functions.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;kotlin&quot;&gt;fun add(a: Int, b:Int): Int {
+    return a + b
+}
+
+fun &amp;lt;A, B, C&amp;gt; partial2(f: (A, B) -&amp;gt; C, a: A): (B) -&amp;gt; C {
+    return { b: B -&amp;gt; f(a, b)}
+}
+
+&#x2F;&#x2F; Break up add and set its first input to 1. This will return a new function
+&#x2F;&#x2F; that always adds 1 to the next argument.
+val add1 = partial2(::add, 1)
+
+val result = add1(2) &#x2F;&#x2F; result = 3
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;&lt;code&gt;Partial2&lt;&#x2F;code&gt; takes a function and the first argument of that function. This will
+return a new function that waits for the second argument to finish up the
+calculation. The new function can be passed around and applied to other values.
+Alternatively, you can do it with an extension method:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;kotlin&quot;&gt;fun &amp;lt;A,B,C&amp;gt; Function2&amp;lt;A,B,C&amp;gt;.partial(a: A): (B) -&amp;gt; C {
+    return {b -&amp;gt; invoke(a, b)}
+}
+
+val add1: (Int) -&amp;gt; Int = (::add).partial(1)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;functional-composition&quot;&gt;Functional Composition&lt;&#x2F;h2&gt;
+&lt;p&gt;Composition is, in abstraction, creating something new by putting things
+together. In the example below, we will combine two functions into new
+functions. The new function can be composed with another function which allows
+you to build up a more powerful function from smaller functions. This isn&#x27;t
+something that comes out of the box in Kotlin, yet is still achievable! We can
+achieve it by using callable references and pass them to a compose helper
+function. This combines (composes) two functions together to get a new function.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;kotlin&quot;&gt;fun isOdd(x: Int) = x % 2 != 0
+fun length(s: String) = s.length
+
+&#x2F;&#x2F; Define a function that takes two functions and return a new one.
+fun &amp;lt;A, B, C&amp;gt; compose(f: (B) -&amp;gt; C, g: (A) -&amp;gt; B): (A) -&amp;gt; C {
+    return { x -&amp;gt; f(g(x)) }
+}
+
+&#x2F;&#x2F; Combine isOdd and length methods and store the combined function
+&#x2F;&#x2F; as variable.
+val oddLength = compose(::isOdd, ::length)
+
+val strings = listOf(&amp;quot;a&amp;quot;, &amp;quot;ab&amp;quot;, &amp;quot;abc&amp;quot;)
+
+strings.filter(oddLength) == listOf(&amp;quot;a&amp;quot;, &amp;quot;abc&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;closing-words&quot;&gt;Closing words&lt;&#x2F;h2&gt;
+&lt;p&gt;Now you know all &quot;beginner&quot; concepts and skills to start writing functional code
+in Kotlin. All of this can be applied to existing code bases without much
+change. We looked at the basics and as you can read it is possible to code
+functionally in this language. We didn&#x27;t go deep, but this is at least a
+promising start. If you&#x27;re interested, The Standardized Ladder of Functional
+Programming discusses many other topics that can be applied to Kotlin with which
+you can dive deeper!&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Solving Challenge with Elixir&#x27;s Compile-Time Functions</title>
+    <published>2019-05-01T00:00:00+00:00</published>
+    <updated>2019-05-01T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/solving-challenges-with-elixirs-compile-time-function/" rel="alternate" type="text/html" title="Solving Challenge with Elixir&#x27;s Compile-Time Functions"/>
+    <id>https://brianvanburken.nl/solving-challenges-with-elixirs-compile-time-function/</id>
+    <summary>I love solving small programming challenges. One of the many challenges on this website is about transcribing DNA nucleotides to RNA nucleotides. I was able to solve this by using Elixir.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/solving-challenges-with-elixirs-compile-time-function/">&lt;p&gt;I love solving small programming challenges. If you do too, I recommend
+&lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;exercism.io&#x2F;&quot;&gt;exercism.io&lt;&#x2F;a&gt;. One of the many challenges on this website is about transcribing
+DNA nucleotides to RNA nucleotides. I was able to solve this by using Elixir. I
+also found that I could apply metaprogramming to improve my answer. In this blog
+post, I will walk you through this process of improvement.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;basics&quot;&gt;Basics&lt;&#x2F;h2&gt;
+&lt;p&gt;Before we can solve this challenge, we need to figure out the mapping between
+the nucleotides that make up a DNA strand and the corresponding representation
+in RNA. The mapping is A to U, G to C, T to A, and C to G. I&#x27;ve drawn out an
+example below:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;img src=&quot;&#x2F;assets&#x2F;solving-challenges-with-elixirs-compile-time-function&#x2F;rna_transcription.jpg&quot; alt=&quot;Drawing of DNA string conversion to RNA&quot; &#x2F;&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Now let&#x27;s implement this in Elixir! We can define multiple functions with the
+same name which are referred to as same head functions. In addition, we can use
+pattern matching on the argument to represent the mapping between the
+nucleotides. Doing so, we end up with the code below:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elixir&quot;&gt;defmodule RNATranscription do
+  def to_rna(&amp;quot;G&amp;quot;), do: &amp;quot;C&amp;quot;
+  def to_rna(&amp;quot;C&amp;quot;), do: &amp;quot;G&amp;quot;
+  def to_rna(&amp;quot;T&amp;quot;), do: &amp;quot;A&amp;quot;
+  def to_rna(&amp;quot;A&amp;quot;), do: &amp;quot;U&amp;quot;
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Following this, we can try out our module in the Elixir REPL called IEx and give
+it a valid DNA nucleotide. As can be seen below, this returns the correct
+corresponding RNA nucleotide:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elixir&quot;&gt;iex&amp;gt; import_file(&amp;quot;rna.ex&amp;quot;)
+iex&amp;gt; RNATranscription.to_rna(&amp;quot;T&amp;quot;)
+&amp;quot;A&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now we can use this module to take a DNA strand and split it into a list of DNA
+nucleotides. Each of these nucleotides is then mapped to its RNA equivalent and
+joined to produce the RNA strand. One way to do this is by using the REPL:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elixir&quot;&gt;iex&amp;gt; strand = &amp;quot;GCAATTA&amp;quot;
+iex&amp;gt; strand |&amp;gt; String.graphemes() |&amp;gt; Enum.map(&amp;amp;RNATranscription.to_rna&#x2F;1) |&amp;gt; Enum.join()
+&amp;quot;CGUUAAU&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This bit of code could be placed in a method called &quot;decode&quot; and we would be
+done! But now imagine the discovery of new RNA or DNA nucleotides. This would
+mean that additional letters would have to be added to our code. We could write a
+few new functions matching these new DNA nucleotides that will return the RNA
+ones. Though doable by hand, we could leverage the power of Elixir
+metaprogramming and define functions from a mapping so future extensions are
+easy. Let&#x27;s have some fun!&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;metaprogramming&quot;&gt;Metaprogramming&lt;&#x2F;h2&gt;
+&lt;p&gt;Before we get into applying metaprogramming to our example, I want to go a bit
+more in-depth on the subject. One amazing thing about Elixir is that it is
+mostly written in.. Elixir! According to Github, at the time of writing this
+blog post, it contains about 90% Elixir code and only 9% Erlang code. Having a
+language written in the same language as the source code makes it easier to read
+and contribute to because you already know the language. Most of it is built
+using metaprogramming on top of a small core. An example of this is &lt;code&gt;if&#x2F;else&lt;&#x2F;code&gt;.
+This is a simple macro for &lt;code&gt;case&lt;&#x2F;code&gt;. So the example code below...&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elixir&quot;&gt;if is_thruthy?() do
+  do_something()
+else
+  do_something_else()
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;..gets compiled down in an intermitted step:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elixir&quot;&gt;case is_thruthy?() do
+  x when x in [false, nil] -&amp;gt;
+    do_something_else()
+  _ -&amp;gt;
+    do_something()
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You can read more about the source code in the &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;github.com&#x2F;elixir-lang&#x2F;elixir&#x2F;blob&#x2F;master&#x2F;lib&#x2F;elixir&#x2F;lib&#x2F;kernel.ex#L3093&quot;&gt;&lt;code&gt;Kernel&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; library. This will
+show you how Elixir works beautifully. You can see the only falsely values are
+&lt;code&gt;false&lt;&#x2F;code&gt; and &lt;code&gt;nil&lt;&#x2F;code&gt;, everything else is truthy.&lt;&#x2F;p&gt;
+&lt;p&gt;To get a sense of how we can implement something like this, let&#x27;s try something
+out in the REPL. Using &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;hexdocs.pm&#x2F;elixir&#x2F;Kernel.SpecialForms.html#unquote&#x2F;1&quot;&gt;&lt;code&gt;unquote&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; we can take an expression and make it
+static on compile time. And with &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;hexdocs.pm&#x2F;elixir&#x2F;Kernel.SpecialForms.html#quote&#x2F;2&quot;&gt;&lt;code&gt;quote&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; we can receive the AST from the
+block passed to check what we&#x27;ve created. The AST is what Elixir uses to
+represent our code before compiling down to Erlang. To see what the AST
+represents we use &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;hexdocs.pm&#x2F;elixir&#x2F;Macro.html#to_string&#x2F;2&quot;&gt;&lt;code&gt;Macro.to_string&#x2F;1&lt;&#x2F;code&gt;&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elixir&quot;&gt;iex&amp;gt; dna = &amp;quot;G&amp;quot;
+iex&amp;gt; ast = quote do
+...&amp;gt; unquote(dna)
+...&amp;gt; end
+iex&amp;gt; dna = &amp;quot;C&amp;quot;
+iex&amp;gt; IO.puts Macro.to_string(ast)
+&amp;quot;G&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;As you can see in the code above, the unquote function returns the value &lt;code&gt;&quot;G&quot;&lt;&#x2F;code&gt;
+even if the value of &lt;code&gt;dna&lt;&#x2F;code&gt; is changed afterward. Through additional
+experimenting, we can find out if this can be used to set the value to match the
+argument in our same head pattern matching. We do this by writing the &lt;code&gt;to_rna&lt;&#x2F;code&gt;
+as we normally would but swapping out the argument and return value with the
+unquoted values of the DNA and RNA.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elixir&quot;&gt;iex&amp;gt; dna = &amp;quot;G&amp;quot;
+iex&amp;gt; rna = &amp;quot;C&amp;quot;
+iex&amp;gt; ast = quote do
+...&amp;gt; def to_rna(unquote(dna)), do: unquote(rna)
+...&amp;gt; end
+iex&amp;gt; IO.puts Macro.to_string(ast)
+def(to_rna(&amp;quot;G&amp;quot;)) do
+  &amp;quot;C&amp;quot;
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;As you can see, the value &lt;code&gt;&quot;G&quot;&lt;&#x2F;code&gt; is set as the argument and &lt;code&gt;&quot;C&quot;&lt;&#x2F;code&gt; is set as the
+return value. This looks exactly like one of the functions we wrote by hand. But
+instead of writing it manually, we&#x27;ve used the value of &lt;code&gt;dna&lt;&#x2F;code&gt; to set the value
+on which the &lt;code&gt;to_rna&lt;&#x2F;code&gt; function needs to match and &lt;code&gt;rna&lt;&#x2F;code&gt; to set as the return
+value. Knowing this, we can bring everything together and create functions for
+our mapping. We can create the DNA to RNA mapping by creating a function for each
+key and value pair that matches on the DNA and returns the RNA. We&#x27;ll use a
+simple &lt;code&gt;for&lt;&#x2F;code&gt;-comprehension for looping through our mapping:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elixir&quot;&gt;defmodule RNATranscription do
+  mapping = %{ &amp;quot;G&amp;quot; =&amp;gt; &amp;quot;C&amp;quot;, &amp;quot;C&amp;quot; =&amp;gt; &amp;quot;G&amp;quot;, &amp;quot;T&amp;quot; =&amp;gt; &amp;quot;A&amp;quot;, &amp;quot;A&amp;quot; =&amp;gt; &amp;quot;U&amp;quot; }
+  for { dna, rna } &amp;lt;- mapping do
+    def to_rna(unquote(dna)), do: unquote(rna)
+  end
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;After loading the file in the REPL, it gets compiled and all functions get defined:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elixir&quot;&gt;iex&amp;gt; import_file(&amp;quot;rna.ex&amp;quot;)
+iex&amp;gt; RNATranscription.to_rna(&amp;quot;T&amp;quot;)
+&amp;quot;A&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And there you go, we&#x27;ve created compile-time functions! We could take the
+automation even further by hosting the mapping somewhere, using a hook to create
+an Elixir package when it changes, and publish it without the interference of a
+developer.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;in-conclusion&quot;&gt;In conclusion&lt;&#x2F;h2&gt;
+&lt;p&gt;Elixir macros allow us to create awesome stuff. Though this awesomeness does come
+with a word of caution. It might be harder to understand what your code does and
+where some functions come from. New developers to your project with macros might
+have a hard time finding their way around. It is a tradeoff you have to make.
+Some might argue that using macros for a small mapping such as in our example
+above might be overkill. And I won&#x27;t argue with that. However, it is fun to
+write and show you how you can define compile-time functions.&lt;&#x2F;p&gt;
+&lt;p&gt;If you are interested in learning more about macros in Elixir I highly recommend
+the book Metaprogramming Elixir which goes deeper into the subject.&lt;&#x2F;p&gt;
+&lt;p&gt;*[DNA]: DeoxyriboNucleic Acid
+*[RNA]: RiboNucleic Acid
+*[REPL]: Read-Evaluate-Print Loop
+*[IEx]: Interactive Elixir
+*[AST]: Abstract Syntax Tree&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Maybe Don&#x27;t Use Maybe?</title>
+    <published>2018-08-13T00:00:00+00:00</published>
+    <updated>2018-08-13T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/maybe-dont-use-maybe/" rel="alternate" type="text/html" title="Maybe Don&#x27;t Use Maybe?"/>
+    <id>https://brianvanburken.nl/maybe-dont-use-maybe/</id>
+    <summary>At my work I&#x27;ve come across a code that had more branches than were possible in the logic of the domain.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/maybe-dont-use-maybe/">&lt;p&gt;Your code could be littered with branches that result in invalid data and should
+never happen, but are allowed. We found such a case, at my work, where we allowed
+multiple variants of data, and it broke our code logic. We use &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;http:&#x2F;&#x2F;elm-lang.org&#x2F;&quot;&gt;Elm&lt;&#x2F;a&gt; and fixed
+it using its type system. Although we describe the solution for Elm in this blog,
+the cases and fixes also apply to other similar languages like &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;www.haskell.org&#x2F;&quot;&gt;Haskell&lt;&#x2F;a&gt; and
+&lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;http:&#x2F;&#x2F;www.purescript.org&#x2F;&quot;&gt;PureScript&lt;&#x2F;a&gt;. In this blog post we find the seemly impossible bug using
+examples written in Elm and go through a step by step progress to fix it. At the
+end, you could find similar cases in your application and know a way to fix
+them. Before we go fix our bug let’s get clear on the domain model.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;how-did-we-get-here&quot;&gt;How did we get here?&lt;&#x2F;h2&gt;
+&lt;p&gt;Our domain contains the model &quot;Question&quot; which can have exactly one &quot;Answer&quot; or
+is not answered yet. If the question has been answered then we receive the
+timestamp and content of the answer. This all will be sent by an API using JSON.
+Note: for this post, I&#x27;ve simplified our domain to this specific case.&lt;&#x2F;p&gt;
+&lt;p&gt;Our back-end was built separate from the front-end and one of the decisions of
+the back-end team was to send out both fields on the root level of the JSON
+document. These fields will always be present and, when there is no answer yet,
+default to &lt;code&gt;null&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Our domain code started out like this:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;type alias Question =
+    { id: String
+    , date : Date
+    , content: String
+    , answer: Answer
+    }
+
+type Answer = Answer (Maybe String) (Maybe Date)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Here we store both fields on the question at the same level as we received from
+the back-end. And our decoder looked like this:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;import Json.Decode as JD
+import DateTime  -- Note: DateTime contains our internal decoder for dates
+
+decoder : JD.Decoder Question
+decoder =
+    JD.map4 Question
+        (JD.field &amp;quot;id&amp;quot; JD.string)
+        (JD.field &amp;quot;date&amp;quot; DateTime.decoder)
+        (JD.field &amp;quot;content&amp;quot; JD.string)
+        (JD.map2 Answer
+            (JD.field &amp;quot;answer&amp;quot; (JD.maybe JD.string))
+            (JD.field &amp;quot;answeredOn&amp;quot; (JD.maybe DateTime.decoder))
+		)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;maybe-we-have-a-bug&quot;&gt;Maybe we have a bug?&lt;&#x2F;h2&gt;
+&lt;p&gt;If we look closer at our &lt;code&gt;Answer&lt;&#x2F;code&gt; type we see that it takes two &lt;code&gt;Maybe&lt;&#x2F;code&gt;&#x27;s. If we
+think about it in terms of &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;codewords.recurse.com&#x2F;issues&#x2F;three&#x2F;algebra-and-calculus-of-algebraic-data-types&quot;&gt;algebraic data types&lt;&#x2F;a&gt; we can reason that this
+solution has four possible cases for our answer:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;Answer (Just _) (Just _)&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;Answer (Just _) Nothing&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;Answer Nothing (Just _)&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;Answer Nothing Nothing&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;Are all these cases valid? If we revisit the domain logic then it becomes more
+clear: if there is an answer we receive both &lt;code&gt;answer&lt;&#x2F;code&gt; and &lt;code&gt;answeredOn&lt;&#x2F;code&gt; filled
+in, else we receive both fields with a null value. This means we have only two
+possible cases:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;we have an answer and both fields are filled in&lt;&#x2F;li&gt;
+&lt;li&gt;we have no answer and both fields are empty&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;This is not what we represent in our code. There are four possible cases right
+now! We only want the two cases that are valid and we can’t express that right
+now. This allowed for a bug to slip in where one of the fields for an answer
+was set to &lt;code&gt;null&lt;&#x2F;code&gt; and made our application show contradicting
+information to our users. Luckily for us, we can leverage Elm’s awesome type
+system to make the other cases impossible! Let’s improve our code.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;maybe-this-will-fix-it&quot;&gt;Maybe this will fix it?&lt;&#x2F;h2&gt;
+&lt;p&gt;We could wrap our &lt;code&gt;Answer&lt;&#x2F;code&gt; type in a &lt;code&gt;Maybe&lt;&#x2F;code&gt; and remove the &lt;code&gt;Maybe&lt;&#x2F;code&gt; for both the
+values or another approach is to expand our &lt;code&gt;Answer&lt;&#x2F;code&gt; type to a &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;guide.elm-lang.org&#x2F;types&#x2F;custom_types.html&quot;&gt;Custom Type&lt;&#x2F;a&gt;
+(also called Union Type). Before we refactor our code let&#x27;s think about how our
+code looks in each approach. Compare both examples below one of each possible
+fix and look at how we would use it rendering our answer. First look at the
+approach using &lt;code&gt;Maybe&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;import Html exposing (Html)
+
+type Answer = Answer String Date
+
+type alias Question =
+    { id: String
+    , date : Date
+    , content: String
+    , answer: Maybe Answer
+    }
+
+viewAnswer : Maybe Answer -&amp;gt; Html Never
+viewAnswer possibleAnswer =
+    case possibleAnswer of
+        Just (Answer content _) -&amp;gt;
+            Html.text content
+
+        Nothing -&amp;gt;
+            Html.text &amp;quot;No answer yet&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;And our Union type approach:&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;import Html exposing (Html)
+
+type Answer
+    = Answered String Date
+    | NoAnswerYet
+
+
+type alias Question =
+    { id: String
+    , date : Date
+    , content: String
+    , answer: Answer
+    }
+
+viewAnswer : Answer -&amp;gt; Html Never
+viewAnswer answer =
+    case answer of
+        Answered content _ -&amp;gt;
+            Html.text content
+
+        NoAnswerYet -&amp;gt;
+            Html.text &amp;quot;No answer yet&amp;quot;
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;As you can see our Union type approach is less code (you don&#x27;t have to write
+&lt;code&gt;Maybe&lt;&#x2F;code&gt; and &lt;code&gt;Just&lt;&#x2F;code&gt; for the value) and has more clarity. Using Maybe does fix it
+quickly. But, it adds an extra level of abstraction around our Answer type.
+Having to unwrap the Maybe first to get to our Answer type. With the Custom Type
+approach, it is clear that we have an answer or no answer, this shows more
+intent than a Maybe. Also, our code emits an uncertainty when using Maybe. A
+great talk about uncertainties in your Elm code can be watched here:
+&lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;youtu.be&#x2F;43eM4kNbb6c&quot;&gt;Working with Maybe&lt;&#x2F;a&gt; by Joël Quenneville. We don&#x27;t want any uncertainties in
+our code. We are certain that when decoded we either have an answer or have no
+answer.&lt;&#x2F;p&gt;
+&lt;p&gt;On the downside, when going for the Custom Type approach, we do lose the
+possibility for using &lt;code&gt;Maybe.map&lt;&#x2F;code&gt; and have to use case for everything. This boils
+down to having the power of mapping or clarity of intent in our code. Since we,
+developers, read code more than we write (said by Robert C. Martin in his book
+Clean Code and by many others) it means that clarity of intent trumps power
+we decided to go with the Custom Type approach.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;making-the-seemly-impossible-impossible&quot;&gt;Making the seemly impossible impossible&lt;&#x2F;h2&gt;
+&lt;p&gt;First, we change our Answer type that represents our only two possible cases.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;type Answer
+    = Answered String Date
+    | NoAnswerYet
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Then we change our decoder to set return the Answered type if all is well and
+&lt;code&gt;NoAnswerYet&lt;&#x2F;code&gt; for the other cases where one or more of the fields are &lt;code&gt;null&lt;&#x2F;code&gt;.
+To make our code more concise we use &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;http:&#x2F;&#x2F;package.elm-lang.org&#x2F;packages&#x2F;elm-community&#x2F;json-extra&#x2F;2.7.0&#x2F;Json-Decode-Extra#withDefault&quot;&gt;&lt;code&gt;Json.Decode.Extra.withDefault&lt;&#x2F;code&gt;&lt;&#x2F;a&gt; to set
+a fallback if one of our fields are &lt;code&gt;null&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;elm&quot;&gt;import Json.Decode.Extra as JDE
+
+decoder : JD.Decoder Question
+decoder =
+    JD.map4 Question
+        (JD.field &amp;quot;id&amp;quot; JD.string)
+        (JD.field &amp;quot;date&amp;quot; DateTime.decoder)
+        (JD.field &amp;quot;content&amp;quot; JD.string)
+        (JD.map2 Answered
+            (JD.field &amp;quot;answer&amp;quot; JD.string)
+            (JD.field &amp;quot;answeredOn&amp;quot; DateTime.decoder)
+            |&amp;gt; JDE.withDefault NoAnswerYet
+        )
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Now our code is safe from weird cases and is more expressive! Having fewer
+possible cases means fewer possible bugs, makes it easier to test, and easier
+to reason about what the code can do. Another small advantage is that you won&#x27;t
+have to write tests for the other weird cases. If you try to write such a test
+the compiler just won&#x27;t allow you. Thus, we don&#x27;t need to write any tests and
+save time. With this, we fixed our bug using the powerful Elm type system.&lt;&#x2F;p&gt;
+&lt;p&gt;You can check out the final SSCCE here:
+&lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;ellie-app.com&#x2F;PnhF7yzQtra1&quot;&gt;https:&#x2F;&#x2F;ellie-app.com&#x2F;PnhF7yzQtra1&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;If you are interested in learning more about fixing similar problems in your Elm
+application I highly recommend to watch &lt;a rel=&quot;noopener nofollow noreferrer external&quot; target=&quot;_blank&quot; href=&quot;https:&#x2F;&#x2F;youtu.be&#x2F;IcgmSRJHu_8&quot;&gt;Making Impossible States Impossible&lt;&#x2F;a&gt;
+by Richard Feldman.&lt;&#x2F;p&gt;
+&lt;p&gt;*[SSCCE]: Short, Self Contained, Correct (Compilable), Example&lt;&#x2F;p&gt;
+</content>
+  </entry>
+  <entry xml:lang="en">
+    <title>Bulk Association Creation in Rails</title>
+    <published>2015-08-22T00:00:00+00:00</published>
+    <updated>2015-08-22T00:00:00+00:00</updated>
+    <link href="https://brianvanburken.nl/bulk-association-creation-in-rails/" rel="alternate" type="text/html" title="Bulk Association Creation in Rails"/>
+    <id>https://brianvanburken.nl/bulk-association-creation-in-rails/</id>
+    <summary>During development of an application I stumbled across a situation where it produced N+1 queries and I set out on an adventure improve it.</summary>
+    <content type="html" xml:base="https://brianvanburken.nl/bulk-association-creation-in-rails/">&lt;p&gt;During development of an application I stumbled across a situation that could be
+improved. The application contains posts that get tagged based on the content.
+Beneath you can see all the models in this situation.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ruby&quot;&gt;class Post &amp;lt; ActiveRecord::Base
+  has_many :taggings, as: :taggable
+  has_many :tags, through: :taggings
+  after_save :tag_content, if: :content_changed?
+
+  private
+
+  def tag_content
+    words = content.strip.downcase.split(&#x2F;\W+&#x2F;)
+    TaggingService.new(self).tag(words)
+  end
+end
+
+class Tagging &amp;lt; ActiveRecord::Base
+  belongs_to :taggable, polymorphic: true
+  belongs_to :tag
+end
+
+class Tag &amp;lt; ActiveRecord::Base
+  has_many :taggings
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;When changing the content of a post it passes the words to a service which
+tags the post. It deletes all the current taggings to make sure irrelevant tags
+are no longer present. Then it walks through all the stored tags. Below is the
+tagging service which handles the automatic tagging.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ruby&quot;&gt;class TaggingService
+  def initialize(record)
+    @record = record
+  end
+
+  def tag(words)
+    @record.taggings.destroy_all
+    Tag.all.each do |tag|
+      record.tags &amp;lt;&amp;lt; tag if words.include? tag.name
+    end
+  end
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The problem with this service is that it walks through all the tags, even
+the ones that aren’t present in the content. We could improve this by only
+fetching relevant tags. By changing the query we can skip the check for included
+tag names.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ruby&quot;&gt;def tag(words)
+  @record.taggings.destroy_all
+  Tag.where(name: words).each do |tag|
+    record.tags &amp;lt;&amp;lt; tag
+  end
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;It’s an improvement, but still walks through each tag and as a result produces
+N+1 queries. After looking through the source of Rails I’ve found that it’s
+possible to pass a &lt;code&gt;ActiveRecord::Relation&lt;&#x2F;code&gt; instance at the &lt;code&gt;CollectionProxy&lt;&#x2F;code&gt; of
+the post instance. A CollectionProxy is an object that handles
+associating records, in this case the post with its taggings and tags.&lt;&#x2F;p&gt;
+&lt;p&gt;Rails would use the &lt;code&gt;ActiveRecord::Relation&lt;&#x2F;code&gt; instance to generate a query and
+skip fetching data from the database. This would reduce the time spent in Ruby
+code. To improve our example we pass in the query we improved earlier.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;ruby&quot;&gt;def tag(words)
+  @record.taggings.destroy_all
+  @record.tags &amp;lt;&amp;lt; Tag.where(name: words)
+end
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This generates a nice SQL &lt;code&gt;INSERT&lt;&#x2F;code&gt; query that would look like the query below.&lt;&#x2F;p&gt;
+&lt;pre&gt;&lt;code data-lang=&quot;sql&quot;&gt;INSERT INTO &amp;quot;taggings&amp;quot; (&amp;quot;taggable_type&amp;quot;, &amp;quot;taggable_id&amp;quot;, &amp;quot;tag_id&amp;quot;, &amp;quot;created_at&amp;quot;, &amp;quot;updated_at&amp;quot;)
+VALUES (&amp;quot;Post&amp;quot;, 1, 1, &amp;quot;2015-08-22 00:00:00.000000&amp;quot;, &amp;quot;2015-08-22 00:00:00.000000&amp;quot;)
+&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+  </entry>
+</feed>
