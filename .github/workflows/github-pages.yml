@@ -25,14 +25,14 @@ jobs:
           tool: zola@0.22.1
       - run: pnpm install
       # Build
-      - run: zola build -o build
-      - run: BUILD_DIR=build node build.js
+      - run: zola build
+      - run: node build.js
       # Publish
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build
+          publish_dir: ./public
           force_orphan: true
           user_name: "github-actions[bot]"
           user_email: "github-actions[bot]@users.noreply.github.com"
