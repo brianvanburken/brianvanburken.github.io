@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Prepare
-      - uses: actions/checkout@master
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
       - name: pnpm setup
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda
         with:
@@ -20,7 +20,7 @@ jobs:
           node-version: '24.13.0'
           cache: 'pnpm'
       - name: Setup Zola
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@edba51d32f66935a112c0516fec65a13d420cbc6
         with:
           tool: zola@0.22.1
       - run: pnpm install
@@ -29,7 +29,7 @@ jobs:
       - run: BUILD_DIR=build node build.js
       # Publish
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build
