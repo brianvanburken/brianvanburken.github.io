@@ -1,9 +1,5 @@
-{% extends "base.html" %}
-
-{% block content %}
+{% extends "base.html" %} {% block content %}
 <h1>Writings</h1>
 
-{% for page in section.pages %}
-  {% include "partials/post-excerpt.html" %}
-{% endfor %}
-{% endblock content %}
+{% for page in section.pages %} {% include "partials/post-excerpt.html" %} {% endfor %} {% endblock
+content %}

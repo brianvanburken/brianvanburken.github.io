@@ -32,17 +32,28 @@ body {
   padding: 0 $baseline;
 }
 
-ul, ol, p, h1, h2, h3, pre, code, footer, article {
+ul,
+ol,
+p,
+h1,
+h2,
+h3,
+pre,
+code,
+footer,
+article {
   margin: $baseline 0;
   line-height: $baseline;
 }
 
-sub, sup {
+sub,
+sup {
   line-height: 1;
   font-size: 0.75rem;
 }
 
-ul, ol {
+ul,
+ol {
   padding-left: $baseline;
 }
 
@@ -68,7 +79,8 @@ blockquote {
   margin: $baseline;
 }
 
-a, a code {
+a,
+a code {
   color: $link-color;
 }
 
@@ -85,7 +97,7 @@ a {
 
 footer {
   border-top: 1px solid #bfbdb6;
-  padding-top: $baseline
+  padding-top: $baseline;
 }
 
 code,
