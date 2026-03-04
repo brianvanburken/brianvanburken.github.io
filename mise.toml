@@ -1,12 +1,11 @@
 [tools]
 node = "24.13.0"
-"npm:oxfmt" = "0.36.0"
 pnpm = "10.28.2"
 zola = "0.22.1"
 
 [tasks.format]
 description = "Format files"
-run = "oxfmt ."
+run = "pnpm exec oxfmt ."
 
 [tasks.clean]
 description = "Remove build output directory"

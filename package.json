@@ -4,6 +4,7 @@
   "devDependencies": {
     "csso": "^5.0.5",
     "html-minifier-terser": "^7.2.0",
+    "oxfmt": "^0.36.0",
     "purgecss": "^8.0.0",
     "shiki": "^4.0.1"
   }
