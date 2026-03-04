@@ -31,7 +31,7 @@ jobs:
         uses: taiki-e/install-action@edba51d32f66935a112c0516fec65a13d420cbc6
         with:
           tool: zola@0.22.1
-      - run: pnpm install
+      - run: pnpm install --prod
       # Build
       - run: zola build
       - run: node build.js

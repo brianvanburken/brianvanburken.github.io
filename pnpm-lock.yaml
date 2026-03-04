@@ -7,22 +7,23 @@ settings:
 importers:
 
   .:
-    devDependencies:
+    dependencies:
       csso:
         specifier: ^5.0.5
         version: 5.0.5
       html-minifier-terser:
         specifier: ^7.2.0
         version: 7.2.0
-      oxfmt:
-        specifier: ^0.36.0
-        version: 0.36.0
       purgecss:
         specifier: ^8.0.0
         version: 8.0.0
       shiki:
         specifier: ^4.0.1
         version: 4.0.1
+    devDependencies:
+      oxfmt:
+        specifier: ^0.36.0
+        version: 0.36.0
 
 packages:
 
