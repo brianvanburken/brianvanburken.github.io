@@ -28,7 +28,7 @@ jobs:
           node-version: "24.13.0"
           cache: "pnpm"
       - name: Setup Zola
-        uses: taiki-e/install-action@edba51d32f66935a112c0516fec65a13d420cbc6
+        uses: taiki-e/install-action@a37010ded18ff788be4440302bd6830b1ae50d8b
         with:
           tool: zola@0.22.1
       - run: pnpm install --prod
