@@ -7,6 +7,21 @@ on:
 permissions:
   contents: read
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - name: pnpm setup
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+        with:
+          version: "10.28.2"
+      - name: Use Node
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
+        with:
+          node-version: "24.13.0"
+          cache: "pnpm"
+      - run: pnpm install
+      - run: pnpm exec oxfmt --check .
   github-pages:
     runs-on: ubuntu-latest
     permissions:
