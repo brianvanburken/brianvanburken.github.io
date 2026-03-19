@@ -8,6 +8,6 @@
     "shiki": "^4.0.2"
   },
   "devDependencies": {
-    "oxfmt": "^0.37.0"
+    "oxfmt": "^0.41.0"
   }
 }
