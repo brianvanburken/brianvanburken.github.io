@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: "24.13.0"
           cache: "pnpm"
-      - run: pnpm install --dev
+      - run: pnpm install
       - run: pnpm exec oxfmt --check .
   github-pages:
     needs: lint
