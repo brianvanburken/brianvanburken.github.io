@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: "24.13.0"
           cache: "pnpm"
-      - run: pnpm install --dev --frozen-lockfile
+      - run: pnpm install --dev
       - run: pnpm exec oxfmt --check .
   github-pages:
     needs: lint
