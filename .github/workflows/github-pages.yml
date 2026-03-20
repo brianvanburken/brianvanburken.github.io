@@ -12,15 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - name: pnpm setup
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
-        with:
-          version: "10.28.2"
-      - name: Use Node
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238
-        with:
-          node-version: "24.13.0"
-          cache: "pnpm"
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
       - run: pnpm install
       - run: pnpm exec oxfmt --check .
   github-pages:
@@ -36,19 +28,7 @@ jobs:
     steps:
       # Prepare
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      - name: pnpm setup
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320
-        with:
-          version: "10.28.2"
-      - name: Use Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
-        with:
-          node-version: "24.13.0"
-          cache: "pnpm"
-      - name: Setup Zola
-        uses: taiki-e/install-action@de6bbd1333b8f331563d54a051e542c7dfef81c3
-        with:
-          tool: zola@0.22.1
+      - uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac
       - run: pnpm install --prod
       # Build
       - run: zola build
