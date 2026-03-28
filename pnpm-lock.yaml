@@ -9,20 +9,20 @@ importers:
   .:
     dependencies:
       csso:
-        specifier: ^5.0.5
+        specifier: 5.0.5
         version: 5.0.5
       html-minifier-terser:
-        specifier: ^7.2.0
+        specifier: 7.2.0
         version: 7.2.0
       purgecss:
-        specifier: ^8.0.0
+        specifier: 8.0.0
         version: 8.0.0
       shiki:
-        specifier: ^4.0.2
+        specifier: 4.0.2
         version: 4.0.2
     devDependencies:
       oxfmt:
-        specifier: ^0.41.0
+        specifier: 0.41.0
         version: 0.41.0
 
 packages:
