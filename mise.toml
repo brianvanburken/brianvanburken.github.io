@@ -1,11 +1,12 @@
 [tools]
 aube = "1.18.0"
 node = "24.15.0"
+oxfmt = "0.53.0"
 zola = "0.22.1"
 
 [tasks.format]
 description = "Format files"
-run = "aubx oxfmt ."
+run = "oxfmt ."
 
 [tasks.clean]
 description = "Remove build output directory"
