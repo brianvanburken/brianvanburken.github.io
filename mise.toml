@@ -1,11 +1,11 @@
 [tools]
+aube = "1.18.0"
 node = "24.15.0"
-pnpm = "10.33.1"
 zola = "0.22.1"
 
 [tasks.format]
 description = "Format files"
-run = "pnpm exec oxfmt ."
+run = "aubx oxfmt ."
 
 [tasks.clean]
 description = "Remove build output directory"
