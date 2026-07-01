@@ -12,25 +12,31 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
-      - run: mise upgrade --bump --local
-      - run: mise lock
-      - name: Open PR if tools changed
-        run: |
-          if git diff --quiet; then
-            echo "No updates found"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          BRANCH="mise-upgrade-$(date +%Y%m%d)"
-          git checkout -b "$BRANCH"
-          git add mise.toml mise.lock
-          git commit -m "chore(mise): upgrade tools"
-          git push origin "$BRANCH"
-          gh pr create \
-            --title "chore(mise): upgrade tools" \
-            --body "Automated weekly upgrade of mise tools via \`mise upgrade --bump\`." \
-            --label "dependencies" \
-            --label "mise"
+      - name: Open PR per upgraded tool
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          BASE=$(git rev-parse --abbrev-ref HEAD)
+          tools=$(awk '/^\[tools\]/{f=1;next} /^\[/{f=0} f && NF && !/^#/{gsub(/[ "=].*/,""); print}' mise.toml)
+          for tool in $tools; do
+            mise upgrade --bump --local "$tool"
+            mise lock
+            if git diff --quiet; then
+              git checkout -- .
+              continue
+            fi
+            version=$(grep -A1 "^\[\[tools\.$tool\]\]" mise.lock | awk -F'"' '/version/{print $2}')
+            BRANCH="mise-upgrade-${tool}-$(date +%Y%m%d)"
+            git checkout -b "$BRANCH"
+            git add mise.toml mise.lock
+            git commit -m "chore(mise): upgrade $tool to $version"
+            git push origin "$BRANCH"
+            gh pr create \
+              --title "chore(mise): upgrade $tool to $version" \
+              --body "Automated upgrade of \`$tool\` to \`$version\` via \`mise upgrade --bump\`." \
+              --label "dependencies" \
+              --label "mise"
+            git checkout "$BASE"
+          done
