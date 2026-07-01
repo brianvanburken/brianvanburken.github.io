@@ -1,0 +1,34 @@
+name: Upgrade mise tools
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  upgrade:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4.2.0
+      - run: mise upgrade --bump --local
+      - run: mise lock
+      - name: Open PR if tools changed
+        run: |
+          if git diff --quiet; then
+            echo "No updates found"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          BRANCH="mise-upgrade-$(date +%Y%m%d)"
+          git checkout -b "$BRANCH"
+          git add mise.toml mise.lock
+          git commit -m "chore(mise): upgrade tools"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "chore(mise): upgrade tools" \
+            --body "Automated weekly upgrade of mise tools via \`mise upgrade --bump\`."
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
