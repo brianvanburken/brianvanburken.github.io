@@ -18,7 +18,7 @@ jobs:
         id: aube-cache
         with:
           path: node_modules
-          key: ${{ runner.os }}-aube-${{ hashFiles('aube-lock.yaml') }}
+          key: ${{ runner.os }}-aube-${{ hashFiles('pnpm-lock.yaml') }}
       - run: aube install
         if: steps.aube-cache.outputs.cache-hit != 'true'
       - run: zola build
