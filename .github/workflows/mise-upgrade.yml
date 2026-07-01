@@ -29,6 +29,8 @@ jobs:
           git push origin "$BRANCH"
           gh pr create \
             --title "chore(mise): upgrade tools" \
-            --body "Automated weekly upgrade of mise tools via \`mise upgrade --bump\`."
+            --body "Automated weekly upgrade of mise tools via \`mise upgrade --bump\`." \
+            --label "dependencies" \
+            --label "mise"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
