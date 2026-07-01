@@ -1,7 +1,7 @@
 [tools]
-aube = "1.18.0"
+aube = "1.25.1"
 node = "24.15.0"
-oxfmt = "0.53.0"
+oxfmt = "0.57.0"
 zola = "0.22.1"
 
 [tasks.format]
