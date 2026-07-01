@@ -36,7 +36,7 @@ provenance = "github-attestations"
 
 [[tools.node]]
 version = "24.15.0"
-backend = "asdf:node"
+backend = "core:node"
 
 [tools.node."platforms.linux-arm64"]
 checksum = "sha256:73afc234d558c24919875f51c2d1ea002a2ada4ea6f83601a383869fefa64eed"
