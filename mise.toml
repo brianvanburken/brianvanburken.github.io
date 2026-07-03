@@ -1,6 +1,5 @@
 [tools]
-aube = "1.25.1"
-node = "26.4.0"
+bun = "1.3.14"
 oxfmt = "0.57.0"
 zola = "0.22.1"
 
@@ -20,4 +19,4 @@ run = "zola serve --drafts || true"
 [tasks.build]
 description = "Build site for production"
 depends = ["clean"]
-run = ["zola build", "node build.js"]
+run = ["zola build", "bun run build.js"]

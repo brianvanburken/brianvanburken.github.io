@@ -84,6 +84,7 @@ const highlighter = await createHighlighter({
     "json",
     "kotlin",
     "ruby",
+    "scss",
     "typescript",
     "shell",
   ],
