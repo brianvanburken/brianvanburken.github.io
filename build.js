@@ -12,20 +12,19 @@
  * 6. Class name minification - Shortens class names (e.g., "shiki_0_1" -> "a")
  * 7. HTML minification - Removes optional tags, whitespace, and comments
  *
- * Usage: node build.js
+ * Usage: bun run build.js
  * Environment: BUILD_DIR can override the default "public" directory
  */
 
-import { readdir, readFile, unlink, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readdir, unlink } from "node:fs/promises";
+import { join } from "node:path";
 import { minify as minifyCss } from "csso";
 import { minify as minifyHtml } from "html-minifier-terser";
 import { PurgeCSS } from "purgecss";
 import { createHighlighter } from "shiki";
 
 const SOURCE = process.env.BUILD_DIR || "public";
-const ROOT = dirname(fileURLToPath(import.meta.url));
+const ROOT = import.meta.dir;
 const THEME = "ayu-dark";
 
 // Default styles to skip (already in base CSS)
@@ -377,7 +376,7 @@ const stats = {
  * @param {string} baseCss - Pre-loaded CSS content to inline
  */
 async function processHtml(filePath, baseCss) {
-  let html = await readFile(filePath, "utf-8");
+  let html = await Bun.file(filePath).text();
 
   // Step 1: Text transforms (regex-based)
   let t = performance.now();
@@ -446,7 +445,7 @@ async function processHtml(filePath, baseCss) {
   });
   stats.minifyHtml += performance.now() - t;
 
-  await writeFile(filePath, minified);
+  await Bun.write(filePath, minified);
 }
 
 /**
@@ -471,7 +470,7 @@ async function build() {
   // Load all CSS files into memory
   let stepStart = performance.now();
   const cssFiles = await findFiles(sourceDir, ".css");
-  const cssContents = await Promise.all(cssFiles.map((file) => readFile(file, "utf-8")));
+  const cssContents = await Promise.all(cssFiles.map((file) => Bun.file(file).text()));
   const baseCss = cssContents.join("");
   logTime("Load CSS", stepStart);
 
