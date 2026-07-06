@@ -25,7 +25,7 @@ import { PurgeCSS } from "purgecss";
 import { createHighlighter } from "shiki";
 
 const SOURCE = process.env.BUILD_DIR || "public";
-const ROOT = dirname(fileURLToPath(import.meta.url));
+const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const THEME = "ayu-dark";
 
 // Default styles to skip (already in base CSS)
