@@ -32,6 +32,12 @@ for tool in $tools; do
     continue
   fi
 
+  # Close any open PRs for older versions of this tool
+  gh pr list --state open --json number,headRefName \
+    | jq -r --arg prefix "mise-upgrade-${safe_tool}-" \
+        '.[] | select(.headRefName | startswith($prefix)) | .number' \
+    | xargs -r -I{} gh pr close {} --comment "Superseded by a newer version."
+
   git checkout -b "$BRANCH"
 
   # Add files, commit, and push
