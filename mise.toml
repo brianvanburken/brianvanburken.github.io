@@ -20,4 +20,4 @@ run = "zola serve --drafts || true"
 [tasks.build]
 description = "Build site for production"
 depends = ["clean"]
-run = ["zola build", "node build.js"]
+run = ["zola build", "node scripts/build.js"]
