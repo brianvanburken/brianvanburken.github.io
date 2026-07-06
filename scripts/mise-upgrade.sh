@@ -25,8 +25,10 @@ for tool in $tools; do
   version=$(mise ls --local --json "$tool" | jq -r '.[0].version')
   safe_version=$(printf '%s' "$tool" | tr -c 'A-Za-z0-9._-' '-')
 
+  BRANCH_PREFIX="mise-upgrade-${safe_tool}-"
+  BRANCH="${BRANCH_PREFIX}${safe_version}"
+
   # Skip if a PR for this exact version already exists
-  BRANCH="mise-upgrade-${safe_tool}-${safe_version}"
   if gh pr list --head "$BRANCH" --json number --jq '.[0].number' | grep -q .; then
     git checkout -- .
     continue
@@ -34,7 +36,7 @@ for tool in $tools; do
 
   # Close any open PRs for older versions of this tool
   gh pr list --state open --json number,headRefName \
-    | jq -r --arg prefix "mise-upgrade-${safe_tool}-" \
+    | jq -r --arg prefix "$BRANCH_PREFIX" \
         '.[] | select(.headRefName | startswith($prefix)) | .number' \
     | xargs -r -I{} gh pr close {} --comment "Superseded by a newer version."
 
