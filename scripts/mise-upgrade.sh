@@ -31,6 +31,7 @@ for tool in $tools; do
   # Skip if a PR for this exact version already exists
   if gh pr list --head "$BRANCH" --json number --jq '.[0].number' | grep -q .; then
     git checkout -- .
+    mise install
     continue
   fi
 
@@ -58,4 +59,5 @@ for tool in $tools; do
     --label "mise"
 
   git checkout "$BASE"
+  mise install
 done
