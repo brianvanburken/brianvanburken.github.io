@@ -7,31 +7,37 @@ backend = "aqua:jdx/aube"
 [tools.aube."platforms.linux-arm64"]
 checksum = "sha256:3ae9c7be170a7859923ff00f03e5f6daa203852cba0a640756dd14f62dd597ff"
 url = "https://github.com/jdx/aube/releases/download/v1.25.2/aube-v1.25.2-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/aube/releases/assets/463676783"
 provenance = "github-attestations"
 
 [tools.aube."platforms.linux-arm64-musl"]
 checksum = "sha256:00d21ab77a33a82ae42b70ff0e99eec61edbd84040858d23351f5a9e89d895c1"
 url = "https://github.com/jdx/aube/releases/download/v1.25.2/aube-v1.25.2-aarch64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/jdx/aube/releases/assets/463655569"
 provenance = "github-attestations"
 
 [tools.aube."platforms.linux-x64"]
 checksum = "sha256:e048e45160170f06f1a881582e253859b16e1b8bef539f8cff2b3e440039d051"
 url = "https://github.com/jdx/aube/releases/download/v1.25.2/aube-v1.25.2-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/jdx/aube/releases/assets/463661659"
 provenance = "github-attestations"
 
 [tools.aube."platforms.linux-x64-musl"]
 checksum = "sha256:92874b76e9a72414243d5ffcc6bc1e4b09257e39d5107301b4861683f30db957"
 url = "https://github.com/jdx/aube/releases/download/v1.25.2/aube-v1.25.2-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/jdx/aube/releases/assets/463661555"
 provenance = "github-attestations"
 
 [tools.aube."platforms.macos-arm64"]
 checksum = "sha256:fceb52801a0bf68617f8cea39bc3a7f4965b49c6f64d19425f44020eae6c19e4"
 url = "https://github.com/jdx/aube/releases/download/v1.25.2/aube-v1.25.2-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/jdx/aube/releases/assets/463691613"
 provenance = "github-attestations"
 
 [tools.aube."platforms.windows-x64"]
 checksum = "sha256:4c27a81af177cbfeb503743c0f52a6412ea054a351eebb2547e06203c3ee3cf5"
 url = "https://github.com/jdx/aube/releases/download/v1.25.2/aube-v1.25.2-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/jdx/aube/releases/assets/463665736"
 provenance = "github-attestations"
 
 [[tools.node]]
@@ -67,7 +73,7 @@ checksum = "sha256:5f87d038c6ec442aa46b9126f8ca170acbd2f3b9b9152ca798cf54596a31e
 url = "https://nodejs.org/dist/v26.4.0/node-v26.4.0-win-x64.zip"
 
 [[tools.oxfmt]]
-version = "0.57.0"
+version = "0.59.0"
 backend = "npm:oxfmt"
 
 [[tools.zola]]
@@ -77,6 +83,7 @@ backend = "aqua:getzola/zola"
 [tools.zola."platforms.linux-arm64"]
 checksum = "sha256:8af437ec6352f33ccd24d7a1cfcb54a3db95d3ce376dc69525b4ef3fb6b8c1d1"
 url = "https://github.com/getzola/zola/releases/download/v0.22.1/zola-v0.22.1-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/getzola/zola/releases/assets/344200624"
 provenance = "github-attestations"
 
 [tools.zola."platforms.linux-arm64-musl"]
@@ -85,24 +92,29 @@ provenance = "github-attestations"
 [tools.zola."platforms.linux-x64"]
 checksum = "sha256:0ca09aa40376aaa9ddfb512ff9ad963262ef95edb0d0f2d5ec6961b6f5cf22ef"
 url = "https://github.com/getzola/zola/releases/download/v0.22.1/zola-v0.22.1-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/getzola/zola/releases/assets/344200621"
 provenance = "github-attestations"
 
 [tools.zola."platforms.linux-x64-musl"]
 checksum = "sha256:227df99b664421240a8ba77747067c51259b08159125d5603763b3b173b9a881"
 url = "https://github.com/getzola/zola/releases/download/v0.22.1/zola-v0.22.1-x86_64-unknown-linux-musl.tar.gz"
+url_api = "https://api.github.com/repos/getzola/zola/releases/assets/344200620"
 provenance = "github-attestations"
 
 [tools.zola."platforms.macos-arm64"]
 checksum = "sha256:46ac45a9e7628dba8593b124ee8794f4f9aa1c6b569918ecd4bbc5d0be190515"
 url = "https://github.com/getzola/zola/releases/download/v0.22.1/zola-v0.22.1-aarch64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/getzola/zola/releases/assets/344200625"
 provenance = "github-attestations"
 
 [tools.zola."platforms.macos-x64"]
 checksum = "sha256:3898709e154ae0593933264a540c869348bdb10d7f1b03a42dfb78d63703b3b5"
 url = "https://github.com/getzola/zola/releases/download/v0.22.1/zola-v0.22.1-x86_64-apple-darwin.tar.gz"
+url_api = "https://api.github.com/repos/getzola/zola/releases/assets/344200622"
 provenance = "github-attestations"
 
 [tools.zola."platforms.windows-x64"]
 checksum = "sha256:2c8b368f5abdf2b2478748f9549a761fd6599238e18948eccb76a7cae51f5dc1"
 url = "https://github.com/getzola/zola/releases/download/v0.22.1/zola-v0.22.1-x86_64-pc-windows-msvc.zip"
+url_api = "https://api.github.com/repos/getzola/zola/releases/assets/344200623"
 provenance = "github-attestations"
