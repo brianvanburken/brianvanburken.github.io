@@ -10,7 +10,6 @@ BASE=$(git rev-parse --abbrev-ref HEAD)
 
 # Read mise tools
 tools=$(mise outdated --bump --json | jq -r 'keys[]')
-safe_tool=$(printf '%s' "$tool" | tr -c 'A-Za-z0-9._-' '-')
 for tool in $tools; do
 
   # Bump the tool, if no changes, continue to next
@@ -23,7 +22,8 @@ for tool in $tools; do
 
   # Take bumped version
   version=$(mise ls --local --json "$tool" | jq -r '.[0].version')
-  safe_version=$(printf '%s' "$tool" | tr -c 'A-Za-z0-9._-' '-')
+  safe_tool=$(printf '%s' "$tool" | tr -c 'A-Za-z0-9._-' '-')
+  safe_version=$(printf '%s' "$version" | tr -c 'A-Za-z0-9._-' '-')
 
   BRANCH_PREFIX="mise-upgrade-${safe_tool}-"
   BRANCH="${BRANCH_PREFIX}${safe_version}"
