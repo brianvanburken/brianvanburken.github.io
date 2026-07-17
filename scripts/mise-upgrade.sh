@@ -12,6 +12,9 @@ BASE=$(git rev-parse --abbrev-ref HEAD)
 tools=$(mise outdated --bump --json | jq -r 'keys[]')
 for tool in $tools; do
 
+  # Take current version before bumping
+  old_version=$(mise ls --local --json "$tool" | jq -r '.[0].version')
+
   # Bump the tool, if no changes, continue to next
   mise upgrade --bump --local "$tool"
   mise lock
@@ -45,7 +48,7 @@ for tool in $tools; do
 
   # Add files, commit, and push
   git add mise.toml mise.lock
-  MSG="chore(deps): upgrade mise \"$tool\" to $version"
+  MSG="chore(deps): bump $tool from $old_version to $version"
   git commit -m "$MSG"
   git push origin "$BRANCH"
 
@@ -54,7 +57,7 @@ for tool in $tools; do
     --base "$BASE" \
     --head "$BRANCH" \
     --title "$MSG" \
-    --body "Automated upgrade of \`$tool\` to \`$version\` via \`mise upgrade --bump\`." \
+    --body "Bumps \`$tool\` from \`$old_version\` to \`$version\` via \`mise upgrade --bump\`." \
     --label "dependencies" \
     --label "mise"
 
