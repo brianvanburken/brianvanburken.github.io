@@ -39,7 +39,7 @@ for tool in $tools; do
   gh pr list --state open --json number,headRefName \
     | jq -r --arg prefix "$BRANCH_PREFIX" \
         '.[] | select(.headRefName | startswith($prefix)) | .number' \
-    | xargs -r -I{} gh pr close {} --comment "Superseded by a newer version."
+    | xargs -r -I{} gh pr close {} --comment "Superseded by a newer version." --delete-branch
 
   git checkout -b "$BRANCH"
 
