@@ -8,8 +8,8 @@ tags = ["Shell"]
 excerpt = "If you find NPM's funding messages distracting, you can disable them by setting a configuration in different ways."
 +++
 
-Whenever you install packages using NPM, you get a message that the packages seek funding.
-This functionality was introduced back in NPM version [6.13][0].
+Whenever you install packages using NPM, you get a message that the packages
+seek funding. This functionality was introduced back in NPM version [6.13][0].
 It looks like this:
 
 ```
@@ -18,8 +18,8 @@ $ npm install
 Run "npm fund" to find out more.
 ```
 
-Running `npm fund` shows which packages are looking for funding.
-Here is a quick preview of what the output looks like:
+Running `npm fund` shows which packages are looking for funding. Here is a quick
+preview of what the output looks like:
 
 ```
 $ npm fund
@@ -35,10 +35,9 @@ tmp@1.0.0
   └── url: https://corp.example.com/sponsor
 ```
 
-
-While the idea is excellent, you should always [support open-source projects][1] in any way possible!
-It can generate unwanted noise, especially in CI environments.
-If you want, you can disable it by running the following command:
+While the idea is excellent, you should always [support open-source projects][1]
+in any way possible! It can generate unwanted noise, especially in CI
+environments. If you want, you can disable it by running the following command:
 
 ```bash
 npm config set fund false
@@ -56,7 +55,8 @@ Or expose it as a shell environment variable:
 export NPM_CONFIG_FUND=false
 ```
 
-Or, if you want to run it once, disable it for installation using the flag `--no-fund`:
+Or, if you want to run it once, disable it for installation using the flag
+`--no-fund`:
 
 ```bash
 npm install --no-fund
@@ -64,7 +64,9 @@ npm install --no-fund
 
 ## Bonus tip:
 
-While these fund messages are one of the many ways these messages get displayed in the terminal, you can [add the following][3] to your shell to disable those as well.
+While these fund messages are one of the many ways these messages get displayed
+in the terminal, you can [add the following][3] to your shell to disable those
+as well.
 
 ```bash
 export ADBLOCK=true

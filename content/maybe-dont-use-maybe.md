@@ -9,14 +9,15 @@ excerpt = "At my work I've come across a code that had more branches than were p
 +++
 
 Your code could be littered with branches that result in invalid data and should
-never happen, but are allowed. We found such a case, at my work, where we allowed
-multiple variants of data, and it broke our code logic. We use [Elm][1] and fixed
-it using its type system. Although we describe the solution for Elm in this blog,
-the cases and fixes also apply to other similar languages like [Haskell][2] and
-[PureScript][3]. In this blog post we find the seemly impossible bug using
-examples written in Elm and go through a step by step progress to fix it. At the
-end, you could find similar cases in your application and know a way to fix
-them. Before we go fix our bug let’s get clear on the domain model.
+never happen, but are allowed. We found such a case, at my work, where we
+allowed multiple variants of data, and it broke our code logic. We use [Elm][1]
+and fixed it using its type system. Although we describe the solution for Elm in
+this blog, the cases and fixes also apply to other similar languages like
+[Haskell][2] and [PureScript][3]. In this blog post we find the seemly
+impossible bug using examples written in Elm and go through a step by step
+progress to fix it. At the end, you could find similar cases in your application
+and know a way to fix them. Before we go fix our bug let’s get clear on the
+domain model.
 
 ## How did we get here?
 
@@ -83,10 +84,10 @@ possible cases:
 
 This is not what we represent in our code. There are four possible cases right
 now! We only want the two cases that are valid and we can’t express that right
-now. This allowed for a bug to slip in where one of the fields for an answer
-was set to `null` and made our application show contradicting
-information to our users. Luckily for us, we can leverage Elm’s awesome type
-system to make the other cases impossible! Let’s improve our code.
+now. This allowed for a bug to slip in where one of the fields for an answer was
+set to `null` and made our application show contradicting information to our
+users. Luckily for us, we can leverage Elm’s awesome type system to make the
+other cases impossible! Let’s improve our code.
 
 ## Maybe this will fix it?
 
@@ -158,16 +159,15 @@ our code. We are certain that when decoded we either have an answer or have no
 answer.
 
 On the downside, when going for the Custom Type approach, we do lose the
-possibility for using `Maybe.map` and have to use case for everything. This boils
-down to having the power of mapping or clarity of intent in our code. Since we,
-developers, read code more than we write (said by Robert C. Martin in his book
-Clean Code and by many others) it means that clarity of intent trumps power
-we decided to go with the Custom Type approach.
+possibility for using `Maybe.map` and have to use case for everything. This
+boils down to having the power of mapping or clarity of intent in our code.
+Since we, developers, read code more than we write (said by Robert C. Martin in
+his book Clean Code and by many others) it means that clarity of intent trumps
+power we decided to go with the Custom Type approach.
 
 ## Making the seemly impossible impossible
 
 First, we change our Answer type that represents our only two possible cases.
-
 
 ```elm
 type Answer
@@ -176,9 +176,9 @@ type Answer
 ```
 
 Then we change our decoder to set return the Answered type if all is well and
-`NoAnswerYet` for the other cases where one or more of the fields are `null`.
-To make our code more concise we use [`Json.Decode.Extra.withDefault`][7] to set
-a fallback if one of our fields are `null`.
+`NoAnswerYet` for the other cases where one or more of the fields are `null`. To
+make our code more concise we use [`Json.Decode.Extra.withDefault`][7] to set a
+fallback if one of our fields are `null`.
 
 ```elm
 import Json.Decode.Extra as JDE
@@ -197,14 +197,13 @@ decoder =
 ```
 
 Now our code is safe from weird cases and is more expressive! Having fewer
-possible cases means fewer possible bugs, makes it easier to test, and easier
-to reason about what the code can do. Another small advantage is that you won't
+possible cases means fewer possible bugs, makes it easier to test, and easier to
+reason about what the code can do. Another small advantage is that you won't
 have to write tests for the other weird cases. If you try to write such a test
 the compiler just won't allow you. Thus, we don't need to write any tests and
 save time. With this, we fixed our bug using the powerful Elm type system.
 
-You can check out the final SSCCE here:
-<https://ellie-app.com/PnhF7yzQtra1>
+You can check out the final SSCCE here: <https://ellie-app.com/PnhF7yzQtra1>
 
 If you are interested in learning more about fixing similar problems in your Elm
 application I highly recommend to watch [Making Impossible States Impossible][8]

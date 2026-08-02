@@ -8,8 +8,8 @@ tags = ["Shell"]
 excerpt = "Using !!, you can access the last command executed. Useful for rerunning a previous command."
 +++
 
-Using `!!`, you can access the last command executed.
-Useful for rerunning a command with `sudo`-privilege.
+Using `!!`, you can access the last command executed. Useful for rerunning a
+command with `sudo`-privilege.
 
 Example:
 

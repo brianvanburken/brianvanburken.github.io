@@ -9,10 +9,10 @@ excerpt = "I love solving small programming challenges. One of the many challeng
 +++
 
 I love solving small programming challenges. If you do too, I recommend
-[exercism.io][1]. One of the many challenges on this website is about transcribing
-DNA nucleotides to RNA nucleotides. I was able to solve this by using Elixir. I
-also found that I could apply metaprogramming to improve my answer. In this blog
-post, I will walk you through this process of improvement.
+[exercism.io][1]. One of the many challenges on this website is about
+transcribing DNA nucleotides to RNA nucleotides. I was able to solve this by
+using Elixir. I also found that I could apply metaprogramming to improve my
+answer. In this blog post, I will walk you through this process of improvement.
 
 ## Basics
 
@@ -59,8 +59,8 @@ iex> strand |> String.graphemes() |> Enum.map(&RNATranscription.to_rna/1) |> Enu
 
 This bit of code could be placed in a method called "decode" and we would be
 done! But now imagine the discovery of new RNA or DNA nucleotides. This would
-mean that additional letters would have to be added to our code. We could write a
-few new functions matching these new DNA nucleotides that will return the RNA
+mean that additional letters would have to be added to our code. We could write
+a few new functions matching these new DNA nucleotides that will return the RNA
 ones. Though doable by hand, we could leverage the power of Elixir
 metaprogramming and define functions from a mapping so future extensions are
 easy. Let's have some fun!
@@ -140,8 +140,8 @@ return value. This looks exactly like one of the functions we wrote by hand. But
 instead of writing it manually, we've used the value of `dna` to set the value
 on which the `to_rna` function needs to match and `rna` to set as the return
 value. Knowing this, we can bring everything together and create functions for
-our mapping. We can create the DNA to RNA mapping by creating a function for each
-key and value pair that matches on the DNA and returns the RNA. We'll use a
+our mapping. We can create the DNA to RNA mapping by creating a function for
+each key and value pair that matches on the DNA and returns the RNA. We'll use a
 simple `for`-comprehension for looping through our mapping:
 
 ```elixir
@@ -153,7 +153,8 @@ defmodule RNATranscription do
 end
 ```
 
-After loading the file in the REPL, it gets compiled and all functions get defined:
+After loading the file in the REPL, it gets compiled and all functions get
+defined:
 
 ```elixir
 iex> import_file("rna.ex")
@@ -168,22 +169,19 @@ developer.
 
 ## In conclusion
 
-Elixir macros allow us to create awesome stuff. Though this awesomeness does come
-with a word of caution. It might be harder to understand what your code does and
-where some functions come from. New developers to your project with macros might
-have a hard time finding their way around. It is a tradeoff you have to make.
-Some might argue that using macros for a small mapping such as in our example
-above might be overkill. And I won't argue with that. However, it is fun to
-write and show you how you can define compile-time functions.
+Elixir macros allow us to create awesome stuff. Though this awesomeness does
+come with a word of caution. It might be harder to understand what your code
+does and where some functions come from. New developers to your project with
+macros might have a hard time finding their way around. It is a tradeoff you
+have to make. Some might argue that using macros for a small mapping such as in
+our example above might be overkill. And I won't argue with that. However, it is
+fun to write and show you how you can define compile-time functions.
 
 If you are interested in learning more about macros in Elixir I highly recommend
 the book Metaprogramming Elixir which goes deeper into the subject.
 
-*[DNA]: DeoxyriboNucleic Acid
-*[RNA]: RiboNucleic Acid
-*[REPL]: Read-Evaluate-Print Loop
-*[IEx]: Interactive Elixir
-*[AST]: Abstract Syntax Tree
+*[DNA]: DeoxyriboNucleic Acid *[RNA]: RiboNucleic Acid *[REPL]:
+Read-Evaluate-Print Loop *[IEx]: Interactive Elixir *[AST]: Abstract Syntax Tree
 
 [1]: https://exercism.io/
 [2]: https://github.com/elixir-lang/elixir/blob/master/lib/elixir/lib/kernel.ex#L3093

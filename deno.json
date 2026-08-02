@@ -1,0 +1,12 @@
+{
+  "fmt": {
+    "exclude": ["public", "deno.lock", "mise.lock"]
+  },
+  "imports": {
+    "csso": "npm:csso@5.0.5",
+    "html-minifier-terser": "npm:html-minifier-terser@7.2.0",
+    "purgecss": "npm:purgecss@8.0.0",
+    "postcss": "npm:postcss@^8.5.18",
+    "shiki": "npm:shiki@4.3.1"
+  }
+}

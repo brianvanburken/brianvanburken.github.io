@@ -8,14 +8,16 @@ tags = ["Elm", "JSON", "Decoding"]
 excerpt = "Storing JSON properties as a List when decoding in Elm"
 +++
 
-While working on an Elm application, I stumbled across a situation where I needed to decode a result from an API and store the rest of the properties that aren't part of the model as a list.
+While working on an Elm application, I stumbled across a situation where I
+needed to decode a result from an API and store the rest of the properties that
+aren't part of the model as a list.
 
 ## Setting the domain
 
-The API returns a list of videos, and each video has an `id` and `title`.
-Each video also has any number of properties that are "metadata."
-These properties are what we want to store in a list of key-value pairs.
-An example video would look like this in JSON.
+The API returns a list of videos, and each video has an `id` and `title`. Each
+video also has any number of properties that are "metadata." These properties
+are what we want to store in a list of key-value pairs. An example video would
+look like this in JSON.
 
 ```json
 {
@@ -26,8 +28,8 @@ An example video would look like this in JSON.
 }
 ```
 
-We then define the model where we store the metadata in a list of tuples.
-Each tuple contains the key and the value.
+We then define the model where we store the metadata in a list of tuples. Each
+tuple contains the key and the value.
 
 ```elm
 type alias Video =
@@ -37,8 +39,8 @@ type alias Video =
     }
 ```
 
-Using standard decoding in Elm, we first pass the JSON fields `id` and `title` to the model.
-And as of last, we pass a custom decoder.
+Using standard decoding in Elm, we first pass the JSON fields `id` and `title`
+to the model. And as of last, we pass a custom decoder.
 
 ```elm
 import Json.Decode as JD
@@ -53,10 +55,11 @@ decoder =
 
 ## Extracting the rest of JSON properties
 
-Our custom decoder gets the whole JSON object and decodes it as a list of key-value pairs.
-We convert all the values to a `String` with the `valueToString` function, so all are the same type.
-However, this does mean that we lose the information.
-You could fix this by writing a [Custom Type][1] for each value type; not needed for this case.
+Our custom decoder gets the whole JSON object and decodes it as a list of
+key-value pairs. We convert all the values to a `String` with the
+`valueToString` function, so all are the same type. However, this does mean that
+we lose the information. You could fix this by writing a [Custom Type][1] for
+each value type; not needed for this case.
 
 ```elm
 metadataDecoder : JD.Decoder (List ( String, String ))
@@ -82,18 +85,15 @@ valueToString =
         ]
 ```
 
-So where done right?
-Well, we have everything as key-value pair.
-And I mean everything.
-We also added our `id` and `title` to `metadata`.
-Not ideal.
+So where done right? Well, we have everything as key-value pair. And I mean
+everything. We also added our `id` and `title` to `metadata`. Not ideal.
 
 ## Block unwanted properties
 
-To fix this, we need to filter out properties using a blocklist.
-We map our key-value pairs to a `filterMetadata` method.
-This method checks for each key against the blocklist. 
-Instead of a blocklist, we could also use an allowlist to only add specific keys to the metadata.
+To fix this, we need to filter out properties using a blocklist. We map our
+key-value pairs to a `filterMetadata` method. This method checks for each key
+against the blocklist. Instead of a blocklist, we could also use an allowlist to
+only add specific keys to the metadata.
 
 ```elm
 metadataDecoder : JD.Decoder (List ( String, String ))
@@ -113,10 +113,10 @@ filterMetadata =
                 >> not
     in
     List.filter isBlocked
-
 ```
 
-In the end, we have a correct model with all the rest of the properties from the JSON object.
+In the end, we have a correct model with all the rest of the properties from the
+JSON object.
 
 You can check out the final SSCCE here: <https://ellie-app.com/9Qxk3RDydTka1>
 

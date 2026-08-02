@@ -15,14 +15,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: jdx/mise-action@9e7f7633ff6f6d6048a9418a68d48f288f50eb14 # v4.2.3
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        id: aube-cache
         with:
-          path: node_modules
-          key: ${{ runner.os }}-aube-${{ hashFiles('pnpm-lock.yaml') }}
-      - run: aube install
-        if: steps.aube-cache.outputs.cache-hit != 'true'
+          path: ~/.cache/deno
+          key: ${{ runner.os }}-deno-${{ hashFiles('deno.lock') }}
       - run: zola build
-      - run: node scripts/build.js
+      - run: deno run --allow-read --allow-write --allow-env --allow-sys scripts/build.js
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         if: github.event_name == 'push'
         with:

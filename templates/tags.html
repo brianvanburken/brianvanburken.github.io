@@ -17,7 +17,7 @@ tag_slugs[i] == slug %} {% set_global current_tag_name = tag_names[i] %} {% endi
   all_pages.pages %} {% if page.extra.tags %} {% for tag in page.extra.tags %} {% if tag | slugify
   == slug %} {% set_global tag_pages = tag_pages | concat(with=[page]) %} {% endif %} {% endfor %}
   {% endif %} {% endfor %} {% set sorted_pages = tag_pages | sort(attribute="date") %} {% for page
-  in sorted_pages %} {{ page.date | date(format=config.extra.date_format) }} -
+  in sorted_pages %} {{ page.date | date(format = config.extra.date_format) }} -
   <a href="{{ page.path }}">{{ page.title }}</a>
   <br />
   {% endfor %}

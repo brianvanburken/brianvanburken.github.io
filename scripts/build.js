@@ -29,7 +29,11 @@ const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const THEME = "ayu-dark";
 
 // Default styles to skip (already in base CSS)
-const SKIP_STYLES = new Set(["color:#BFBDB6", "font-style:italic", "background-color:#0B0E14"]);
+const SKIP_STYLES = new Set([
+  "color:#BFBDB6",
+  "font-style:italic",
+  "background-color:#0B0E14",
+]);
 
 // Global style-to-class map and CSS (shared across all files)
 const styleToClass = {};
@@ -152,7 +156,9 @@ function processFootnotes(html) {
   }
 
   // Build footnotes list
-  const listItems = footnotes.map((fn) => `<li id="fn:${fn.id}">${fn.content}</li>`).join("");
+  const listItems = footnotes.map((fn) =>
+    `<li id="fn:${fn.id}">${fn.content}</li>`
+  ).join("");
   const footnotesHtml = `<ol role="doc-endnotes">${listItems}</ol>`;
 
   // Insert before </section> or </article> or </body>
@@ -177,10 +183,13 @@ function processAbbreviations(html) {
   const abbreviations = {};
 
   // Extract abbreviation definitions from paragraphs and remove them
-  html = html.replace(/<p>\s*\*\[([^\]]+)\]:\s*(.+?)\s*<\/p>/g, (_match, abbr, title) => {
-    abbreviations[abbr] = title.trim();
-    return ""; // Remove the definition paragraph
-  });
+  html = html.replace(
+    /<p>\s*\*\[([^\]]+)\]:\s*(.+?)\s*<\/p>/g,
+    (_match, abbr, title) => {
+      abbreviations[abbr] = title.trim();
+      return ""; // Remove the definition paragraph
+    },
+  );
 
   if (Object.keys(abbreviations).length === 0) return html;
 
@@ -252,7 +261,11 @@ function convertCode(html) {
   html = html.replace(
     /<pre><code(?:\s+class="([^"]*)")?(?:\s+data-lang="([^"]*)")?[^>]*>([\s\S]*?)<\/code><\/pre>/g,
     (_match, cls, dataLang, content) => {
-      const lang = dataLang ? dataLang : cls ? cls.replace("language-", "").trim() : "text";
+      const lang = dataLang
+        ? dataLang
+        : cls
+        ? cls.replace("language-", "").trim()
+        : "text";
 
       const decoded = decodeHtmlEntities(content);
 
@@ -268,7 +281,10 @@ function convertCode(html) {
       });
 
       // Unwrap Shiki's pre and return just the inner content in our pre
-      const inner = highlighted.replace(/^<pre[^>]*>/, "").replace(/<\/pre>$/, "");
+      const inner = highlighted.replace(/^<pre[^>]*>/, "").replace(
+        /<\/pre>$/,
+        "",
+      );
       return `<pre>${inner}</pre>`;
     },
   );
@@ -302,8 +318,12 @@ function cleanupSpans(html) {
  * @returns {string} HTML with merged spans
  */
 function mergeSpans(html) {
-  const regex = /<span class="([a-z]+)">([^<]*)<\/span>(\s*)<span class="\1">/gm;
-  return html.replace(regex, '<span class="$1">$2$3').replace(regex, '<span class="$1">$2$3');
+  const regex =
+    /<span class="([a-z]+)">([^<]*)<\/span>(\s*)<span class="\1">/gm;
+  return html.replace(regex, '<span class="$1">$2$3').replace(
+    regex,
+    '<span class="$1">$2$3',
+  );
 }
 
 /**
@@ -346,8 +366,9 @@ function minifyClassNames(html) {
 
   // Second pass: replace class names in CSS selectors
   html = html.replace(/<style>([\s\S]*?)<\/style>/g, (_match, css) => {
-    const newCss = css.replace(/\.([a-z0-9_-]+)/gi, (m, cls) =>
-      classMap[cls] ? `.${classMap[cls]}` : m,
+    const newCss = css.replace(
+      /\.([a-z0-9_-]+)/gi,
+      (m, cls) => classMap[cls] ? `.${classMap[cls]}` : m,
     );
     return `<style>${newCss}</style>`;
   });
@@ -470,7 +491,9 @@ async function build() {
   // Load all CSS files into memory
   let stepStart = performance.now();
   const cssFiles = await findFiles(sourceDir, ".css");
-  const cssContents = await Promise.all(cssFiles.map((file) => readFile(file, "utf-8")));
+  const cssContents = await Promise.all(
+    cssFiles.map((file) => readFile(file, "utf-8")),
+  );
   const baseCss = cssContents.join("");
   logTime("Load CSS", stepStart);
 
@@ -489,7 +512,9 @@ async function build() {
   // Log per-step timing breakdown
   console.log("Per-step breakdown (cumulative across all files):");
   for (const [step, ms] of Object.entries(stats)) {
-    const display = ms < 10 ? `${ms.toFixed(2)}ms` : `${(ms / 1000).toFixed(2)}s`;
+    const display = ms < 10
+      ? `${ms.toFixed(2)}ms`
+      : `${(ms / 1000).toFixed(2)}s`;
     console.log(`  ${step}: ${display}`);
   }
 

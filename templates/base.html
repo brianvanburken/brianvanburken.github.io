@@ -8,7 +8,7 @@
       rel="alternate"
       type="application/atom+xml"
       title="RSS Feed"
-      href="{{ get_url(path='feed.xml') }}"
+      href="{{ get_url(path = "feed.xml") }}"
     />
 
     {# SEO Meta Tags #} {% if page.title %}
@@ -41,12 +41,12 @@
     {# Article specific meta #} {% if page.date %}
     <meta
       property="article:published_time"
-      content="{{ page.date | date(format='%Y-%m-%dT%H:%M:%S') }}+00:00"
+      content="{{ page.date | date(format = "%Y-%m-%dT%H:%M:%S") }}+00:00"
     />
     {% endif %} {% if page.updated %}
     <meta
       property="article:modified_time"
-      content="{{ page.updated | date(format='%Y-%m-%dT%H:%M:%S') }}+00:00"
+      content="{{ page.updated | date(format = "%Y-%m-%dT%H:%M:%S") }}+00:00"
     />
     {% endif %}
   </head>

@@ -36,9 +36,9 @@ class Tag < ActiveRecord::Base
 end
 ```
 
-When changing the content of a post it passes the words to a service which
-tags the post. It deletes all the current taggings to make sure irrelevant tags
-are no longer present. Then it walks through all the stored tags. Below is the
+When changing the content of a post it passes the words to a service which tags
+the post. It deletes all the current taggings to make sure irrelevant tags are
+no longer present. Then it walks through all the stored tags. Below is the
 tagging service which handles the automatic tagging.
 
 ```ruby
@@ -56,10 +56,10 @@ class TaggingService
 end
 ```
 
-The problem with this service is that it walks through all the tags, even
-the ones that aren’t present in the content. We could improve this by only
-fetching relevant tags. By changing the query we can skip the check for included
-tag names.
+The problem with this service is that it walks through all the tags, even the
+ones that aren’t present in the content. We could improve this by only fetching
+relevant tags. By changing the query we can skip the check for included tag
+names.
 
 ```ruby
 def tag(words)
@@ -73,8 +73,8 @@ end
 It’s an improvement, but still walks through each tag and as a result produces
 N+1 queries. After looking through the source of Rails I’ve found that it’s
 possible to pass a `ActiveRecord::Relation` instance at the `CollectionProxy` of
-the post instance. A CollectionProxy is an object that handles
-associating records, in this case the post with its taggings and tags.
+the post instance. A CollectionProxy is an object that handles associating
+records, in this case the post with its taggings and tags.
 
 Rails would use the `ActiveRecord::Relation` instance to generate a query and
 skip fetching data from the database. This would reduce the time spent in Ruby

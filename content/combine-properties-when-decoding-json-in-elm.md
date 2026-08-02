@@ -8,13 +8,14 @@ tags = ["Elm", "JSON", "Decoding"]
 excerpt = "Combining two properties extracted from a JSON-object when decoding JSON in Elm."
 +++
 
-Sometimes an API returns a JSON object that contains properties you want to combine, for example, pieces of information belonging together.
+Sometimes an API returns a JSON object that contains properties you want to
+combine, for example, pieces of information belonging together.
 
 ## The domain
 
-Before we look at how to solve this, let's establish a shared domain.
-So let's say we have an API that returns a list of videos when called.
-Each video coming from that API has the following structure:
+Before we look at how to solve this, let's establish a shared domain. So let's
+say we have an API that returns a list of videos when called. Each video coming
+from that API has the following structure:
 
 ```json
 {
@@ -24,9 +25,10 @@ Each video coming from that API has the following structure:
 }
 ```
 
-Here we see that the `extension` and the `name` are separate properties of the video object.
-It would be nice to combine them to get the full filename and download the video.
-Based on the JSON object and our wish to combine properties, we can create our model in Elm.
+Here we see that the `extension` and the `name` are separate properties of the
+video object. It would be nice to combine them to get the full filename and
+download the video. Based on the JSON object and our wish to combine properties,
+we can create our model in Elm.
 
 ```elm
 type alias Video =
@@ -37,9 +39,9 @@ type alias Video =
 
 ## Decoding
 
-Now that we know our goal, we can create the decoder for our model.
-In this first attempt, we decode all the properties and pass them to a function.
-In the function, we combine the name and extension and pass it to our model.
+Now that we know our goal, we can create the decoder for our model. In this
+first attempt, we decode all the properties and pass them to a function. In the
+function, we combine the name and extension and pass it to our model.
 
 ```elm
 import Json.Decode as JD exposing (Decoder)
@@ -57,17 +59,17 @@ decode =
         (JD.field "name" JD.string)
 ```
 
-This code works and does what we want.
-But, the code isn't straightforward and less extensible.
-What if the API returns more properties that we want to use?
-The `toVideo` function becomes longer and less readable.
-It is also more error-prone, e.g., accidentally swapping arguments.
+This code works and does what we want. But, the code isn't straightforward and
+less extensible. What if the API returns more properties that we want to use?
+The `toVideo` function becomes longer and less readable. It is also more
+error-prone, e.g., accidentally swapping arguments.
 
 ## Improving the decoder
 
-We can improve this by extracting the logic of combining the name and extension into a separate custom decoder.
-In the decoder, we get the whole JSON object, extract only the name, and combine those.
-The result is passed back into our decoder for `Video`.
+We can improve this by extracting the logic of combining the name and extension
+into a separate custom decoder. In the decoder, we get the whole JSON object,
+extract only the name, and combine those. The result is passed back into our
+decoder for `Video`.
 
 ```elm
 decode : Decoder Video
@@ -84,6 +86,7 @@ decodeFilename =
         (JD.field "name" JD.string)
 ```
 
-The code, in the end, is more readable and easier to extend.
-The decoder is also reusable for other JSON objects that have the same properties.
-If we want to add a new property to `Video`, we need to change `JD.map2` to `JD.map3` and add our new field.
+The code, in the end, is more readable and easier to extend. The decoder is also
+reusable for other JSON objects that have the same properties. If we want to add
+a new property to `Video`, we need to change `JD.map2` to `JD.map3` and add our
+new field.
