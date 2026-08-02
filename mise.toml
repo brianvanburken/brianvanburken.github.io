@@ -18,4 +18,4 @@ run = "zola serve --drafts || true"
 [tasks.build]
 description = "Build site for production"
 depends = ["clean"]
-run = ["zola build", "deno run --allow-read --allow-write --allow-env --allow-sys scripts/build.js"]
+run = ["zola build", "deno run --allow-read=public --allow-write=public --allow-env --allow-sys=cpus scripts/build.ts"]

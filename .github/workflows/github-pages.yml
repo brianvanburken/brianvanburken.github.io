@@ -19,7 +19,7 @@ jobs:
           path: ~/.cache/deno
           key: ${{ runner.os }}-deno-${{ hashFiles('deno.lock') }}
       - run: zola build
-      - run: deno run --allow-read --allow-write --allow-env --allow-sys scripts/build.js
+      - run: deno run --allow-read=public --allow-write=public --allow-env --allow-sys=cpus scripts/build.ts
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         if: github.event_name == 'push'
         with:

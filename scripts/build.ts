@@ -12,7 +12,7 @@
  * 6. Class name minification - Shortens class names (e.g., "shiki_0_1" -> "a")
  * 7. HTML minification - Removes optional tags, whitespace, and comments
  *
- * Usage: node build.js
+ * Usage: deno run --allow-read=public --allow-write=public --allow-env --allow-sys=cpus build.ts
  * Environment: BUILD_DIR can override the default "public" directory
  */
 
@@ -22,9 +22,9 @@ import { fileURLToPath } from "node:url";
 import { minify as minifyCss } from "csso";
 import { minify as minifyHtml } from "html-minifier-terser";
 import { PurgeCSS } from "purgecss";
-import { createHighlighter } from "shiki";
+import { createHighlighter, type ShikiTransformer } from "shiki";
 
-const SOURCE = process.env.BUILD_DIR || "public";
+const SOURCE = Deno.env.get("BUILD_DIR") || "public";
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const THEME = "ayu-dark";
 
@@ -36,7 +36,7 @@ const SKIP_STYLES = new Set([
 ]);
 
 // Global style-to-class map and CSS (shared across all files)
-const styleToClass = {};
+const styleToClass: Record<string, string> = {};
 let shikiCss = "";
 let classCounter = 0;
 
@@ -44,7 +44,7 @@ let classCounter = 0;
  * Shiki transformer that converts inline styles to CSS classes.
  * This runs during highlighting, avoiding a separate DOM traversal.
  */
-const classTransformer = {
+const classTransformer: ShikiTransformer = {
   pre(node) {
     // Remove Shiki's default classes and styles from pre
     delete node.properties.class;
@@ -53,9 +53,9 @@ const classTransformer = {
   },
   span(node) {
     const style = node.properties?.style;
-    if (!style) return;
+    if (!style || typeof style !== "string") return;
 
-    const classes = [];
+    const classes: string[] = [];
     for (const part of style.split(";")) {
       const normalized = part.replace(/\s/g, "").toLowerCase();
       if (!normalized || SKIP_STYLES.has(normalized)) continue;
@@ -95,12 +95,12 @@ const highlighter = await createHighlighter({
 
 /**
  * Recursively finds all files with a given extension in a directory.
- * @param {string} dir - Directory to search
- * @param {string} ext - File extension to match (e.g., ".html")
- * @returns {Promise<string[]>} Array of absolute file paths
+ * @param dir - Directory to search
+ * @param ext - File extension to match (e.g., ".html")
+ * @returns Array of absolute file paths
  */
-async function findFiles(dir, ext) {
-  const files = [];
+async function findFiles(dir: string, ext: string): Promise<string[]> {
+  const files: string[] = [];
   const entries = await readdir(dir, { withFileTypes: true });
   for (const entry of entries) {
     const fullPath = join(dir, entry.name);
@@ -116,10 +116,10 @@ async function findFiles(dir, ext) {
 /**
  * Transforms Zola's footnote markup into accessible HTML structure (regex-based).
  *
- * @param {string} html - HTML string to process
- * @returns {string} HTML with transformed footnotes
+ * @param html - HTML string to process
+ * @returns HTML with transformed footnotes
  */
-function processFootnotes(html) {
+function processFootnotes(html: string): string {
   // Update footnote references: <sup><a href="#1">1</a></sup> -> <sup id="fnref:1"><a href="#fn:1">1</a></sup>
   html = html.replace(
     /<sup><a href="#(\d+)">(\d+)<\/a><\/sup>/g,
@@ -127,9 +127,9 @@ function processFootnotes(html) {
   );
 
   // Collect and transform footnote definitions
-  const footnotes = [];
+  const footnotes: { id: string; content: string; original: string }[] = [];
   const fnRegex = /<div id="(\d+)"><sup>\d+<\/sup>([\s\S]*?)<\/div>/g;
-  let match;
+  let match: RegExpExecArray | null;
 
   while ((match = fnRegex.exec(html)) !== null) {
     const id = match[1];
@@ -176,11 +176,11 @@ function processFootnotes(html) {
 /**
  * Processes markdown abbreviation definitions and wraps matching text in <abbr> tags (regex-based).
  *
- * @param {string} html - HTML string to process
- * @returns {string} HTML with abbreviations wrapped in <abbr> tags
+ * @param html - HTML string to process
+ * @returns HTML with abbreviations wrapped in <abbr> tags
  */
-function processAbbreviations(html) {
-  const abbreviations = {};
+function processAbbreviations(html: string): string {
+  const abbreviations: Record<string, string> = {};
 
   // Extract abbreviation definitions from paragraphs and remove them
   html = html.replace(
@@ -196,9 +196,9 @@ function processAbbreviations(html) {
   // Replace abbreviations in text, but not inside code, pre, script, style, or abbr tags
   // Split HTML into parts: tags we skip, and everything else
   const skipTags = /<(code|pre|script|style|abbr)[^>]*>[\s\S]*?<\/\1>/gi;
-  const parts = [];
+  const parts: { text: string; process: boolean }[] = [];
   let lastIndex = 0;
-  let match;
+  let match: RegExpExecArray | null;
 
   while ((match = skipTags.exec(html)) !== null) {
     // Text before this tag (process it)
@@ -238,10 +238,10 @@ function processAbbreviations(html) {
 
 /**
  * Decodes HTML entities in a string.
- * @param {string} text - Text with HTML entities
- * @returns {string} Decoded text
+ * @param text - Text with HTML entities
+ * @returns Decoded text
  */
-function decodeHtmlEntities(text) {
+function decodeHtmlEntities(text: string): string {
   return text
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
@@ -253,10 +253,10 @@ function decodeHtmlEntities(text) {
 /**
  * Applies syntax highlighting to code blocks using Shiki (regex-based).
  *
- * @param {string} html - HTML string to process
- * @returns {string} HTML with highlighted code blocks
+ * @param html - HTML string to process
+ * @returns HTML with highlighted code blocks
  */
-function convertCode(html) {
+function convertCode(html: string): string {
   // Handle block code: <pre><code class="..." data-lang="...">content</code></pre>
   html = html.replace(
     /<pre><code(?:\s+class="([^"]*)")?(?:\s+data-lang="([^"]*)")?[^>]*>([\s\S]*?)<\/code><\/pre>/g,
@@ -295,10 +295,10 @@ function convertCode(html) {
 /**
  * Cleans up empty and unnecessary span elements (regex-based).
  *
- * @param {string} html - HTML string to process
- * @returns {string} Cleaned HTML
+ * @param html - HTML string to process
+ * @returns Cleaned HTML
  */
-function cleanupSpans(html) {
+function cleanupSpans(html: string): string {
   // Remove empty spans
   html = html.replace(/<span[^>]*><\/span>/g, "");
 
@@ -314,10 +314,10 @@ function cleanupSpans(html) {
 /**
  * Merges adjacent spans with the same class (regex-based).
  *
- * @param {string} html - HTML string to process
- * @returns {string} HTML with merged spans
+ * @param html - HTML string to process
+ * @returns HTML with merged spans
  */
-function mergeSpans(html) {
+function mergeSpans(html: string): string {
   const regex =
     /<span class="([a-z]+)">([^<]*)<\/span>(\s*)<span class="\1">/gm;
   return html.replace(regex, '<span class="$1">$2$3').replace(
@@ -328,10 +328,10 @@ function mergeSpans(html) {
 
 /**
  * Converts a number to a class name (0=a, 25=z, 26=aa, etc.)
- * @param {number} n - Number to convert
- * @returns {string} Class name
+ * @param n - Number to convert
+ * @returns Class name
  */
-function toClassName(n) {
+function toClassName(n: number): string {
   let name = "";
   do {
     name = String.fromCharCode(97 + (n % 26)) + name;
@@ -344,18 +344,18 @@ function toClassName(n) {
  * Minifies class names to single/double letters using regex (no Cheerio).
  * Updates both element class attributes and CSS selectors.
  *
- * @param {string} html - HTML string to process
- * @returns {string} HTML with minified class names
+ * @param html - HTML string to process
+ * @returns HTML with minified class names
  */
-function minifyClassNames(html) {
-  const classMap = {};
+function minifyClassNames(html: string): string {
+  const classMap: Record<string, string> = {};
   let counter = 0;
 
   // First pass: find all classes and build the map, while replacing
   html = html.replace(/\bclass="([^"]+)"/g, (_match, classes) => {
     const newClasses = classes
       .split(/\s+/)
-      .map((cls) => {
+      .map((cls: string) => {
         if (!cls) return cls;
         if (!classMap[cls]) classMap[cls] = toClassName(counter++);
         return classMap[cls];
@@ -368,7 +368,7 @@ function minifyClassNames(html) {
   html = html.replace(/<style>([\s\S]*?)<\/style>/g, (_match, css) => {
     const newCss = css.replace(
       /\.([a-z0-9_-]+)/gi,
-      (m, cls) => classMap[cls] ? `.${classMap[cls]}` : m,
+      (m: string, cls: string) => classMap[cls] ? `.${classMap[cls]}` : m,
     );
     return `<style>${newCss}</style>`;
   });
@@ -393,10 +393,10 @@ const stats = {
 /**
  * Processes a single HTML file through all optimization steps.
  *
- * @param {string} filePath - Absolute path to the HTML file
- * @param {string} baseCss - Pre-loaded CSS content to inline
+ * @param filePath - Absolute path to the HTML file
+ * @param baseCss - Pre-loaded CSS content to inline
  */
-async function processHtml(filePath, baseCss) {
+async function processHtml(filePath: string, baseCss: string): Promise<void> {
   let html = await readFile(filePath, "utf-8");
 
   // Step 1: Text transforms (regex-based)
@@ -471,10 +471,10 @@ async function processHtml(filePath, baseCss) {
 
 /**
  * Logs elapsed time since a start timestamp.
- * @param {string} label - Description of the timed operation
- * @param {number} start - Start timestamp from performance.now()
+ * @param label - Description of the timed operation
+ * @param start - Start timestamp from performance.now()
  */
-function logTime(label, start) {
+function logTime(label: string, start: number): void {
   const ms = performance.now() - start;
   const display = ms < 10 ? `${ms.toFixed(2)}ms` : `${(ms / 1000).toFixed(2)}s`;
   console.log(`  ${label}: ${display}`);
@@ -484,7 +484,7 @@ function logTime(label, start) {
  * Main build function.
  * Processes all HTML and CSS files in the source directory.
  */
-async function build() {
+async function build(): Promise<void> {
   const start = performance.now();
   const sourceDir = join(ROOT, SOURCE);
 
@@ -525,5 +525,5 @@ async function build() {
 // Run build
 build().catch((err) => {
   console.error(err);
-  process.exit(1);
+  Deno.exit(1);
 });

@@ -7,6 +7,8 @@
     "html-minifier-terser": "npm:html-minifier-terser@7.2.0",
     "purgecss": "npm:purgecss@8.0.0",
     "postcss": "npm:postcss@^8.5.18",
-    "shiki": "npm:shiki@4.3.1"
+    "shiki": "npm:shiki@4.3.1",
+    "@types/csso": "npm:@types/csso@5.0.4",
+    "@types/html-minifier-terser": "npm:@types/html-minifier-terser@7.0.2"
   }
 }
