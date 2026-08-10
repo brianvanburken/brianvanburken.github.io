@@ -12,7 +12,7 @@ import { basename, dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { convertCode } from "./build.js";
+import { convertCode, minifyClassNames } from "./build.js";
 
 const run = promisify(execFile);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -85,6 +85,30 @@ test("convertCode returns only the CSS its own code blocks use", () => {
     defined.filter((c) => !used.has(c)),
     [],
   );
+});
+
+/** The text a reader sees, i.e. everything outside of tags and stylesheets. */
+const visibleText = (html) => html.replace(/<style>[\s\S]*?<\/style>/g, "").replace(/<[^>]*>/g, "");
+
+test("minifyClassNames leaves the text of a code sample untouched", () => {
+  // Regression: a code sample that itself contains `class="..."` had that text
+  // rewritten as if it were a real attribute, corrupting the rendered sample.
+  const sample = 'output = &#x3C;pre class="language-#{lang}">#{body}&#x3C;/pre>\n';
+  const { html } = convertCode(page("ruby", sample));
+  const document = `<html><head><style>.s0{color:red}</style></head><body>${html}</body></html>`;
+
+  assert.equal(visibleText(minifyClassNames(document)), visibleText(document));
+});
+
+test("minifyClassNames still shortens real class attributes and selectors", () => {
+  const document =
+    "<html><head><style>.token{color:red}</style></head>" +
+    '<body><span class="token">x</span></body></html>';
+
+  const out = minifyClassNames(document);
+
+  assert.ok(!out.includes("token"), `expected "token" to be renamed, got: ${out}`);
+  assert.match(out, /<style>\.(\w+)\{color:red\}<\/style>[\s\S]*<span class="\1">x<\/span>/);
 });
 
 test("code blocks without a known language are left unhighlighted", () => {

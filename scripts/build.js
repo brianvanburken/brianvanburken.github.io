@@ -338,22 +338,26 @@ function toClassName(n) {
  * @param {string} html - HTML string to process
  * @returns {string} HTML with minified class names
  */
-function minifyClassNames(html) {
+export function minifyClassNames(html) {
   const classMap = {};
   let counter = 0;
 
-  // First pass: find all classes and build the map, while replacing
-  html = html.replace(/\bclass="([^"]+)"/g, (_match, classes) => {
-    const newClasses = classes
-      .split(/\s+/)
-      .map((cls) => {
-        if (!cls) return cls;
-        if (!classMap[cls]) classMap[cls] = toClassName(counter++);
-        return classMap[cls];
-      })
-      .join(" ");
-    return `class="${newClasses}"`;
-  });
+  // First pass: find all classes and build the map, while replacing.
+  // Scoped to real tags, because a code sample's text may itself contain
+  // `class="..."`, which must be rendered as written rather than renamed.
+  html = html.replace(/<[a-zA-Z][^>]*>/g, (tag) =>
+    tag.replace(/\bclass="([^"]+)"/, (_match, classes) => {
+      const newClasses = classes
+        .split(/\s+/)
+        .map((cls) => {
+          if (!cls) return cls;
+          if (!classMap[cls]) classMap[cls] = toClassName(counter++);
+          return classMap[cls];
+        })
+        .join(" ");
+      return `class="${newClasses}"`;
+    }),
+  );
 
   // Second pass: replace class names in CSS selectors
   html = html.replace(/<style>([\s\S]*?)<\/style>/g, (_match, css) => {
