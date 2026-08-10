@@ -18,6 +18,9 @@ feed_filenames = ["feed.xml"]
 # Taxonomies disabled - tags page built manually
 taxonomies = []
 
+# Content contains no Tera templating, only code samples that may use {{ }}
+skip_content_templating = ["**/*.md"]
+
 # Markdown settings
 [markdown]
 external_links_target_blank = true
