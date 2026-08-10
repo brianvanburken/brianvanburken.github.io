@@ -2,7 +2,7 @@
 aube = "1.38.0"
 node = "26.7.0"
 oxfmt = "0.62.0"
-zola = "0.22.1"
+zola = "0.23.2"
 
 [tasks.format]
 description = "Format files"
