@@ -8,6 +8,10 @@ zola = "0.23.2"
 description = "Format files"
 run = "oxfmt ."
 
+[tasks.test]
+description = "Run build script tests"
+run = "node --test 'scripts/*.test.js'"
+
 [tasks.clean]
 description = "Remove build output directory"
 run = "rm -rf public"

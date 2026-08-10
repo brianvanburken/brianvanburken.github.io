@@ -17,7 +17,7 @@
  */
 
 import { readdir, readFile, unlink, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { minify as minifyCss } from "csso";
 import { minify as minifyHtml } from "html-minifier-terser";
@@ -31,44 +31,52 @@ const THEME = "ayu-dark";
 // Default styles to skip (already in base CSS)
 const SKIP_STYLES = new Set(["color:#BFBDB6", "font-style:italic", "background-color:#0B0E14"]);
 
-// Global style-to-class map and CSS (shared across all files)
-const styleToClass = {};
-let shikiCss = "";
-let classCounter = 0;
-
 /**
- * Shiki transformer that converts inline styles to CSS classes.
+ * Creates a Shiki transformer that converts inline styles to CSS classes.
  * This runs during highlighting, avoiding a separate DOM traversal.
+ *
+ * State is per-document: sharing it across files would make each file's class
+ * names depend on the order files happened to be processed in.
+ *
+ * @returns {{transformer: object, css: () => string}}
  */
-const classTransformer = {
-  pre(node) {
-    // Remove Shiki's default classes and styles from pre
-    delete node.properties.class;
-    delete node.properties.style;
-    delete node.properties.tabindex;
-  },
-  span(node) {
-    const style = node.properties?.style;
-    if (!style) return;
+function createClassTransformer() {
+  const styleToClass = {};
+  let css = "";
+  let counter = 0;
 
-    const classes = [];
-    for (const part of style.split(";")) {
-      const normalized = part.replace(/\s/g, "").toLowerCase();
-      if (!normalized || SKIP_STYLES.has(normalized)) continue;
+  const transformer = {
+    pre(node) {
+      // Remove Shiki's default classes and styles from pre
+      delete node.properties.class;
+      delete node.properties.style;
+      delete node.properties.tabindex;
+    },
+    span(node) {
+      const style = node.properties?.style;
+      if (!style) return;
 
-      if (!styleToClass[normalized]) {
-        styleToClass[normalized] = `s${classCounter++}`;
-        shikiCss += `.${styleToClass[normalized]}{${part.trim()}}\n`;
+      const classes = [];
+      for (const part of style.split(";")) {
+        const normalized = part.replace(/\s/g, "").toLowerCase();
+        if (!normalized || SKIP_STYLES.has(normalized)) continue;
+
+        if (!styleToClass[normalized]) {
+          styleToClass[normalized] = `s${counter++}`;
+          css += `.${styleToClass[normalized]}{${part.trim()}}\n`;
+        }
+        classes.push(styleToClass[normalized]);
       }
-      classes.push(styleToClass[normalized]);
-    }
 
-    delete node.properties.style;
-    if (classes.length > 0) {
-      node.properties.class = classes.join(" ");
-    }
-  },
-};
+      delete node.properties.style;
+      if (classes.length > 0) {
+        node.properties.class = classes.join(" ");
+      }
+    },
+  };
+
+  return { transformer, css: () => css };
+}
 
 // Initialize Shiki highlighter with supported languages
 const highlighter = await createHighlighter({
@@ -106,7 +114,8 @@ async function findFiles(dir, ext) {
       files.push(fullPath);
     }
   }
-  return files;
+  // Sorted so that concatenation order does not depend on directory listing order
+  return files.sort();
 }
 
 /**
@@ -245,9 +254,11 @@ function decodeHtmlEntities(text) {
  * Applies syntax highlighting to code blocks using Shiki (regex-based).
  *
  * @param {string} html - HTML string to process
- * @returns {string} HTML with highlighted code blocks
+ * @returns {{html: string, css: string}} Highlighted HTML and the CSS it needs
  */
-function convertCode(html) {
+export function convertCode(html) {
+  const { transformer, css } = createClassTransformer();
+
   // Handle block code: <pre><code class="..." data-lang="...">content</code></pre>
   html = html.replace(
     /<pre><code(?:\s+class="([^"]*)")?(?:\s+data-lang="([^"]*)")?[^>]*>([\s\S]*?)<\/code><\/pre>/g,
@@ -264,7 +275,7 @@ function convertCode(html) {
       const highlighted = highlighter.codeToHtml(decoded, {
         lang,
         theme: THEME,
-        transformers: [classTransformer],
+        transformers: [transformer],
       });
 
       // Unwrap Shiki's pre and return just the inner content in our pre
@@ -273,7 +284,7 @@ function convertCode(html) {
     },
   );
 
-  return html;
+  return { html, css: css() };
 }
 
 /**
@@ -386,7 +397,9 @@ async function processHtml(filePath, baseCss) {
 
   // Step 2: Syntax highlighting (Shiki)
   t = performance.now();
-  html = convertCode(html);
+  const highlighted = convertCode(html);
+  html = highlighted.html;
+  const shikiCss = highlighted.css;
   stats.shiki += performance.now() - t;
 
   // Step 3: Clean up spans
@@ -465,7 +478,7 @@ function logTime(label, start) {
  */
 async function build() {
   const start = performance.now();
-  const sourceDir = join(ROOT, SOURCE);
+  const sourceDir = resolve(ROOT, SOURCE);
 
   // Load all CSS files into memory
   let stepStart = performance.now();
@@ -497,8 +510,10 @@ async function build() {
   console.log(`Build complete in ${elapsed}s`);
 }
 
-// Run build
-build().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Run build, unless imported (e.g. by tests)
+if (import.meta.main) {
+  build().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}
