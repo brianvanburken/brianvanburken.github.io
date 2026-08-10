@@ -34,5 +34,5 @@ taxonomies = "on"
 anchors = "on"
 
 [extra]
-github_source = "https://github.com/brianvanburken/brianvanburken.github.io/tree/master/"
+github_source = "https://github.com/brianvanburken/brianvanburken.github.io/blob/main/"
 date_format = "%Y-%m-%d"
