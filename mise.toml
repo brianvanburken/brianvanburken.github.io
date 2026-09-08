@@ -1,5 +1,5 @@
 [tools]
-aube = "2.2.0"
+"github:aubepkg/aube" = "2.2.12"
 node = "26.8.1"
 oxfmt = "0.65.0"
 zola = "0.23.4"
