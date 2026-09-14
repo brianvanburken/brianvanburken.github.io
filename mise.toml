@@ -1,8 +1,8 @@
 [tools]
-"github:aubepkg/aube" = "2.2.12"
-node = "26.8.1"
+"github:aubepkg/aube" = "2.2.15"
+node = "26.8.2"
 oxfmt = "0.67.0"
-zola = "0.23.4"
+zola = "0.23.6"
 
 [tasks.format]
 description = "Format files"
