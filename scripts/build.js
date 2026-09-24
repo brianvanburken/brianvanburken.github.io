@@ -93,6 +93,7 @@ const highlighter = await createHighlighter({
     "kotlin",
     "ruby",
     "typescript",
+    "scss",
     "shell",
   ],
 });
