@@ -29,7 +29,8 @@ const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 const THEME = "ayu-dark";
 
 // Default styles to skip (already in base CSS)
-const SKIP_STYLES = new Set(["color:#BFBDB6", "font-style:italic", "background-color:#0B0E14"]);
+// Lowercase, because styles are normalized to lowercase before lookup
+const SKIP_STYLES = new Set(["color:#bfbdb6", "font-style:italic", "background-color:#0b0e14"]);
 
 /**
  * Creates a Shiki transformer that converts inline styles to CSS classes.
@@ -92,8 +93,8 @@ const highlighter = await createHighlighter({
     "json",
     "kotlin",
     "ruby",
-    "typescript",
     "scss",
+    "typescript",
     "shell",
   ],
 });
