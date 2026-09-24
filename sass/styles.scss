@@ -1,7 +1,10 @@
 $bg: #0b0e14;
 $fg: #fff;
 $baseline: 1.5rem;
-$link-color: #a37acc;
+$link-color: #fa3;
+$code-fg: #bfbdb6;
+$comment: #5a6673;
+$comment-light: #adaeb1;
 
 html.debug {
   background-image: repeating-linear-gradient(
@@ -95,8 +98,42 @@ a {
   }
 }
 
+time,
+a[href^="/tags/"] {
+  border-radius: 10px;
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  line-height: $baseline - 0.25rem;
+  margin-top: 0.125rem;
+  padding: 0 0.5em;
+  text-decoration: none;
+  text-transform: uppercase;
+  vertical-align: top;
+  white-space: nowrap;
+
+  color: $comment;
+  @media (prefers-color-scheme: light) {
+    color: $comment-light;
+  }
+}
+
+a[href^="/tags/"] {
+  background: rgba($comment, 0.2);
+  @media (prefers-color-scheme: light) {
+    background: rgba($comment-light, 0.2);
+  }
+
+  &:hover,
+  &:focus {
+    color: $bg;
+    background: lighten($link-color, 10%);
+  }
+}
+
 footer {
-  border-top: 1px solid #bfbdb6;
+  border-top: 1px solid $code-fg;
   padding-top: $baseline;
 }
 
@@ -108,7 +145,7 @@ pre {
   word-wrap: normal;
   hyphens: none;
 
-  color: #bfbdb6;
+  color: $code-fg;
   background: $bg;
   border-radius: 0.375rem;
 }

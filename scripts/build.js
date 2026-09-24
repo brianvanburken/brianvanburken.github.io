@@ -436,6 +436,8 @@ async function processHtml(filePath, baseCss) {
     const purged = await purgeCss.purge({
       content: [{ raw: htmlWithoutStyle, extension: "html" }],
       css: [{ raw: css }],
+      // Keep attribute selectors like a[href^="/tags/"]; PurgeCSS can't match their values
+      dynamicAttributes: ["href"],
     });
     if (purged[0]?.css) {
       // Minify CSS after purging
