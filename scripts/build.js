@@ -53,6 +53,12 @@ function createClassTransformer() {
       delete node.properties.style;
       delete node.properties.tabindex;
     },
+    code(node) {
+      // Unwrap line spans; lines are already separated by newlines in <pre>
+      node.children = node.children.flatMap((child) =>
+        child.type === "element" ? child.children : [child],
+      );
+    },
     span(node) {
       const style = node.properties?.style;
       if (!style) return;
