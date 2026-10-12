@@ -79,7 +79,7 @@ checksum = "sha256:9fef7eca6743a6b910989cd8e78712376b394fcb9b6e1e9c44a0799a287f9
 url = "https://nodejs.org/dist/v26.10.0/node-v26.10.0-win-x64.zip"
 
 [[tools.oxfmt]]
-version = "0.71.0"
+version = "0.72.0"
 backend = "npm:oxfmt"
 
 [[tools.zola]]
@@ -93,6 +93,9 @@ url_api = "https://api.github.com/repos/getzola/zola/releases/assets/560029424"
 provenance = "github-attestations"
 
 [tools.zola."platforms.linux-arm64-musl"]
+checksum = "sha256:266448fffbf7c7004ca399d0e76dd699541771096d8a42aede98cebe2a029d02"
+url = "https://github.com/getzola/zola/releases/download/v0.23.6/zola-v0.23.6-aarch64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/getzola/zola/releases/assets/560029424"
 provenance = "github-attestations"
 
 [tools.zola."platforms.linux-x64"]
@@ -102,9 +105,9 @@ url_api = "https://api.github.com/repos/getzola/zola/releases/assets/560029419"
 provenance = "github-attestations"
 
 [tools.zola."platforms.linux-x64-musl"]
-checksum = "sha256:7d77a4220a4f699cba2fc0e0c7859f780e887e269159ad4fab90e11ea16c906f"
-url = "https://github.com/getzola/zola/releases/download/v0.23.6/zola-v0.23.6-x86_64-unknown-linux-musl.tar.gz"
-url_api = "https://api.github.com/repos/getzola/zola/releases/assets/560029418"
+checksum = "sha256:8f5132b3522412d04e395e0b25f6d68613ad272a873e54a2b3ebf664873024a4"
+url = "https://github.com/getzola/zola/releases/download/v0.23.6/zola-v0.23.6-x86_64-unknown-linux-gnu.tar.gz"
+url_api = "https://api.github.com/repos/getzola/zola/releases/assets/560029419"
 provenance = "github-attestations"
 
 [tools.zola."platforms.macos-arm64"]
