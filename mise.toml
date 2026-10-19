@@ -1,7 +1,7 @@
 [tools]
 "github:aubepkg/aube" = "2.7.0"
 node = "26.11.1"
-oxfmt = "0.72.0"
+oxfmt = "0.73.0"
 zola = "0.23.6"
 
 [tasks.format]
