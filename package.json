@@ -7,6 +7,9 @@
     "purgecss": "8.0.0",
     "shiki": "4.5.0"
   },
+  "devDependencies": {
+    "oxfmt": "0.74.0"
+  },
   "pnpm": {
     "overrides": {
       "postcss": "^8.5.18",
