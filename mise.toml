@@ -13,7 +13,7 @@ run = "aubx oxfmt --check ."
 
 [tasks."lint:check"]
 description = "Lint JavaScript files"
-run = "aubx oxlint --deny-warnings"
+run = "aubx oxlint -D correctness -D suspicious -D perf --deny-warnings"
 
 [tasks.test]
 description = "Run build script tests"

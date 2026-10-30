@@ -33,9 +33,7 @@ const PAGES = {
 async function writeFixture(dir) {
   await mkdir(dir, { recursive: true });
   await writeFile(join(dir, "styles.css"), "body{color:#000}\n.unused{color:red}\n");
-  for (const [name, html] of Object.entries(PAGES)) {
-    await writeFile(join(dir, name), html);
-  }
+  await Promise.all(Object.entries(PAGES).map(([name, html]) => writeFile(join(dir, name), html)));
 }
 
 /** Runs the real build script against `dir` and returns each page's output. */
@@ -44,7 +42,7 @@ async function runBuild(dir) {
     cwd: ROOT,
     env: { ...process.env, BUILD_DIR: dir },
   });
-  const names = (await readdir(dir)).filter((n) => n.endsWith(".html")).sort();
+  const names = (await readdir(dir)).filter((n) => n.endsWith(".html")).toSorted();
   return Object.fromEntries(
     await Promise.all(names.map(async (n) => [basename(n), await readFile(join(dir, n), "utf-8")])),
   );

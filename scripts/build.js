@@ -112,18 +112,16 @@ const highlighter = await createHighlighter({
  * @returns {Promise<string[]>} Array of absolute file paths
  */
 async function findFiles(dir, ext) {
-  const files = [];
   const entries = await readdir(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...(await findFiles(fullPath, ext)));
-    } else if (entry.name.endsWith(ext)) {
-      files.push(fullPath);
-    }
-  }
+  const files = await Promise.all(
+    entries.map(async (entry) => {
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) return findFiles(fullPath, ext);
+      return entry.name.endsWith(ext) ? [fullPath] : [];
+    }),
+  );
   // Sorted so that concatenation order does not depend on directory listing order
-  return files.sort();
+  return files.flat().toSorted();
 }
 
 /**
