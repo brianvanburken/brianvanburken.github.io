@@ -3,9 +3,17 @@
 node = "26.12.1"
 zola = "0.23.6"
 
-[tasks.format]
+[tasks."format:fix"]
 description = "Format files"
-run = "node_modules/.bin/oxfmt ."
+run = "aubx oxfmt ."
+
+[tasks."format:check"]
+description = "Check file formatting"
+run = "aubx oxfmt --check ."
+
+[tasks."lint:check"]
+description = "Lint JavaScript files"
+run = "aubx oxlint --deny-warnings"
 
 [tasks.test]
 description = "Run build script tests"

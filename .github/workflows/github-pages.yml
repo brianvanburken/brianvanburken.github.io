@@ -21,6 +21,8 @@ jobs:
           key: ${{ runner.os }}-aube-${{ hashFiles('pnpm-lock.yaml') }}
       - run: aube install
         if: steps.aube-cache.outputs.cache-hit != 'true'
+      - run: mise run format:check
+      - run: mise run lint:check
       - run: mise run test
       - run: zola build
       - run: node scripts/build.js
