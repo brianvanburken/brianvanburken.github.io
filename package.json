@@ -8,7 +8,7 @@
     "shiki": "4.6.0"
   },
   "devDependencies": {
-    "oxfmt": "0.76.0",
+    "oxfmt": "0.78.0",
     "oxlint": "1.90.0"
   }
 }
