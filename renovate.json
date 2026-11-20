@@ -2,6 +2,5 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "enabledManagers": ["mise"],
-  "labels": ["dependencies", "mise"],
-  "schedule": ["before 6am on monday"]
+  "labels": ["dependencies", "mise"]
 }
