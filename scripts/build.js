@@ -190,58 +190,33 @@ export function processFootnotes(html) {
  * @param {string} html - HTML string to process
  * @returns {string} HTML with abbreviations wrapped in <abbr> tags
  */
-function processAbbreviations(html) {
-  const abbreviations = {};
+export function processAbbreviations(html) {
+  const titlesByAbbreviation = new Map();
 
-  // Extract abbreviation definitions from paragraphs and remove them
-  html = html.replace(/<p>\s*\*\[([^\]]+)\]:\s*(.+?)\s*<\/p>/g, (_match, abbr, title) => {
-    abbreviations[abbr] = title.trim();
-    return ""; // Remove the definition paragraph
+  html = html.replace(/<p>\s*(\*\[[^\]]+\]:[^<]*?)\s*<\/p>/g, (_match, definitions) => {
+    for (const [, abbr, title] of definitions.matchAll(/^\*\[([^\]]+)\]:\s*(.+)$/gm)) {
+      titlesByAbbreviation.set(abbr, title.trim());
+    }
+    return "";
   });
 
-  if (Object.keys(abbreviations).length === 0) return html;
+  if (titlesByAbbreviation.size === 0) return html;
 
-  // Replace abbreviations in text, but not inside code, pre, script, style, or abbr tags
-  // Split HTML into parts: tags we skip, and everything else
-  const skipTags = /<(code|pre|script|style|abbr)[^>]*>[\s\S]*?<\/\1>/gi;
-  const parts = [];
-  let lastIndex = 0;
-  let match;
+  const escapedAbbreviations = [...titlesByAbbreviation.keys()].map((abbr) =>
+    abbr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+  );
+  const abbreviationPattern = new RegExp(`\\b(${escapedAbbreviations.join("|")})\\b`, "g");
+  const wrapAbbreviations = (text) =>
+    text.replace(
+      abbreviationPattern,
+      (abbr) => `<abbr title="${titlesByAbbreviation.get(abbr)}">${abbr}</abbr>`,
+    );
 
-  while ((match = skipTags.exec(html)) !== null) {
-    // Text before this tag (process it)
-    if (match.index > lastIndex) {
-      parts.push({ text: html.slice(lastIndex, match.index), process: true });
-    }
-    // The tag itself (don't process)
-    parts.push({ text: match[0], process: false });
-    lastIndex = skipTags.lastIndex;
-  }
-  // Remaining text after last tag
-  if (lastIndex < html.length) {
-    parts.push({ text: html.slice(lastIndex), process: true });
-  }
-
-  // Process parts and replace abbreviations
-  for (const part of parts) {
-    if (part.process) {
-      for (const [abbr, title] of Object.entries(abbreviations)) {
-        const escapedAbbr = abbr.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        // Only replace in text content (not inside tags)
-        part.text = part.text.replace(
-          new RegExp(`(>|^)([^<]*?)\\b${escapedAbbr}\\b`, "g"),
-          (_m, before, text) =>
-            before +
-            text.replace(
-              new RegExp(`\\b${escapedAbbr}\\b`, "g"),
-              `<abbr title="${title}">${abbr}</abbr>`,
-            ),
-        );
-      }
-    }
-  }
-
-  return parts.map((p) => p.text).join("");
+  // Only wrap text between tags, never inside code, pre, script, style, title or abbr elements
+  return html.replace(
+    /<(code|pre|script|style|title|abbr)\b[^>]*>[\s\S]*?<\/\1>|<[^>]*>|[^<]+/gi,
+    (segment) => (segment.startsWith("<") ? segment : wrapAbbreviations(segment)),
+  );
 }
 
 /**
