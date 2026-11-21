@@ -376,6 +376,21 @@ export function minifyClassNames(html) {
   return html;
 }
 
+/**
+ * Keeps only the markup that CSS selectors can match: the body's tags.
+ * Text, styles, and head metadata are dropped, so words like "code" in prose
+ * or a description do not keep unused rules alive.
+ *
+ * @param {string} html - HTML string to process
+ * @returns {string} Body tags without text content
+ */
+export function stripToBodyMarkup(html) {
+  return html
+    .replace(/<style>[\s\S]*?<\/style>/g, "")
+    .replace(/<head>[\s\S]*?<\/head>/, "")
+    .replace(/>[^<]+</g, "><");
+}
+
 // Shared PurgeCSS instance
 const purgeCss = new PurgeCSS();
 
@@ -437,10 +452,8 @@ async function processHtml(filePath, baseCss) {
   const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
   if (styleMatch) {
     const css = styleMatch[1];
-    // Exclude style content from analysis to avoid false positives
-    const htmlWithoutStyle = html.replace(/<style>[\s\S]*?<\/style>/g, "");
     const purged = await purgeCss.purge({
-      content: [{ raw: htmlWithoutStyle, extension: "html" }],
+      content: [{ raw: stripToBodyMarkup(html), extension: "html" }],
       css: [{ raw: css }],
       // Keep attribute selectors like a[href^="/tags/"]; PurgeCSS can't match their values
       dynamicAttributes: ["href"],
