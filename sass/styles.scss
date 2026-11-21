@@ -113,7 +113,7 @@ a[href^="/tags/"] {
 }
 
 a[href^="/tags/"] {
-  background: rgba($comment, 0.2);
+  background: #{$comment}33; // 33 is 20% alpha
 
   &:hover,
   &:focus {
@@ -161,6 +161,6 @@ li code {
   }
 
   a[href^="/tags/"] {
-    background: rgba($comment-light, 0.2);
+    background: #{$comment-light}33;
   }
 }
