@@ -12,7 +12,13 @@ import { basename, dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { convertCode, minifyClassNames, processFootnotes, stripToBodyMarkup } from "./build.js";
+import {
+  convertCode,
+  minifyClassNames,
+  processAbbreviations,
+  processFootnotes,
+  stripToBodyMarkup,
+} from "./build.js";
 
 const run = promisify(execFile);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -174,5 +180,41 @@ test("processFootnotes turns Zola footnotes into linked endnotes", () => {
 
   for (const { name, html, expected } of cases) {
     assert.equal(processFootnotes(html), expected, name);
+  }
+});
+
+test("processAbbreviations wraps defined terms in abbr tags", () => {
+  const cases = [
+    {
+      name: "keeps the term and wraps it",
+      html: "<p>In CI environments.</p>\n<p>*[CI]: Continuous Integration</p>",
+      expected: '<p>In <abbr title="Continuous Integration">CI</abbr> environments.</p>\n',
+    },
+    {
+      name: "reads every definition from one multi-line paragraph",
+      html: "<p>DNA and RNA.</p>\n<p>*[DNA]: DeoxyriboNucleic Acid\n*[RNA]: RiboNucleic Acid</p>",
+      expected:
+        '<p><abbr title="DeoxyriboNucleic Acid">DNA</abbr> and <abbr title="RiboNucleic Acid">RNA</abbr>.</p>\n',
+    },
+    {
+      name: "wraps every occurrence in a text node",
+      html: "<p>CI, CI.</p><p>*[CI]: Continuous Integration</p>",
+      expected:
+        '<p><abbr title="Continuous Integration">CI</abbr>, <abbr title="Continuous Integration">CI</abbr>.</p>',
+    },
+    {
+      name: "skips attributes, code and partial words",
+      html: '<p><a href="/CI">CICD</a> <code>CI</code></p><p>*[CI]: Continuous Integration</p>',
+      expected: '<p><a href="/CI">CICD</a> <code>CI</code></p>',
+    },
+    {
+      name: "leaves a page without definitions untouched",
+      html: "<p>CI</p>",
+      expected: "<p>CI</p>",
+    },
+  ];
+
+  for (const { name, html, expected } of cases) {
+    assert.equal(processAbbreviations(html), expected, name);
   }
 });
