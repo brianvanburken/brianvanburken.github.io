@@ -12,7 +12,7 @@ import { basename, dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { convertCode, minifyClassNames } from "./build.js";
+import { convertCode, minifyClassNames, stripToBodyMarkup } from "./build.js";
 
 const run = promisify(execFile);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -114,4 +114,33 @@ test("code blocks without a known language are left unhighlighted", () => {
 
   assert.equal(html, "<html><head></head><body><pre><code>just words</code></pre></body></html>");
   assert.equal(css, "");
+});
+
+test("stripToBodyMarkup keeps only body tags for CSS purging", () => {
+  const cases = [
+    {
+      name: "drops prose so words like `code` do not count as elements",
+      html: "<body><p>Some code here</p></body>",
+      expected: "<body><p></p></body>",
+    },
+    {
+      name: "drops head metadata",
+      html: '<html><head><meta name="description" content="pre code"></head><body></body></html>',
+      expected: "<html><body></body></html>",
+    },
+    {
+      name: "drops stylesheets",
+      html: "<body><style>blockquote{color:red}</style><p></p></body>",
+      expected: "<body><p></p></body>",
+    },
+    {
+      name: "keeps classes and attributes, including after raw `>` in code text",
+      html: '<pre><code>a => <span class="s0">b</span>></code></pre>',
+      expected: '<pre><code><span class="s0"></span></code></pre>',
+    },
+  ];
+
+  for (const { name, html, expected } of cases) {
+    assert.equal(stripToBodyMarkup(html), expected, name);
+  }
 });
