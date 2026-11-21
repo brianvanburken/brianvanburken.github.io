@@ -17,6 +17,7 @@ import {
   minifyClassNames,
   processAbbreviations,
   processFootnotes,
+  purgeDynamicAttributes,
   stripToBodyMarkup,
 } from "./build.js";
 
@@ -153,6 +154,17 @@ test("stripToBodyMarkup keeps only body tags for CSS purging", () => {
 
   for (const { name, html, expected } of cases) {
     assert.equal(stripToBodyMarkup(html), expected, name);
+  }
+});
+
+test("purgeDynamicAttributes keeps href selectors only on pages with tag links", () => {
+  const cases = [
+    { name: "page with a tag link", bodyMarkup: '<a href="/tags/#elm"></a>', expected: ["href"] },
+    { name: "page without a tag link", bodyMarkup: '<a href="/"></a>', expected: [] },
+  ];
+
+  for (const { name, bodyMarkup, expected } of cases) {
+    assert.deepEqual(purgeDynamicAttributes(bodyMarkup), expected, name);
   }
 });
 
