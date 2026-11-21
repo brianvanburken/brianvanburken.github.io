@@ -463,6 +463,7 @@ async function processHtml(filePath, baseCss) {
   t = performance.now();
   const minified = await minifyHtml(html, {
     collapseWhitespace: true,
+    decodeEntities: true,
     removeComments: true,
     removeEmptyAttributes: true,
     removeAttributeQuotes: true,
