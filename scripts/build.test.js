@@ -144,6 +144,11 @@ test("stripToBodyMarkup keeps only body tags for CSS purging", () => {
       html: '<pre><code>a => <span class="s0">b</span>></code></pre>',
       expected: '<pre><code><span class="s0"></span></code></pre>',
     },
+    {
+      name: "drops noscript fallbacks so a tracking pixel does not count as an image",
+      html: '<body><p></p><noscript><img src="/count"></noscript></body>',
+      expected: "<body><p></p></body>",
+    },
   ];
 
   for (const { name, html, expected } of cases) {

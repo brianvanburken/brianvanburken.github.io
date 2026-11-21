@@ -365,6 +365,7 @@ export function stripToBodyMarkup(html) {
   return html
     .replace(/<style>[\s\S]*?<\/style>/g, "")
     .replace(/<head>[\s\S]*?<\/head>/, "")
+    .replace(/<noscript>[\s\S]*?<\/noscript>/g, "")
     .replace(/>[^<]+</g, "><");
 }
 
