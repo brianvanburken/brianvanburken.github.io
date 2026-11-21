@@ -20,10 +20,6 @@ html.debug {
 html {
   color: $fg;
   background: $bg;
-  @media (prefers-color-scheme: light) {
-    color: $bg;
-    background: $fg;
-  }
 }
 
 body {
@@ -114,16 +110,10 @@ a[href^="/tags/"] {
   white-space: nowrap;
 
   color: $comment;
-  @media (prefers-color-scheme: light) {
-    color: $comment-light;
-  }
 }
 
 a[href^="/tags/"] {
   background: rgba($comment, 0.2);
-  @media (prefers-color-scheme: light) {
-    background: rgba($comment-light, 0.2);
-  }
 
   &:hover,
   &:focus {
@@ -160,4 +150,22 @@ li code {
   line-height: 1;
   outline: 3px solid $bg;
   margin: 0 2px;
+}
+
+// One combined block keeps the output small; it comes last so it overrides
+// the dark defaults above, while the more specific tag hover rule still wins.
+@media (prefers-color-scheme: light) {
+  html {
+    color: $bg;
+    background: $fg;
+  }
+
+  time,
+  a[href^="/tags/"] {
+    color: $comment-light;
+  }
+
+  a[href^="/tags/"] {
+    background: rgba($comment-light, 0.2);
+  }
 }
