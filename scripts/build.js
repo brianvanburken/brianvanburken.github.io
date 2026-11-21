@@ -130,16 +130,18 @@ async function findFiles(dir, ext) {
  * @param {string} html - HTML string to process
  * @returns {string} HTML with transformed footnotes
  */
-function processFootnotes(html) {
-  // Update footnote references: <sup><a href="#1">1</a></sup> -> <sup id="fnref:1"><a href="#fn:1">1</a></sup>
+export function processFootnotes(html) {
+  // Update footnote references: <sup class="footnote-reference"><a href="#1">1</a></sup>
+  // -> <sup id="fnref:1"><a href="#fn:1">1</a></sup>
   html = html.replace(
-    /<sup><a href="#(\d+)">(\d+)<\/a><\/sup>/g,
+    /<sup class="footnote-reference"><a href="#(\d+)">(\d+)<\/a><\/sup>/g,
     '<sup id="fnref:$1"><a href="#fn:$1">$2</a></sup>',
   );
 
   // Collect and transform footnote definitions
   const footnotes = [];
-  const fnRegex = /<div id="(\d+)"><sup>\d+<\/sup>([\s\S]*?)<\/div>/g;
+  const fnRegex =
+    /<div class="footnote-definition" id="(\d+)"><sup class="footnote-definition-label">\d+<\/sup>([\s\S]*?)<\/div>/g;
   let match;
 
   while ((match = fnRegex.exec(html)) !== null) {

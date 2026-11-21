@@ -12,7 +12,7 @@ import { basename, dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { convertCode, minifyClassNames, stripToBodyMarkup } from "./build.js";
+import { convertCode, minifyClassNames, processFootnotes, stripToBodyMarkup } from "./build.js";
 
 const run = promisify(execFile);
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -142,5 +142,37 @@ test("stripToBodyMarkup keeps only body tags for CSS purging", () => {
 
   for (const { name, html, expected } of cases) {
     assert.equal(stripToBodyMarkup(html), expected, name);
+  }
+});
+
+/** Zola's markup for footnote 1, referenced in the text and defined at the end. */
+const footnoteReference = '<sup class="footnote-reference"><a href="#1">1</a></sup>';
+const footnoteDefinition = (body) =>
+  `<div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>\n${body}\n</div>`;
+
+test("processFootnotes turns Zola footnotes into linked endnotes", () => {
+  const cases = [
+    {
+      name: "links the reference and moves a paragraph definition into an endnote list",
+      html: `<section><p>Text${footnoteReference}.</p>\n${footnoteDefinition("<p>Note</p>")}\n</section>`,
+      expected:
+        '<section><p>Text<sup id="fnref:1"><a href="#fn:1">1</a></sup>.</p>\n\n' +
+        '<ol role="doc-endnotes"><li id="fn:1">\n<p>Note&nbsp;<a href="#fnref:1" role="doc-backlink">↩</a></p>\n</li></ol></section>',
+    },
+    {
+      name: "appends the back-link when the definition has no paragraph",
+      html: `<section>${footnoteDefinition("Note")}</section>`,
+      expected:
+        '<section><ol role="doc-endnotes"><li id="fn:1">\nNote\n<a href="#fnref:1" role="doc-backlink">↩</a></li></ol></section>',
+    },
+    {
+      name: "leaves a page without footnotes untouched",
+      html: "<section><p>Text</p></section>",
+      expected: "<section><p>Text</p></section>",
+    },
+  ];
+
+  for (const { name, html, expected } of cases) {
+    assert.equal(processFootnotes(html), expected, name);
   }
 });
