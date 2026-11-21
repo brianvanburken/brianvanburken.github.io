@@ -369,6 +369,17 @@ export function stripToBodyMarkup(html) {
     .replace(/>[^<]+</g, "><");
 }
 
+/**
+ * Keeps attribute selectors like a[href^="/tags/"], whose values PurgeCSS can't match,
+ * but only on pages that link to a tag so other pages drop the tag styles.
+ *
+ * @param {string} bodyMarkup - Output of stripToBodyMarkup
+ * @returns {string[]} Attributes PurgeCSS should treat as dynamic
+ */
+export function purgeDynamicAttributes(bodyMarkup) {
+  return bodyMarkup.includes('href="/tags/') ? ["href"] : [];
+}
+
 // Shared PurgeCSS instance
 const purgeCss = new PurgeCSS();
 
@@ -430,11 +441,11 @@ async function processHtml(filePath, baseCss) {
   const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
   if (styleMatch) {
     const css = styleMatch[1];
+    const bodyMarkup = stripToBodyMarkup(html);
     const purged = await purgeCss.purge({
-      content: [{ raw: stripToBodyMarkup(html), extension: "html" }],
+      content: [{ raw: bodyMarkup, extension: "html" }],
       css: [{ raw: css }],
-      // Keep attribute selectors like a[href^="/tags/"]; PurgeCSS can't match their values
-      dynamicAttributes: ["href"],
+      dynamicAttributes: purgeDynamicAttributes(bodyMarkup),
     });
     if (purged[0]?.css) {
       // Minify CSS after purging
