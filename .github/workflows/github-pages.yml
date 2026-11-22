@@ -11,9 +11,12 @@ jobs:
     # Runs pull request code, so it gets no deploy credentials
     permissions:
       contents: read
+    defaults:
+      run:
+        shell: nix develop --command bash -e {0}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: jdx/mise-action@d5574b52816a478f9d4e6529a3f6ff17a8a36785 # v5.2.8
+      - uses: cachix/install-nix-action@bb0495a1086c46893eee56f32fd192dfe4a15bb9 # v32.0.0
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         id: aube-cache
         with:
@@ -21,11 +24,10 @@ jobs:
           key: ${{ runner.os }}-aube-${{ hashFiles('pnpm-lock.yaml') }}
       - run: aube install
         if: steps.aube-cache.outputs.cache-hit != 'true'
-      - run: mise run format:check
-      - run: mise run lint:check
-      - run: mise run test
-      - run: zola build
-      - run: node scripts/build.js
+      - run: aubr format:check
+      - run: aubr lint:check
+      - run: aubr test
+      - run: aubr build
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         if: github.event_name == 'push'
         with:
