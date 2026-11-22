@@ -1,6 +1,15 @@
 {
   "name": "brianvanburken.github.io",
   "type": "module",
+  "scripts": {
+    "format:fix": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint:check": "oxlint -D correctness -D suspicious -D perf --deny-warnings",
+    "test": "node --test 'scripts/*.test.js'",
+    "clean": "rm -rf public",
+    "serve": "aubr clean && zola serve --drafts || true",
+    "build": "aubr clean && zola build && node scripts/build.js"
+  },
   "dependencies": {
     "csso": "5.0.5",
     "html-minifier-terser": "7.2.0",
